@@ -1,34 +1,42 @@
-import { useMemo } from "react";
-import { Crown } from "lucide-react";
+import { useMemo, useState, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
-import { useFilters } from "@/hooks/use-filters";
 import { getAllRequestsWithRelations } from "@/lib/mock-data";
 import { filterRequestsByPermission } from "@/lib/permissions";
-import { applyRequestFilters } from "@/lib/filters";
-import { REQUEST_STATUS_LABELS, CHANNEL_LABELS } from "@/lib/constants";
-import type { RequestStatus, Channel } from "@/types";
-import { RequestTable } from "@/components/requests/request-table";
-import { FilterBar } from "@/components/filters/filter-bar";
-import { SearchInput } from "@/components/filters/search-input";
-import { StatusFilter } from "@/components/filters/status-filter";
-import { ChannelFilter } from "@/components/filters/channel-filter";
-import { AssigneeFilter } from "@/components/filters/assignee-filter";
-import { DateRangePicker } from "@/components/shared/date-range-picker";
-import { EmptyState } from "@/components/shared/empty-state";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import type { Channel, Communication, RequestWithRelations } from "@/types";
+import { InboxLayout } from "@/components/inbox/inbox-layout";
+import { ConversationList } from "@/components/inbox/conversation-list";
+import { ConversationThread } from "@/components/inbox/conversation-thread";
+import { ContactDetailPanel } from "@/components/inbox/contact-detail-panel";
 
-const statusOptions = Object.entries(REQUEST_STATUS_LABELS).map(
-  ([value, label]) => ({ value, label })
-);
+function getLastCommTime(request: RequestWithRelations): number {
+  if (request.communications.length === 0) return 0;
+  return Math.max(
+    ...request.communications.map((c) => new Date(c.createdAt).getTime())
+  );
+}
 
-const channelOptions = Object.entries(CHANNEL_LABELS).map(
-  ([value, label]) => ({ value, label })
-);
+function matchesSearch(request: RequestWithRelations, query: string): boolean {
+  const q = query.toLowerCase();
+  return (
+    request.client.name.toLowerCase().includes(q) ||
+    request.title.toLowerCase().includes(q) ||
+    request.communications.some((c) =>
+      c.message.toLowerCase().includes(q)
+    )
+  );
+}
 
 export function InboxPage() {
   const { currentUser, allUsers } = useAuth();
-  const { filters, dispatch, activeCount } = useFilters();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedId = searchParams.get("id");
+
+  const [activeChannel, setActiveChannel] = useState<Channel | "all">("all");
+  const [search, setSearch] = useState("");
+  const [localMessages, setLocalMessages] = useState<
+    Map<string, Communication[]>
+  >(new Map());
 
   const allRequests = useMemo(() => getAllRequestsWithRelations(), []);
 
@@ -37,88 +45,90 @@ export function InboxPage() {
     [currentUser, allRequests]
   );
 
-  const filteredRequests = useMemo(
-    () => applyRequestFilters(permittedRequests, filters),
-    [permittedRequests, filters]
+  const filteredRequests = useMemo(() => {
+    let result = permittedRequests;
+
+    // Filter by channel (concierge only visible in "all")
+    if (activeChannel !== "all") {
+      result = result.filter((r) => r.channel === activeChannel);
+    }
+
+    // Filter by search
+    if (search) {
+      result = result.filter((r) => matchesSearch(r, search));
+    }
+
+    // Sort by most recent communication
+    return [...result].sort(
+      (a, b) => getLastCommTime(b) - getLastCommTime(a)
+    );
+  }, [permittedRequests, activeChannel, search]);
+
+  const selectedRequest = useMemo(
+    () => (selectedId ? permittedRequests.find((r) => r.id === selectedId) ?? null : null),
+    [selectedId, permittedRequests]
   );
 
+  const handleSelect = useCallback(
+    (id: string) => {
+      setSearchParams({ id });
+    },
+    [setSearchParams]
+  );
+
+  const handleSend = useCallback(
+    (message: string) => {
+      if (!selectedId) return;
+      const newComm: Communication = {
+        id: `local-${Date.now()}`,
+        requestId: selectedId,
+        sender: "agent",
+        senderName: currentUser.name,
+        channel: selectedRequest?.channel ?? "web",
+        message,
+        createdAt: new Date().toISOString(),
+      };
+      setLocalMessages((prev) => {
+        const next = new Map(prev);
+        const existing = next.get(selectedId) ?? [];
+        next.set(selectedId, [...existing, newComm]);
+        return next;
+      });
+    },
+    [selectedId, currentUser.name, selectedRequest?.channel]
+  );
+
+  const currentLocalMessages = selectedId
+    ? localMessages.get(selectedId) ?? []
+    : [];
+
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Inbox</h1>
-
-      <FilterBar
-        activeCount={activeCount}
-        onReset={() => dispatch({ type: "RESET" })}
-      >
-        <SearchInput
-          value={filters.search}
-          onChange={(value) =>
-            dispatch({ type: "SET_SEARCH", payload: value })
-          }
-          placeholder="Search requests..."
+    <InboxLayout
+      left={
+        <ConversationList
+          requests={filteredRequests}
+          selectedId={selectedId}
+          onSelect={handleSelect}
+          activeChannel={activeChannel}
+          onChannelChange={setActiveChannel}
+          search={search}
+          onSearchChange={setSearch}
         />
-        <StatusFilter
-          values={filters.statuses}
-          onChange={(values) =>
-            dispatch({
-              type: "SET_STATUSES",
-              payload: values as RequestStatus[],
-            })
-          }
-          options={statusOptions}
-        />
-        <ChannelFilter
-          values={filters.channels}
-          onChange={(values) =>
-            dispatch({
-              type: "SET_CHANNELS",
-              payload: values as Channel[],
-            })
-          }
-          options={channelOptions}
-        />
-        <AssigneeFilter
-          values={filters.assigneeIds}
-          onChange={(values) =>
-            dispatch({ type: "SET_ASSIGNEES", payload: values })
-          }
-          users={allUsers}
-        />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            dispatch({ type: "SET_VIP_ONLY", payload: !filters.vipOnly })
-          }
-          className={cn(
-            "gap-1.5",
-            filters.vipOnly &&
-              "border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800"
-          )}
-        >
-          <Crown className="size-3.5" />
-          VIP Only
-        </Button>
-        <DateRangePicker
-          from={filters.dateFrom ?? undefined}
-          to={filters.dateTo ?? undefined}
-          onSelect={(range) =>
-            dispatch({
-              type: "SET_DATE_RANGE",
-              payload: { from: range.from ?? null, to: range.to ?? null },
-            })
-          }
-        />
-      </FilterBar>
-
-      {filteredRequests.length > 0 ? (
-        <RequestTable requests={filteredRequests} />
-      ) : (
-        <EmptyState
-          title="No requests found"
-          description="Try adjusting your filters"
-        />
-      )}
-    </div>
+      }
+      middle={
+        selectedRequest ? (
+          <ConversationThread
+            request={selectedRequest}
+            localMessages={currentLocalMessages}
+            onSend={handleSend}
+          />
+        ) : null
+      }
+      right={
+        selectedRequest ? (
+          <ContactDetailPanel request={selectedRequest} users={allUsers} />
+        ) : null
+      }
+    />
   );
 }
