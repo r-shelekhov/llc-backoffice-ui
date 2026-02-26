@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ExternalLink } from "lucide-react";
 import type { Communication, RequestWithRelations } from "@/types";
 import { ChannelIcon } from "@/components/shared/channel-icon";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -34,24 +33,25 @@ export function ConversationThread({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <h3 className="truncate text-sm font-semibold">{request.title}</h3>
-          <ChannelIcon channel={request.channel} className="size-3.5 shrink-0 text-muted-foreground" />
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <StatusBadge type="request" status={request.status} />
-          <PriorityBadge priority={request.priority} />
-          <SlaBadge state={request.slaState} />
+      <div className="shrink-0 border-b px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <h3 className="truncate text-sm font-semibold">{request.title}</h3>
+            <ChannelIcon channel={request.channel} className="size-3.5 shrink-0 text-muted-foreground" />
+          </div>
           <Button
             variant="outline"
             size="sm"
-            className="gap-1.5"
+            className="shrink-0"
             onClick={() => navigate(`/requests/${request.id}`)}
           >
-            <ExternalLink className="size-3.5" />
             Full Details
           </Button>
+        </div>
+        <div className="mt-2 flex items-center gap-2">
+          <StatusBadge type="request" status={request.status} />
+          <PriorityBadge priority={request.priority} />
+          <SlaBadge state={request.slaState} />
         </div>
       </div>
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4">
