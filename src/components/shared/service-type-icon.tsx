@@ -19,9 +19,8 @@ const iconMap: Record<ServiceType, { icon: LucideIcon; extraClass?: string }> = 
 export function ServiceTypeIcon({ serviceType, className }: ServiceTypeIconProps) {
   const { icon: Icon, extraClass } = iconMap[serviceType];
   return (
-    <Icon
-      className={cn("size-4", extraClass, className)}
-      title={SERVICE_TYPE_LABELS[serviceType]}
-    />
+    <span title={SERVICE_TYPE_LABELS[serviceType]}>
+      <Icon className={cn("size-4", extraClass, className)} />
+    </span>
   );
 }

@@ -18,5 +18,9 @@ const iconMap = {
 
 export function ChannelIcon({ channel, className }: ChannelIconProps) {
   const Icon = iconMap[channel];
-  return <Icon className={cn("size-4", className)} title={CHANNEL_LABELS[channel]} />;
+  return (
+    <span title={CHANNEL_LABELS[channel]}>
+      <Icon className={cn("size-4", className)} />
+    </span>
+  );
 }
