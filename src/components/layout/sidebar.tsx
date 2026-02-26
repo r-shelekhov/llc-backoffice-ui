@@ -5,10 +5,19 @@ import {
   FileText,
   CreditCard,
   Users,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { ROLE_LABELS } from "@/lib/constants";
 import { requests } from "@/lib/mock-data";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const actionRequiredCount = requests.filter(
   (r) => r.status === "action_required",
@@ -46,7 +55,7 @@ function NavItem({ to, icon: Icon, label, badge }: NavItemProps) {
 }
 
 export function Sidebar() {
-  const { currentUser } = useAuth();
+  const { currentUser, setCurrentUser, allUsers } = useAuth();
 
   return (
     <aside className="flex h-full w-60 flex-col border-r bg-white pt-14">
@@ -68,6 +77,35 @@ export function Sidebar() {
           </>
         )}
       </nav>
+
+      <div className="border-t p-3">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="w-full justify-start gap-2">
+              <img
+                src={currentUser.avatarUrl}
+                alt={currentUser.name}
+                className="h-8 w-8 rounded-full"
+              />
+              <span className="truncate text-sm">{currentUser.name}</span>
+              <ChevronDown className="ml-auto size-4 shrink-0" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="start" className="w-56">
+            {allUsers.map((user) => (
+              <DropdownMenuItem
+                key={user.id}
+                onSelect={() => setCurrentUser(user)}
+              >
+                <span>{user.name}</span>
+                <span className="ml-2 text-xs text-muted-foreground">
+                  {ROLE_LABELS[user.role]}
+                </span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </aside>
   );
 }

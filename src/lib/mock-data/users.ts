@@ -12,16 +12,6 @@ export const users: User[] = [
     updatedAt: "2026-01-10T14:30:00Z",
   },
   {
-    id: "usr-2",
-    name: "Sophia Laurent",
-    email: "sophia.laurent@llccar.com",
-    role: "admin",
-    avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=SL",
-    isActive: true,
-    createdAt: "2025-07-01T10:00:00Z",
-    updatedAt: "2026-01-15T11:00:00Z",
-  },
-  {
     id: "usr-3",
     name: "Marcus Chen",
     email: "marcus.chen@llccar.com",
@@ -40,15 +30,5 @@ export const users: User[] = [
     isActive: true,
     createdAt: "2025-09-05T07:15:00Z",
     updatedAt: "2026-02-10T09:20:00Z",
-  },
-  {
-    id: "usr-5",
-    name: "David Kim",
-    email: "david.kim@llccar.com",
-    role: "manager",
-    avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=DK",
-    isActive: true,
-    createdAt: "2025-10-20T12:00:00Z",
-    updatedAt: "2026-02-18T13:10:00Z",
   },
 ];
