@@ -32,10 +32,10 @@ export function InboxPage() {
 
   const allRequests = useMemo(() => getAllRequestsWithRelations(), []);
 
-  const permittedRequests = useMemo(() => {
-    const filtered = filterRequestsByPermission(currentUser, allRequests);
-    return allRequests.filter((r) => filtered.some((f) => f.id === r.id));
-  }, [currentUser, allRequests]);
+  const permittedRequests = useMemo(
+    () => filterRequestsByPermission(currentUser, allRequests),
+    [currentUser, allRequests]
+  );
 
   const filteredRequests = useMemo(
     () => applyRequestFilters(permittedRequests, filters),

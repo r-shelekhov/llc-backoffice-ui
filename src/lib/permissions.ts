@@ -16,16 +16,16 @@ export function canViewClient(user: User, clientId: string, requests: Request[])
   return requests.some((r) => r.clientId === clientId && r.assigneeId === user.id);
 }
 
-export function filterRequestsByPermission(user: User, requests: Request[]): Request[] {
+export function filterRequestsByPermission<T extends Request>(user: User, requests: T[]): T[] {
   if (user.role === "admin" || user.role === "vip_manager") return requests;
   return requests.filter((r) => r.assigneeId === user.id);
 }
 
-export function filterInvoicesByPermission(
+export function filterInvoicesByPermission<T extends Invoice>(
   user: User,
-  invoices: Invoice[],
+  invoices: T[],
   requests: Request[]
-): Invoice[] {
+): T[] {
   if (user.role === "admin" || user.role === "vip_manager") return invoices;
   const allowedRequestIds = new Set(
     requests.filter((r) => r.assigneeId === user.id).map((r) => r.id)
@@ -33,12 +33,12 @@ export function filterInvoicesByPermission(
   return invoices.filter((i) => allowedRequestIds.has(i.requestId));
 }
 
-export function filterPaymentsByPermission(
+export function filterPaymentsByPermission<T extends Payment>(
   user: User,
-  payments: Payment[],
+  payments: T[],
   invoices: Invoice[],
   requests: Request[]
-): Payment[] {
+): T[] {
   if (user.role === "admin" || user.role === "vip_manager") return payments;
   const allowedRequestIds = new Set(
     requests.filter((r) => r.assigneeId === user.id).map((r) => r.id)
