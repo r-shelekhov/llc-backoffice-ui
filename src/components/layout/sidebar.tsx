@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import {
-  LayoutDashboard,
+  BarChart3,
   Inbox,
   CalendarCheck,
   FileText,
@@ -71,13 +71,13 @@ export function Sidebar() {
         <span className="text-lg font-bold">LLC Car</span>
       </div>
       <nav className="flex flex-1 flex-col gap-1 p-3">
-        <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" />
         <NavItem
           to="/inbox"
           icon={Inbox}
           label="Inbox"
           badge={awaitingClientCount}
         />
+        <NavItem to="/dashboard" icon={BarChart3} label="Analytics" />
         <NavItem to="/bookings" icon={CalendarCheck} label="Bookings" />
         <NavItem to="/invoices" icon={FileText} label="Invoices" />
         <NavItem to="/payments" icon={CreditCard} label="Payments" />

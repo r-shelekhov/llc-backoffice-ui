@@ -27,7 +27,7 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
+      <h1 className="text-2xl font-semibold">Analytics</h1>
       <DashboardKpiStrip data={metrics.kpiStrip} />
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-8 space-y-6">
