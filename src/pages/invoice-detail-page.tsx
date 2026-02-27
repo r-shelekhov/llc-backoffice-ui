@@ -26,11 +26,17 @@ export function InvoiceDetailPage() {
     return <NotFoundPage />;
   }
 
-  const fromBooking = (location.state as { from?: string })?.from === "booking";
-  const backTo = fromBooking
+  const from = (location.state as { from?: string })?.from;
+  const backTo = from === "booking"
     ? `/bookings/${invoice.booking.id}`
-    : "/invoices";
-  const backLabel = fromBooking ? "Back to Booking" : "Back to Invoices";
+    : from === "payment"
+      ? "/payments"
+      : "/invoices";
+  const backLabel = from === "booking"
+    ? "Back to Booking"
+    : from === "payment"
+      ? "Back to Payments"
+      : "Back to Invoices";
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-8">
@@ -157,6 +163,11 @@ export function InvoiceDetailPage() {
                     <p className="text-xs text-muted-foreground">
                       {payment.method}
                     </p>
+                    {payment.refundReason && (
+                      <p className="text-xs text-muted-foreground italic">
+                        {payment.refundReason}
+                      </p>
+                    )}
                   </div>
                   <div className="text-right text-xs text-muted-foreground">
                     {payment.processedAt

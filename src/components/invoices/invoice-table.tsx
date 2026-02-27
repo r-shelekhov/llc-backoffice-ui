@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { InvoiceWithRelations } from "@/types";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { formatCurrency, formatDate } from "@/lib/format";
@@ -42,7 +43,14 @@ export function InvoiceTable({ invoices, onSelect }: InvoiceTableProps) {
             <TableCell className="font-mono text-sm">{invoice.id}</TableCell>
             <TableCell>{invoice.client.name}</TableCell>
             <TableCell className="max-w-[200px] truncate">
-              {invoice.booking.title}
+              <Link
+                to={`/bookings/${invoice.booking.id}`}
+                state={{ from: "invoice", invoiceId: invoice.id }}
+                onClick={(e) => e.stopPropagation()}
+                className="hover:underline"
+              >
+                {invoice.booking.title}
+              </Link>
             </TableCell>
             <TableCell>{formatCurrency(invoice.total)}</TableCell>
             <TableCell>{formatDate(invoice.dueDate)}</TableCell>

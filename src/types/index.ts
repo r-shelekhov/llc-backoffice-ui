@@ -22,6 +22,8 @@ export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled";
 
 export type PaymentStatus = "pending" | "succeeded" | "failed" | "refunded";
 
+export type PaymentMethod = "bank_transfer" | "card" | "balance_credit_external" | "cash" | "other";
+
 export type Channel = "phone" | "email" | "whatsapp" | "web" | "concierge";
 
 export type ServiceType = "car" | "jet" | "helicopter" | "yacht";

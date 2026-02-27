@@ -1,4 +1,4 @@
-import type { ConversationStatus, BookingStatus, InvoiceStatus, PaymentStatus, Role, Channel, ServiceType, SlaState, Priority } from "@/types";
+import type { ConversationStatus, BookingStatus, InvoiceStatus, PaymentStatus, PaymentMethod, Role, Channel, ServiceType, SlaState, Priority } from "@/types";
 
 export const CONVERSATION_STATUS_LABELS: Record<ConversationStatus, string> = {
   new: "New",
@@ -41,6 +41,14 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   succeeded: "Succeeded",
   failed: "Failed",
   refunded: "Refunded",
+};
+
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  bank_transfer: "Bank Transfer",
+  card: "Card",
+  balance_credit_external: "Balance / Credit (External)",
+  cash: "Cash",
+  other: "Other",
 };
 
 export const ROLE_LABELS: Record<Role, string> = {

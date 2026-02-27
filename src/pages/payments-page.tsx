@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { PaymentFilterState, PaymentStatus } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -30,6 +31,7 @@ const statusOptions = Object.entries(PAYMENT_STATUS_LABELS).map(
 
 export function PaymentsPage() {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<PaymentFilterState>(initialFilters);
 
   const allPayments = getAllPaymentsWithRelations();
@@ -90,7 +92,10 @@ export function PaymentsPage() {
           description="Try adjusting your filters or search query."
         />
       ) : (
-        <PaymentTable payments={filteredPayments} />
+        <PaymentTable
+          payments={filteredPayments}
+          onSelect={(payment) => navigate(`/invoices/${payment.invoiceId}`, { state: { from: "payment" } })}
+        />
       )}
     </div>
   );

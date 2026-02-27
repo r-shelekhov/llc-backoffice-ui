@@ -1,24 +1,80 @@
 import { useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import { ArrowLeft, Zap } from "lucide-react";
-import type { BookingStatus } from "@/types";
-import { getBookingWithRelations } from "@/lib/mock-data";
+import type { BookingStatus, PaymentMethod } from "@/types";
+import { getBookingWithRelations, payments, invoices, bookings } from "@/lib/mock-data";
 import { computeSlaState } from "@/lib/sla";
-import { BOOKING_STATUS_TRANSITIONS, BOOKING_STATUS_ACTION_LABELS, SERVICE_TYPE_LABELS, CHANNEL_LABELS } from "@/lib/constants";
+import { BOOKING_STATUS_TRANSITIONS, BOOKING_STATUS_ACTION_LABELS, PAYMENT_METHOD_LABELS, SERVICE_TYPE_LABELS, CHANNEL_LABELS } from "@/lib/constants";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { ChannelIcon } from "@/components/shared/channel-icon";
 import { SlaBadge } from "@/components/shared/sla-badge";
 import { ServiceTypeIcon } from "@/components/shared/service-type-icon";
-import { formatCurrency, formatDateTime } from "@/lib/format";
+import { formatCurrency, formatDateTime, formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmPaymentDialog } from "@/components/bookings/confirm-payment-dialog";
 import { NotFoundPage } from "@/pages/not-found-page";
+
+type BillingState =
+  | "no_invoice"
+  | "invoice_draft"
+  | "awaiting_payment"
+  | "payment_processing"
+  | "paid"
+  | "overdue";
+
+const BILLING_STATE_CONFIG: Record<BillingState, { label: string; className: string }> = {
+  no_invoice: { label: "No Invoice", className: "bg-gray-100 text-gray-600" },
+  invoice_draft: { label: "Invoice Draft", className: "bg-gray-100 text-gray-600" },
+  awaiting_payment: { label: "Awaiting Payment", className: "bg-amber-100 text-amber-700" },
+  payment_processing: { label: "Payment Processing", className: "bg-amber-100 text-amber-700" },
+  paid: { label: "Paid", className: "bg-green-100 text-green-700" },
+  overdue: { label: "Overdue", className: "bg-red-100 text-red-700" },
+};
+
+function confirmPayment(
+  bookingId: string,
+  invoiceId: string,
+  amount: number,
+  method: PaymentMethod,
+) {
+  const now = new Date().toISOString();
+
+  payments.push({
+    id: `pay-${payments.length + 1}`,
+    invoiceId,
+    clientId: bookings.find((b) => b.id === bookingId)!.clientId,
+    amount,
+    method,
+    status: "succeeded",
+    processedAt: now,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  const invoiceRef = invoices.find((i) => i.id === invoiceId);
+  if (invoiceRef) {
+    invoiceRef.status = "paid";
+    invoiceRef.paidAt = now;
+    invoiceRef.updatedAt = now;
+  }
+
+  const bookingRef = bookings.find((b) => b.id === bookingId);
+  if (bookingRef) {
+    bookingRef.status = "paid";
+    bookingRef.updatedAt = now;
+    if (bookingRef.assigneeId !== null && bookingRef.executionAt !== "") {
+      bookingRef.status = "scheduled";
+    }
+  }
+}
 
 export function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const [, forceUpdate] = useState(0);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
   const booking = id ? getBookingWithRelations(id) : null;
 
@@ -28,8 +84,17 @@ export function BookingDetailPage() {
 
   const state = location.state as { from?: string; invoiceId?: string } | null;
   const fromInvoice = state?.from === "invoice";
-  const backTo = fromInvoice ? `/invoices/${state.invoiceId}` : "/bookings";
-  const backLabel = fromInvoice ? "Back to Invoice" : "Back to Bookings";
+  const fromPayment = state?.from === "payment";
+  const backTo = fromInvoice
+    ? `/invoices/${state.invoiceId}`
+    : fromPayment
+      ? "/payments"
+      : "/bookings";
+  const backLabel = fromInvoice
+    ? "Back to Invoice"
+    : fromPayment
+      ? "Back to Payments"
+      : "Back to Bookings";
 
   const transitions = BOOKING_STATUS_TRANSITIONS[booking.status];
   const isAutoScheduled =
@@ -37,9 +102,44 @@ export function BookingDetailPage() {
     booking.assigneeId !== null &&
     booking.executionAt !== "";
 
+  // Derive billing state
+  const billingState = deriveBillingState();
+  const billingConfig = BILLING_STATE_CONFIG[billingState];
+
+  // Find first sent invoice for payment confirmation
+  const sentInvoice = booking.invoices.find((i) => i.status === "sent");
+  const hasInvoice = booking.invoices.length > 0;
+
+  function deriveBillingState(): BillingState {
+    if (booking!.invoices.length === 0) return "no_invoice";
+
+    const hasOverdue = booking!.invoices.some((i) => i.status === "overdue");
+    if (hasOverdue) return "overdue";
+
+    const hasPaid = booking!.invoices.some((i) => i.status === "paid");
+    if (hasPaid) return "paid";
+
+    const hasSent = booking!.invoices.some((i) => i.status === "sent");
+    if (hasSent) {
+      const hasPending = booking!.payments.some((p) => p.status === "pending");
+      return hasPending ? "payment_processing" : "awaiting_payment";
+    }
+
+    return "invoice_draft";
+  }
+
   function handleStatusChange(newStatus: BookingStatus) {
     const allowed = BOOKING_STATUS_TRANSITIONS[booking!.status];
     if (!allowed.includes(newStatus)) return;
+
+    // For draft → awaiting_payment, require invoice
+    if (booking!.status === "draft" && newStatus === "awaiting_payment" && !hasInvoice) return;
+
+    // For awaiting_payment → paid, open dialog instead
+    if (booking!.status === "awaiting_payment" && newStatus === "paid") {
+      setPaymentDialogOpen(true);
+      return;
+    }
 
     booking!.status = newStatus;
     booking!.updatedAt = new Date().toISOString();
@@ -53,6 +153,16 @@ export function BookingDetailPage() {
       booking!.status = "scheduled";
     }
 
+    forceUpdate((n) => n + 1);
+  }
+
+  function handleConfirmPayment(method: PaymentMethod) {
+    const invoice = sentInvoice ?? booking!.invoices[0];
+    if (!invoice) return;
+
+    confirmPayment(id!, invoice.id, invoice.total, method);
+
+    setPaymentDialogOpen(false);
     forceUpdate((n) => n + 1);
   }
 
@@ -88,16 +198,31 @@ export function BookingDetailPage() {
 
           {transitions.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {transitions.map((nextStatus) => (
-                <Button
-                  key={nextStatus}
-                  variant={nextStatus === "cancelled" ? "outline" : "default"}
-                  size="sm"
-                  onClick={() => handleStatusChange(nextStatus)}
-                >
-                  {BOOKING_STATUS_ACTION_LABELS[nextStatus]}
-                </Button>
-              ))}
+              {transitions.map((nextStatus) => {
+                // Disable "Send for Payment" if no invoice
+                const disabled =
+                  booking.status === "draft" &&
+                  nextStatus === "awaiting_payment" &&
+                  !hasInvoice;
+
+                const label =
+                  booking.status === "awaiting_payment" && nextStatus === "paid"
+                    ? "Confirm Payment"
+                    : BOOKING_STATUS_ACTION_LABELS[nextStatus];
+
+                return (
+                  <Button
+                    key={nextStatus}
+                    variant={nextStatus === "cancelled" ? "outline" : "default"}
+                    size="sm"
+                    disabled={disabled}
+                    title={disabled ? "Create an invoice first" : undefined}
+                    onClick={() => handleStatusChange(nextStatus)}
+                  >
+                    {label}
+                  </Button>
+                );
+              })}
             </div>
           )}
         </CardContent>
@@ -137,6 +262,73 @@ export function BookingDetailPage() {
         </CardContent>
       </Card>
 
+      {/* Billing */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Billing</CardTitle>
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${billingConfig.className}`}>
+              <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />
+              {billingConfig.label}
+            </span>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Invoice summary */}
+          {booking.invoices.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No invoices yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {booking.invoices.map((invoice) => (
+                <Link
+                  key={invoice.id}
+                  to={`/invoices/${invoice.id}`}
+                  state={{ from: "booking" }}
+                  className="flex items-center justify-between rounded-md border p-3 hover:bg-muted/50 transition-colors"
+                >
+                  <div className="space-y-1">
+                    <p className="font-mono text-sm">{invoice.id}</p>
+                    <StatusBadge type="invoice" status={invoice.status} />
+                  </div>
+                  <p className="text-sm font-medium">
+                    {formatCurrency(invoice.total)}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {/* Payment summary */}
+          {booking.payments.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No payments yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {booking.payments.map((payment) => (
+                <div
+                  key={payment.id}
+                  className="flex items-center justify-between rounded-md border p-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <StatusBadge type="payment" status={payment.status} />
+                    <span className="text-xs text-muted-foreground">
+                      {PAYMENT_METHOD_LABELS[payment.method as keyof typeof PAYMENT_METHOD_LABELS] ?? payment.method}
+                    </span>
+                    {payment.processedAt && (
+                      <span className="text-xs text-muted-foreground">
+                        {formatDate(payment.processedAt)}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm font-medium">
+                    {formatCurrency(payment.amount)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Conversation */}
       <Card>
         <CardHeader>
@@ -167,67 +359,15 @@ export function BookingDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Invoices */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Invoices</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {booking.invoices.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No invoices yet.</p>
-          ) : (
-            <div className="space-y-2">
-              {booking.invoices.map((invoice) => (
-                <Link
-                  key={invoice.id}
-                  to={`/invoices/${invoice.id}`}
-                  state={{ from: "booking" }}
-                  className="flex items-center justify-between rounded-md border p-3 hover:bg-muted/50 transition-colors"
-                >
-                  <div className="space-y-1">
-                    <p className="font-mono text-sm">{invoice.id}</p>
-                    <StatusBadge type="invoice" status={invoice.status} />
-                  </div>
-                  <p className="text-sm font-medium">
-                    {formatCurrency(invoice.total)}
-                  </p>
-                </Link>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Payments */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Payments</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {booking.payments.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No payments yet.</p>
-          ) : (
-            <div className="space-y-2">
-              {booking.payments.map((payment) => (
-                <div
-                  key={payment.id}
-                  className="flex items-center justify-between rounded-md border p-3"
-                >
-                  <div className="space-y-1">
-                    <StatusBadge type="payment" status={payment.status} />
-                    <p className="text-xs text-muted-foreground">
-                      {payment.method}
-                    </p>
-                  </div>
-                  <p className="text-sm font-medium">
-                    {formatCurrency(payment.amount)}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Payment confirmation dialog */}
+      {sentInvoice && (
+        <ConfirmPaymentDialog
+          open={paymentDialogOpen}
+          onOpenChange={setPaymentDialogOpen}
+          invoiceTotal={sentInvoice.total}
+          onConfirm={handleConfirmPayment}
+        />
+      )}
     </div>
   );
 }

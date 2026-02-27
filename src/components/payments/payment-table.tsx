@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { PaymentWithRelations } from "@/types";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { formatCurrency, formatRelativeTime } from "@/lib/format";
@@ -12,9 +13,10 @@ import {
 
 interface PaymentTableProps {
   payments: PaymentWithRelations[];
+  onSelect?: (payment: PaymentWithRelations) => void;
 }
 
-export function PaymentTable({ payments }: PaymentTableProps) {
+export function PaymentTable({ payments, onSelect }: PaymentTableProps) {
   return (
     <Table>
       <TableHeader>
@@ -23,6 +25,7 @@ export function PaymentTable({ payments }: PaymentTableProps) {
           <TableHead>Payment ID</TableHead>
           <TableHead>Invoice ID</TableHead>
           <TableHead>Client</TableHead>
+          <TableHead>Booking</TableHead>
           <TableHead>Amount</TableHead>
           <TableHead>Method</TableHead>
           <TableHead>Processed At</TableHead>
@@ -30,7 +33,11 @@ export function PaymentTable({ payments }: PaymentTableProps) {
       </TableHeader>
       <TableBody>
         {payments.map((payment) => (
-          <TableRow key={payment.id}>
+          <TableRow
+            key={payment.id}
+            onClick={() => onSelect?.(payment)}
+            className={onSelect ? "hover:bg-muted/50 cursor-pointer" : undefined}
+          >
             <TableCell>
               <StatusBadge type="payment" status={payment.status} />
             </TableCell>
@@ -39,6 +46,20 @@ export function PaymentTable({ payments }: PaymentTableProps) {
               {payment.invoiceId}
             </TableCell>
             <TableCell>{payment.client.name}</TableCell>
+            <TableCell className="max-w-[200px] truncate">
+              {payment.booking ? (
+                <Link
+                  to={`/bookings/${payment.booking.id}`}
+                  state={{ from: "payment" }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="hover:underline"
+                >
+                  {payment.booking.title}
+                </Link>
+              ) : (
+                <span className="text-muted-foreground">—</span>
+              )}
+            </TableCell>
             <TableCell>
               <div>
                 <span>{formatCurrency(payment.amount)}</span>
