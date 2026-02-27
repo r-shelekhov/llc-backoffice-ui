@@ -1,12 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { KpiGrid } from "@/components/dashboard/kpi-grid";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
-import { conversations } from "@/lib/mock-data";
+import { useAuth } from "@/hooks/use-auth";
+import { conversations, clients } from "@/lib/mock-data";
 import { CONVERSATION_STATUS_LABELS, CONVERSATION_STATUS_COLORS } from "@/lib/constants";
 import type { ConversationStatus } from "@/types";
 
 export function DashboardPage() {
-  const statusCounts = conversations.reduce<Record<string, number>>((acc, r) => {
+  const { currentUser } = useAuth();
+
+  const isPrivileged = currentUser.role === "admin" || currentUser.role === "vip_manager";
+  const vipClientIds = new Set(clients.filter((c) => c.isVip).map((c) => c.id));
+
+  const filteredConversations = isPrivileged
+    ? conversations
+    : conversations.filter(
+        (c) => !vipClientIds.has(c.clientId) && c.assigneeId === currentUser.id
+      );
+
+  const statusCounts = filteredConversations.reduce<Record<string, number>>((acc, r) => {
     acc[r.status] = (acc[r.status] || 0) + 1;
     return acc;
   }, {});

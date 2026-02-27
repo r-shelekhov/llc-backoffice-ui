@@ -6,11 +6,11 @@ import { PriorityBadge } from "@/components/shared/priority-badge";
 import { SlaBadge } from "@/components/shared/sla-badge";
 import type { ConversationWithRelations } from "@/types";
 
-interface RequestDetailHeaderProps {
+interface ConversationDetailHeaderProps {
   conversation: ConversationWithRelations;
 }
 
-export function RequestDetailHeader({ conversation }: RequestDetailHeaderProps) {
+export function ConversationDetailHeader({ conversation }: ConversationDetailHeaderProps) {
   const navigate = useNavigate();
 
   return (

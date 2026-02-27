@@ -3,7 +3,7 @@ import { AuthProvider } from "@/contexts/auth-context";
 import { AppLayout } from "@/components/layout/app-layout";
 import { DashboardPage } from "@/pages/dashboard-page";
 import { InboxPage } from "@/pages/inbox-page";
-import { RequestDetailPage } from "@/pages/request-detail-page";
+import { ConversationDetailPage } from "@/pages/conversation-detail-page";
 import { BookingsPage } from "@/pages/bookings-page";
 import { BookingDetailPage } from "@/pages/booking-detail-page";
 import { BookingNewPage } from "@/pages/booking-new-page";
@@ -23,8 +23,7 @@ export function App() {
             <Route index element={<Navigate to="/inbox" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="inbox" element={<InboxPage />} />
-            <Route path="conversations/:id" element={<RequestDetailPage />} />
-            <Route path="requests/:id" element={<Navigate to="/inbox" replace />} />
+            <Route path="conversations/:id" element={<ConversationDetailPage />} />
             <Route path="bookings" element={<BookingsPage />} />
             <Route path="bookings/new" element={<BookingNewPage />} />
             <Route path="bookings/:id" element={<BookingDetailPage />} />

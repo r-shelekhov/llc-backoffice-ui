@@ -1,6 +1,8 @@
 import { Link, useParams, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 import { getInvoiceWithRelations } from "@/lib/mock-data";
+import { canViewInvoice } from "@/lib/permissions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ServiceTypeIcon } from "@/components/shared/service-type-icon";
 import { SERVICE_TYPE_LABELS } from "@/lib/constants";
@@ -16,14 +18,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { NotFoundPage } from "@/pages/not-found-page";
+import { PermissionDenied } from "@/components/shared/permission-denied";
 
 export function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
+  const { currentUser } = useAuth();
   const invoice = id ? getInvoiceWithRelations(id) : null;
 
   if (!invoice) {
     return <NotFoundPage />;
+  }
+
+  if (!canViewInvoice(currentUser, invoice)) {
+    return <PermissionDenied />;
   }
 
   const from = (location.state as { from?: string })?.from;

@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { communications, conversations } from "@/lib/mock-data";
+import { useAuth } from "@/hooks/use-auth";
+import { communications, conversations, clients } from "@/lib/mock-data";
 import { formatRelativeTime } from "@/lib/format";
 
 const BORDER_COLORS: Record<string, string> = {
@@ -9,7 +10,21 @@ const BORDER_COLORS: Record<string, string> = {
 };
 
 export function RecentActivity() {
+  const { currentUser } = useAuth();
+
+  const isPrivileged = currentUser.role === "admin" || currentUser.role === "vip_manager";
+  const vipClientIds = new Set(clients.filter((c) => c.isVip).map((c) => c.id));
+
+  const permittedConversationIds = new Set(
+    isPrivileged
+      ? conversations.map((c) => c.id)
+      : conversations
+          .filter((c) => !vipClientIds.has(c.clientId) && c.assigneeId === currentUser.id)
+          .map((c) => c.id)
+  );
+
   const recentComms = [...communications]
+    .filter((c) => permittedConversationIds.has(c.conversationId))
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 10);
 

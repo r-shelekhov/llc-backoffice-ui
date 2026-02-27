@@ -7,7 +7,7 @@ import { ServiceTypeIcon } from "@/components/shared/service-type-icon";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { SlaBadge } from "@/components/shared/sla-badge";
-import { InternalNotesPanel } from "@/components/request-detail/internal-notes-panel";
+import { InternalNotesPanel } from "@/components/conversation-detail/internal-notes-panel";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

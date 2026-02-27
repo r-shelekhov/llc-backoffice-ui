@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type { BookingFilterState, BookingStatus } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import { getAllBookingsWithRelations } from "@/lib/mock-data";
-import { filterBookingsByPermission } from "@/lib/permissions";
+import { filterBookingsByPermission, filterVipBookings } from "@/lib/permissions";
 import { applyBookingFilters } from "@/lib/filters";
 import { BOOKING_STATUS_LABELS } from "@/lib/constants";
 import { FilterBar } from "@/components/filters/filter-bar";
@@ -31,9 +31,9 @@ export function BookingsPage() {
   const [filters, setFilters] = useState<BookingFilterState>(initialFilters);
 
   const allBookings = getAllBookingsWithRelations();
-  const permittedBookings = filterBookingsByPermission(
+  const permittedBookings = filterVipBookings(
     currentUser,
-    allBookings
+    filterBookingsByPermission(currentUser, allBookings)
   );
   const filteredBookings = applyBookingFilters(permittedBookings, filters);
 

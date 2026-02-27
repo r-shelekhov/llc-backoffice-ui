@@ -6,11 +6,11 @@ import { SERVICE_TYPE_LABELS, CHANNEL_LABELS } from "@/lib/constants";
 import { formatDateTime } from "@/lib/format";
 import type { ConversationWithRelations } from "@/types";
 
-interface RequestInfoPanelProps {
+interface ConversationInfoPanelProps {
   conversation: ConversationWithRelations;
 }
 
-export function RequestInfoPanel({ conversation }: RequestInfoPanelProps) {
+export function ConversationInfoPanel({ conversation }: ConversationInfoPanelProps) {
   return (
     <Card>
       <CardHeader>

@@ -6,7 +6,7 @@ import { ChannelIcon } from "@/components/shared/channel-icon";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { SlaBadge } from "@/components/shared/sla-badge";
-import { CommunicationTimeline } from "@/components/request-detail/communication-timeline";
+import { CommunicationTimeline } from "@/components/conversation-detail/communication-timeline";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

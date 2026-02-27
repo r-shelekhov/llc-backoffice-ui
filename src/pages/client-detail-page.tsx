@@ -6,7 +6,7 @@ import { PermissionDenied } from "@/components/shared/permission-denied";
 import { ErrorState } from "@/components/shared/error-state";
 import { ClientProfileHeader } from "@/components/clients/client-profile-header";
 import { ClientStatsCards } from "@/components/clients/client-stats-cards";
-import { ClientRequestHistory } from "@/components/clients/client-request-history";
+import { ClientConversationHistory } from "@/components/clients/client-conversation-history";
 
 export function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -30,7 +30,7 @@ export function ClientDetailPage() {
     <div className="space-y-6">
       <ClientProfileHeader client={client} />
       <ClientStatsCards client={client} conversationCount={clientConversations.length} />
-      <ClientRequestHistory conversations={clientConversations} />
+      <ClientConversationHistory conversations={clientConversations} />
     </div>
   );
 }

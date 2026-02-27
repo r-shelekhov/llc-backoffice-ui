@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import { ArrowLeft, Zap } from "lucide-react";
 import type { BookingStatus, PaymentMethod } from "@/types";
+import { useAuth } from "@/hooks/use-auth";
 import { getBookingWithRelations, payments, invoices, bookings } from "@/lib/mock-data";
+import { canViewBooking } from "@/lib/permissions";
 import { computeSlaState } from "@/lib/sla";
 import { BOOKING_STATUS_TRANSITIONS, BOOKING_STATUS_ACTION_LABELS, PAYMENT_METHOD_LABELS, SERVICE_TYPE_LABELS, CHANNEL_LABELS } from "@/lib/constants";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -15,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmPaymentDialog } from "@/components/bookings/confirm-payment-dialog";
 import { NotFoundPage } from "@/pages/not-found-page";
+import { PermissionDenied } from "@/components/shared/permission-denied";
 
 type BillingState =
   | "no_invoice"
@@ -73,6 +76,7 @@ function confirmPayment(
 export function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
+  const { currentUser } = useAuth();
   const [, forceUpdate] = useState(0);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
@@ -80,6 +84,10 @@ export function BookingDetailPage() {
 
   if (!booking) {
     return <NotFoundPage />;
+  }
+
+  if (!canViewBooking(currentUser, booking)) {
+    return <PermissionDenied />;
   }
 
   const state = location.state as { from?: string; invoiceId?: string } | null;

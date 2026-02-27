@@ -19,7 +19,7 @@ import { ChannelIcon } from "@/components/shared/channel-icon";
 import { formatRelativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-interface RequestTableProps {
+interface ConversationTableProps {
   conversations: ConversationWithRelations[];
 }
 
@@ -75,7 +75,7 @@ function compareSortValues(
   return direction === "desc" ? -result : result;
 }
 
-export function RequestTable({ conversations }: RequestTableProps) {
+export function ConversationTable({ conversations }: ConversationTableProps) {
   const navigate = useNavigate();
   const [sortColumn, setSortColumn] = useState<SortColumn>("createdAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");

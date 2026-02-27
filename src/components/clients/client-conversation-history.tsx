@@ -1,12 +1,12 @@
 import type { ConversationWithRelations } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RequestTable } from "@/components/requests/request-table";
+import { ConversationTable } from "@/components/conversations/conversation-table";
 
-interface ClientRequestHistoryProps {
+interface ClientConversationHistoryProps {
   conversations: ConversationWithRelations[];
 }
 
-export function ClientRequestHistory({ conversations }: ClientRequestHistoryProps) {
+export function ClientConversationHistory({ conversations }: ClientConversationHistoryProps) {
   return (
     <Card>
       <CardHeader>
@@ -16,7 +16,7 @@ export function ClientRequestHistory({ conversations }: ClientRequestHistoryProp
         {conversations.length === 0 ? (
           <p className="text-sm text-muted-foreground">No conversations found</p>
         ) : (
-          <RequestTable conversations={conversations} />
+          <ConversationTable conversations={conversations} />
         )}
       </CardContent>
     </Card>

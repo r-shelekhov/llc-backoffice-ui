@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type { InvoiceFilterState, InvoiceStatus } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import { getAllInvoicesWithRelations, bookings } from "@/lib/mock-data";
-import { filterInvoicesByPermission } from "@/lib/permissions";
+import { filterInvoicesByPermission, filterVipInvoices } from "@/lib/permissions";
 import { applyInvoiceFilters } from "@/lib/filters";
 import { INVOICE_STATUS_LABELS } from "@/lib/constants";
 import { FilterBar } from "@/components/filters/filter-bar";
@@ -31,10 +31,9 @@ export function InvoicesPage() {
   const [filters, setFilters] = useState<InvoiceFilterState>(initialFilters);
 
   const allInvoices = getAllInvoicesWithRelations();
-  const permittedInvoices = filterInvoicesByPermission(
+  const permittedInvoices = filterVipInvoices(
     currentUser,
-    allInvoices,
-    bookings
+    filterInvoicesByPermission(currentUser, allInvoices, bookings)
   );
   const filteredInvoices = applyInvoiceFilters(permittedInvoices, filters);
 

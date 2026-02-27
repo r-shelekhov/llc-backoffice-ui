@@ -2,26 +2,55 @@ import {
   Activity,
   AlertTriangle,
   AlertCircle,
-  DollarSign,
+  PoundSterling,
   Clock,
   FileWarning,
   Crown,
   Users,
 } from "lucide-react";
-import { conversations, invoices, payments, clients } from "@/lib/mock-data";
+import { useAuth } from "@/hooks/use-auth";
+import { conversations, invoices, payments, clients, bookings } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/format";
 import { KpiCard } from "./kpi-card";
 
 export function KpiGrid() {
+  const { currentUser } = useAuth();
   const now = new Date();
 
-  const activeConversations = conversations.filter(
+  const isPrivileged = currentUser.role === "admin" || currentUser.role === "vip_manager";
+  const vipClientIds = new Set(clients.filter((c) => c.isVip).map((c) => c.id));
+
+  const filteredConversations = isPrivileged
+    ? conversations
+    : conversations.filter(
+        (c) => !vipClientIds.has(c.clientId) && c.assigneeId === currentUser.id
+      );
+
+  const allowedBookingIds = new Set(
+    isPrivileged
+      ? bookings.map((b) => b.id)
+      : bookings
+          .filter((b) => !vipClientIds.has(b.clientId) && b.assigneeId === currentUser.id)
+          .map((b) => b.id)
+  );
+
+  const filteredInvoices = isPrivileged
+    ? invoices
+    : invoices.filter((i) => allowedBookingIds.has(i.bookingId));
+
+  const allowedInvoiceIds = new Set(filteredInvoices.map((i) => i.id));
+
+  const filteredPayments = isPrivileged
+    ? payments
+    : payments.filter((p) => allowedInvoiceIds.has(p.invoiceId));
+
+  const activeConversations = filteredConversations.filter(
     (c) => c.status !== "converted" && c.status !== "closed"
   );
 
   const activeConversationCount = activeConversations.length;
 
-  const awaitingClientCount = conversations.filter(
+  const awaitingClientCount = filteredConversations.filter(
     (c) => c.status === "awaiting_client"
   ).length;
 
@@ -30,21 +59,25 @@ export function KpiGrid() {
     return dueDate.getTime() < now.getTime();
   }).length;
 
-  const revenue = invoices
+  const revenue = filteredInvoices
     .filter((i) => i.status === "paid")
     .reduce((sum, i) => sum + i.total, 0);
 
-  const pendingPayments = payments
+  const pendingPayments = filteredPayments
     .filter((p) => p.status === "pending")
     .reduce((sum, p) => sum + p.amount, 0);
 
-  const overdueInvoiceCount = invoices.filter(
+  const overdueInvoiceCount = filteredInvoices.filter(
     (i) => i.status === "overdue"
   ).length;
 
-  const vipActiveCount = clients.filter((c) => c.isVip).length;
+  const vipActiveCount = isPrivileged
+    ? clients.filter((c) => c.isVip).length
+    : 0;
 
-  const totalClientCount = clients.length;
+  const totalClientCount = isPrivileged
+    ? clients.length
+    : new Set(filteredConversations.map((c) => c.clientId)).size;
 
   return (
     <div className="grid grid-cols-4 gap-4">
@@ -66,7 +99,7 @@ export function KpiGrid() {
       <KpiCard
         label="Revenue"
         value={formatCurrency(revenue)}
-        icon={DollarSign}
+        icon={PoundSterling}
       />
       <KpiCard
         label="Pending Payments"

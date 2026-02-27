@@ -7,7 +7,7 @@ import {
   invoices,
   bookings,
 } from "@/lib/mock-data";
-import { filterPaymentsByPermission } from "@/lib/permissions";
+import { filterPaymentsByPermission, filterVipPayments } from "@/lib/permissions";
 import { applyPaymentFilters } from "@/lib/filters";
 import { PAYMENT_STATUS_LABELS } from "@/lib/constants";
 import { FilterBar } from "@/components/filters/filter-bar";
@@ -35,11 +35,9 @@ export function PaymentsPage() {
   const [filters, setFilters] = useState<PaymentFilterState>(initialFilters);
 
   const allPayments = getAllPaymentsWithRelations();
-  const permittedPayments = filterPaymentsByPermission(
+  const permittedPayments = filterVipPayments(
     currentUser,
-    allPayments,
-    invoices,
-    bookings
+    filterPaymentsByPermission(currentUser, allPayments, invoices, bookings)
   );
   const filteredPayments = applyPaymentFilters(permittedPayments, filters);
 

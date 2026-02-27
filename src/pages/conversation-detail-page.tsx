@@ -5,14 +5,14 @@ import { canViewConversation } from "@/lib/permissions";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ErrorState } from "@/components/shared/error-state";
 import { PermissionDenied } from "@/components/shared/permission-denied";
-import { RequestDetailHeader } from "@/components/request-detail/request-detail-header";
-import { RequestInfoPanel } from "@/components/request-detail/request-info-panel";
-import { CommunicationTimeline } from "@/components/request-detail/communication-timeline";
-import { ClientSummaryCard } from "@/components/request-detail/client-summary-card";
-import { InternalNotesPanel } from "@/components/request-detail/internal-notes-panel";
-import { InvoicePaymentCard } from "@/components/request-detail/invoice-payment-card";
+import { ConversationDetailHeader } from "@/components/conversation-detail/conversation-detail-header";
+import { ConversationInfoPanel } from "@/components/conversation-detail/conversation-info-panel";
+import { CommunicationTimeline } from "@/components/conversation-detail/communication-timeline";
+import { ClientSummaryCard } from "@/components/conversation-detail/client-summary-card";
+import { InternalNotesPanel } from "@/components/conversation-detail/internal-notes-panel";
+import { InvoicePaymentCard } from "@/components/conversation-detail/invoice-payment-card";
 
-export function RequestDetailPage() {
+export function ConversationDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { currentUser } = useAuth();
 
@@ -28,10 +28,10 @@ export function RequestDetailPage() {
 
   return (
     <div className="space-y-6">
-      <RequestDetailHeader conversation={conversation} />
+      <ConversationDetailHeader conversation={conversation} />
       <div className="flex gap-6">
         <div className="flex-1 min-w-0 space-y-6">
-          <RequestInfoPanel conversation={conversation} />
+          <ConversationInfoPanel conversation={conversation} />
           <Card>
             <CardHeader>
               <CardTitle>Communications</CardTitle>

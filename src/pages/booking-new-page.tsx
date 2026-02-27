@@ -136,7 +136,7 @@ export function BookingNewPage() {
             </div>
 
             <div className="space-y-1.5">
-              <span className="text-sm font-medium">Price (USD)</span>
+              <span className="text-sm font-medium">Price (GBP)</span>
               <Input
                 type="number"
                 min="0"
