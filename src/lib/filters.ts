@@ -1,10 +1,10 @@
-import type { FilterState, InvoiceFilterState, PaymentFilterState, RequestWithRelations, InvoiceWithRelations, PaymentWithRelations } from "@/types";
+import type { ConversationFilterState, InvoiceFilterState, PaymentFilterState, ConversationWithRelations, InvoiceWithRelations, PaymentWithRelations } from "@/types";
 
-export function applyRequestFilters(
-  requests: RequestWithRelations[],
-  filters: FilterState
-): RequestWithRelations[] {
-  return requests.filter((r) => {
+export function applyConversationFilters(
+  conversations: ConversationWithRelations[],
+  filters: ConversationFilterState
+): ConversationWithRelations[] {
+  return conversations.filter((r) => {
     // Search
     if (filters.search) {
       const q = filters.search.toLowerCase();

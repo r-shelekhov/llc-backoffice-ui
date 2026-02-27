@@ -23,7 +23,7 @@ export function InvoiceTable({ invoices, onSelect }: InvoiceTableProps) {
           <TableHead>Status</TableHead>
           <TableHead>Invoice ID</TableHead>
           <TableHead>Client</TableHead>
-          <TableHead>Request</TableHead>
+          <TableHead>Booking</TableHead>
           <TableHead>Total</TableHead>
           <TableHead>Due Date</TableHead>
           <TableHead>Paid At</TableHead>
@@ -42,7 +42,7 @@ export function InvoiceTable({ invoices, onSelect }: InvoiceTableProps) {
             <TableCell className="font-mono text-sm">{invoice.id}</TableCell>
             <TableCell>{invoice.client.name}</TableCell>
             <TableCell className="max-w-[200px] truncate">
-              {invoice.request.title}
+              {invoice.booking.title}
             </TableCell>
             <TableCell>{formatCurrency(invoice.total)}</TableCell>
             <TableCell>{formatDate(invoice.dueDate)}</TableCell>

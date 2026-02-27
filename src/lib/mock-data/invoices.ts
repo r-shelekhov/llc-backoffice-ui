@@ -1,15 +1,15 @@
 import type { Invoice } from "@/types";
 
 export const invoices: Invoice[] = [
-  // req-1: Rothschild Teterboro transfer (completed)
+  // bk-1: Ashworth Farnborough transfer (completed)
   {
     id: "inv-1",
-    requestId: "req-1",
+    bookingId: "bk-1",
     clientId: "cli-1",
     status: "paid",
     lineItems: [
-      { description: "Mercedes-Maybach S680 Transfer — Teterboro to Manhattan", quantity: 1, unitPrice: 1200 },
-      { description: "VIP Meet & Greet — Private Terminal", quantity: 1, unitPrice: 350 },
+      { description: "Mercedes-Maybach S680 Transfer — Farnborough to Mayfair", quantity: 1, unitPrice: 1200 },
+      { description: "VIP Meet & Greet — TAG Terminal", quantity: 1, unitPrice: 350 },
       { description: "Krug Grande Cuvée (chilled)", quantity: 2, unitPrice: 320 },
       { description: "Security coordination surcharge", quantity: 1, unitPrice: 500 },
     ],
@@ -22,17 +22,17 @@ export const invoices: Invoice[] = [
     createdAt: "2026-01-16T09:00:00Z",
     updatedAt: "2026-02-02T14:00:00Z",
   },
-  // req-2: Rothschild G650 charter (in_progress)
+  // bk-8: Ashworth G650 charter (awaiting_payment)
   {
     id: "inv-2",
-    requestId: "req-2",
+    bookingId: "bk-8",
     clientId: "cli-1",
     status: "sent",
     lineItems: [
-      { description: "Gulfstream G650 Charter — NYC to Aspen (one way)", quantity: 1, unitPrice: 68000 },
-      { description: "Nobu Omakase Catering — 6 guests", quantity: 1, unitPrice: 4200 },
-      { description: "Ground transport — 2x Escalade ESV, Aspen", quantity: 1, unitPrice: 2800 },
-      { description: "FBO handling fees — Teterboro", quantity: 1, unitPrice: 850 },
+      { description: "Gulfstream G650 Charter — London to Geneva (one way)", quantity: 1, unitPrice: 68000 },
+      { description: "Dorchester Full Menu Catering — 6 guests", quantity: 1, unitPrice: 4200 },
+      { description: "Ground transport — 2x Range Rover Sport, Geneva", quantity: 1, unitPrice: 2800 },
+      { description: "FBO handling fees — Farnborough", quantity: 1, unitPrice: 850 },
     ],
     subtotal: 75850,
     taxRate: 10,
@@ -42,35 +42,38 @@ export const invoices: Invoice[] = [
     createdAt: "2026-02-12T10:00:00Z",
     updatedAt: "2026-02-12T10:00:00Z",
   },
-  // req-3: Victoria helicopter (assigned)
+  // bk-3 (placeholder — helicopter tour has no booking yet, use conv-3's future booking)
+  // Actually conv-3 is in_review, not converted. Let's use bk-3 (conv-8 helicopter tour)
   {
     id: "inv-3",
-    requestId: "req-3",
-    clientId: "cli-2",
-    status: "draft",
+    bookingId: "bk-3",
+    clientId: "cli-4",
+    status: "paid",
     lineItems: [
-      { description: "AgustaWestland AW139 — Hong Kong to Macau (round trip)", quantity: 1, unitPrice: 18500 },
-      { description: "Helipad landing fees — Grand Lisboa", quantity: 1, unitPrice: 1200 },
-      { description: "VIP casino arrival coordination", quantity: 1, unitPrice: 800 },
+      { description: "Helicopter scenic tour — Lake District circuit", quantity: 1, unitPrice: 6800 },
+      { description: "Bollinger Rosé champagne service", quantity: 1, unitPrice: 450 },
+      { description: "Windermere landing fee", quantity: 1, unitPrice: 350 },
+      { description: "Range Rover Autobiography — Windermere to London", quantity: 1, unitPrice: 800 },
     ],
-    subtotal: 20500,
+    subtotal: 8400,
     taxRate: 10,
-    taxAmount: 2050,
-    total: 22550,
-    dueDate: "2026-04-05T00:00:00Z",
-    createdAt: "2026-02-20T08:00:00Z",
-    updatedAt: "2026-02-20T08:00:00Z",
+    taxAmount: 840,
+    total: 9240,
+    dueDate: "2026-02-25T00:00:00Z",
+    paidAt: "2026-02-18T11:00:00Z",
+    createdAt: "2026-01-26T09:00:00Z",
+    updatedAt: "2026-02-18T11:00:00Z",
   },
-  // req-4: Victoria wedding fleet (completed)
+  // bk-2: Lady Beaumont wedding fleet (completed)
   {
     id: "inv-4",
-    requestId: "req-4",
+    bookingId: "bk-2",
     clientId: "cli-2",
     status: "paid",
     lineItems: [
       { description: "Rolls-Royce Phantom (Arctic White) — Wedding Fleet", quantity: 4, unitPrice: 3500 },
-      { description: "Floral arrangements by Moens (per vehicle)", quantity: 4, unitPrice: 1800 },
-      { description: "Route survey and police coordination", quantity: 1, unitPrice: 2500 },
+      { description: "Floral arrangements by McQueens (per vehicle)", quantity: 4, unitPrice: 1800 },
+      { description: "Route survey and Metropolitan Police coordination", quantity: 1, unitPrice: 2500 },
       { description: "Ivory ribbon decorations — Pantone 11-0604 TCX", quantity: 4, unitPrice: 150 },
     ],
     subtotal: 23800,
@@ -82,32 +85,33 @@ export const invoices: Invoice[] = [
     createdAt: "2026-01-21T09:00:00Z",
     updatedAt: "2026-02-10T10:00:00Z",
   },
-  // req-5: Sheikh yacht charter (action_required)
+  // conv-5: Sheikh yacht charter (awaiting_client — draft invoice)
+  // No booking yet since conv-5 is awaiting_client, but we can have a draft booking estimate
+  // Actually per the plan, invoices link to bookingId. Let's skip non-converted ones.
+  // We need a draft invoice for bk-14 (Challenger 350)
   {
     id: "inv-5",
-    requestId: "req-5",
-    clientId: "cli-3",
+    bookingId: "bk-14",
+    clientId: "cli-8",
     status: "draft",
     lineItems: [
-      { description: "Superyacht 'Eclipse II' (88m) — Monaco GP Weekend (4 nights)", quantity: 1, unitPrice: 420000 },
-      { description: "Harbor-front berth — Port Hercules", quantity: 1, unitPrice: 35000 },
-      { description: "Master suite reconfiguration (estimate)", quantity: 1, unitPrice: 180000 },
-      { description: "Michelin-starred chef engagement (4 days)", quantity: 1, unitPrice: 28000 },
-      { description: "Tender service — 40ft Riva", quantity: 1, unitPrice: 12000 },
-      { description: "Full crew (18 personnel, 4 days)", quantity: 1, unitPrice: 45000 },
+      { description: "Bombardier Challenger 350 — London to Edinburgh", quantity: 1, unitPrice: 42000 },
+      { description: "Crew premium", quantity: 1, unitPrice: 2500 },
+      { description: "Custom catering (no shellfish, Chinese tea service)", quantity: 1, unitPrice: 1800 },
+      { description: "FBO handling — Farnborough", quantity: 1, unitPrice: 650 },
     ],
-    subtotal: 720000,
+    subtotal: 46950,
     taxRate: 10,
-    taxAmount: 72000,
-    total: 792000,
-    dueDate: "2026-04-22T00:00:00Z",
-    createdAt: "2026-02-08T10:00:00Z",
-    updatedAt: "2026-02-24T16:30:00Z",
+    taxAmount: 4695,
+    total: 51645,
+    dueDate: "2026-04-12T00:00:00Z",
+    createdAt: "2026-02-23T09:00:00Z",
+    updatedAt: "2026-02-23T09:00:00Z",
   },
-  // req-7: Isabelle Fashion Week car (in_progress)
+  // bk-9: Isabelle Fashion Week car (scheduled)
   {
     id: "inv-6",
-    requestId: "req-7",
+    bookingId: "bk-9",
     clientId: "cli-4",
     status: "sent",
     lineItems: [
@@ -124,36 +128,15 @@ export const invoices: Invoice[] = [
     createdAt: "2026-02-10T09:00:00Z",
     updatedAt: "2026-02-10T09:00:00Z",
   },
-  // req-8: Isabelle helicopter tour (completed)
-  {
-    id: "inv-7",
-    requestId: "req-8",
-    clientId: "cli-4",
-    status: "paid",
-    lineItems: [
-      { description: "Helicopter scenic tour — Mont Blanc circuit", quantity: 1, unitPrice: 6800 },
-      { description: "Bollinger Rosé champagne service", quantity: 1, unitPrice: 450 },
-      { description: "Megève Altiport landing fee", quantity: 1, unitPrice: 350 },
-      { description: "Range Rover Autobiography — Megève to Chamonix", quantity: 1, unitPrice: 800 },
-    ],
-    subtotal: 8400,
-    taxRate: 10,
-    taxAmount: 840,
-    total: 9240,
-    dueDate: "2026-02-25T00:00:00Z",
-    paidAt: "2026-02-18T11:00:00Z",
-    createdAt: "2026-01-26T09:00:00Z",
-    updatedAt: "2026-02-18T11:00:00Z",
-  },
-  // req-9: Harrington LAX transfer (completed)
+  // bk-4: Harrington Heathrow transfer (completed)
   {
     id: "inv-8",
-    requestId: "req-9",
+    bookingId: "bk-4",
     clientId: "cli-5",
     status: "paid",
     lineItems: [
-      { description: "Mercedes S-Class Transfer — LAX to Beverly Hills Hotel", quantity: 1, unitPrice: 450 },
-      { description: "Meet & Greet service — Terminal B", quantity: 1, unitPrice: 75 },
+      { description: "Mercedes S-Class Transfer — Heathrow T5 to The Savoy", quantity: 1, unitPrice: 450 },
+      { description: "Meet & Greet service — Terminal 5", quantity: 1, unitPrice: 75 },
       { description: "Luggage handling (3 bags)", quantity: 1, unitPrice: 30 },
     ],
     subtotal: 555,
@@ -165,16 +148,16 @@ export const invoices: Invoice[] = [
     createdAt: "2026-01-19T08:00:00Z",
     updatedAt: "2026-02-15T09:00:00Z",
   },
-  // req-11: Petrova Range Rover (in_progress)
+  // bk-10: Petrova Range Rover (scheduled)
   {
     id: "inv-9",
-    requestId: "req-11",
+    bookingId: "bk-10",
     clientId: "cli-6",
     status: "sent",
     lineItems: [
       { description: "Range Rover Autobiography LWB — Weekend rental (Fri-Sun)", quantity: 1, unitPrice: 2800 },
       { description: "Chauffeur — 3 days", quantity: 3, unitPrice: 650 },
-      { description: "Refreshment package (Fiji water, snacks)", quantity: 1, unitPrice: 85 },
+      { description: "Refreshment package (Highland Spring water, snacks)", quantity: 1, unitPrice: 85 },
     ],
     subtotal: 4835,
     taxRate: 10,
@@ -184,15 +167,15 @@ export const invoices: Invoice[] = [
     createdAt: "2026-02-21T10:00:00Z",
     updatedAt: "2026-02-21T10:00:00Z",
   },
-  // req-13: Whitfield Tesla (completed)
+  // bk-5: Whitfield Tesla (completed)
   {
     id: "inv-10",
-    requestId: "req-13",
+    bookingId: "bk-5",
     clientId: "cli-7",
     status: "paid",
     lineItems: [
-      { description: "Tesla Model S Plaid — SFO to Downtown SF", quantity: 1, unitPrice: 380 },
-      { description: "Meet & Greet service — Terminal 2", quantity: 1, unitPrice: 75 },
+      { description: "Tesla Model S Plaid — City Airport to Canary Wharf", quantity: 1, unitPrice: 380 },
+      { description: "Meet & Greet service — City Airport", quantity: 1, unitPrice: 75 },
     ],
     subtotal: 455,
     taxRate: 10,
@@ -203,35 +186,15 @@ export const invoices: Invoice[] = [
     createdAt: "2026-01-23T09:00:00Z",
     updatedAt: "2026-02-20T16:00:00Z",
   },
-  // req-14: Mei Lin jet (assigned)
-  {
-    id: "inv-11",
-    requestId: "req-14",
-    clientId: "cli-8",
-    status: "draft",
-    lineItems: [
-      { description: "Bombardier Challenger 350 — Shanghai to Tokyo", quantity: 1, unitPrice: 42000 },
-      { description: "Mandarin-speaking crew premium", quantity: 1, unitPrice: 2500 },
-      { description: "Custom catering (no shellfish, Chinese tea service)", quantity: 1, unitPrice: 1800 },
-      { description: "FBO handling — Hongqiao", quantity: 1, unitPrice: 650 },
-    ],
-    subtotal: 46950,
-    taxRate: 10,
-    taxAmount: 4695,
-    total: 51645,
-    dueDate: "2026-04-12T00:00:00Z",
-    createdAt: "2026-02-23T09:00:00Z",
-    updatedAt: "2026-02-23T09:00:00Z",
-  },
-  // req-16: Mendes São Paulo (completed)
+  // bk-6: Mendes Gatwick (completed)
   {
     id: "inv-12",
-    requestId: "req-16",
+    bookingId: "bk-6",
     clientId: "cli-9",
     status: "overdue",
     lineItems: [
-      { description: "Mercedes E-Class Transfer — Guarulhos to Fasano Hotel", quantity: 1, unitPrice: 280 },
-      { description: "Portuguese-speaking driver", quantity: 1, unitPrice: 50 },
+      { description: "Mercedes E-Class Transfer — Gatwick to The Grand Brighton", quantity: 1, unitPrice: 280 },
+      { description: "Standard driver", quantity: 1, unitPrice: 50 },
       { description: "Late-night pickup surcharge (after 10 PM)", quantity: 1, unitPrice: 75 },
     ],
     subtotal: 405,
@@ -242,10 +205,10 @@ export const invoices: Invoice[] = [
     createdAt: "2026-01-29T08:00:00Z",
     updatedAt: "2026-02-16T00:00:00Z",
   },
-  // req-18: Kensington celebrity event (in_progress)
+  // bk-11: Kensington celebrity event (scheduled)
   {
     id: "inv-13",
-    requestId: "req-18",
+    bookingId: "bk-11",
     clientId: "cli-10",
     status: "sent",
     lineItems: [
@@ -263,10 +226,10 @@ export const invoices: Invoice[] = [
     createdAt: "2026-02-14T09:00:00Z",
     updatedAt: "2026-02-14T09:00:00Z",
   },
-  // req-19: Kensington Heathrow (completed)
+  // bk-7: Kensington Heathrow (completed)
   {
     id: "inv-14",
-    requestId: "req-19",
+    bookingId: "bk-7",
     clientId: "cli-10",
     status: "paid",
     lineItems: [
@@ -282,16 +245,16 @@ export const invoices: Invoice[] = [
     createdAt: "2026-02-06T08:00:00Z",
     updatedAt: "2026-03-01T10:00:00Z",
   },
-  // req-21: Okafor Lagos (in_progress)
+  // bk-12: Okafor Stansted (scheduled)
   {
     id: "inv-15",
-    requestId: "req-21",
+    bookingId: "bk-12",
     clientId: "cli-12",
     status: "sent",
     lineItems: [
-      { description: "Mercedes S-Class (Armored B6) — Lagos Airport Transfer", quantity: 1, unitPrice: 2200 },
-      { description: "Citadel Security escort — 3 vehicles", quantity: 1, unitPrice: 4500 },
-      { description: "Route survey and advance security check", quantity: 1, unitPrice: 800 },
+      { description: "Mercedes S-Class — Stansted to City of London", quantity: 1, unitPrice: 2200 },
+      { description: "Meet & Greet service — Stansted arrivals", quantity: 1, unitPrice: 4500 },
+      { description: "Route planning and advance check", quantity: 1, unitPrice: 800 },
     ],
     subtotal: 7500,
     taxRate: 10,
@@ -301,33 +264,10 @@ export const invoices: Invoice[] = [
     createdAt: "2026-02-19T10:00:00Z",
     updatedAt: "2026-02-19T10:00:00Z",
   },
-  // req-23: Rothschild Caribbean yacht (action_required)
-  {
-    id: "inv-16",
-    requestId: "req-23",
-    clientId: "cli-1",
-    status: "draft",
-    lineItems: [
-      { description: "60m Yacht Charter — St. Barths, 7 nights", quantity: 1, unitPrice: 350000 },
-      { description: "40ft Riva Tender upgrade (davit crane modification)", quantity: 1, unitPrice: 45000 },
-      { description: "Water toys package (Jet Skis, Seabobs, Flyboard)", quantity: 1, unitPrice: 18000 },
-      { description: "Youth entertainment coordinator — 7 days", quantity: 1, unitPrice: 8500 },
-      { description: "Aman Spa therapist engagement — 7 days", quantity: 1, unitPrice: 12000 },
-      { description: "Captain Morrison — charter engagement", quantity: 1, unitPrice: 15000 },
-      { description: "Child safety equipment package", quantity: 1, unitPrice: 1200 },
-    ],
-    subtotal: 449700,
-    taxRate: 10,
-    taxAmount: 44970,
-    total: 494670,
-    dueDate: "2026-11-28T00:00:00Z",
-    createdAt: "2026-02-16T10:00:00Z",
-    updatedAt: "2026-02-25T17:00:00Z",
-  },
-  // req-12: Petrova cancelled jet
+  // bk-13: Petrova cancelled jet
   {
     id: "inv-17",
-    requestId: "req-12",
+    bookingId: "bk-13",
     clientId: "cli-6",
     status: "cancelled",
     lineItems: [
@@ -342,14 +282,14 @@ export const invoices: Invoice[] = [
     createdAt: "2026-02-02T09:00:00Z",
     updatedAt: "2026-02-10T09:30:00Z",
   },
-  // req-20: Blake BMW transfer (assigned)
+  // bk-15: Blake BMW transfer (draft)
   {
     id: "inv-18",
-    requestId: "req-20",
+    bookingId: "bk-15",
     clientId: "cli-11",
     status: "draft",
     lineItems: [
-      { description: "BMW 7 Series Transfer — JFK to Greenwich, CT", quantity: 1, unitPrice: 520 },
+      { description: "BMW 7 Series Transfer — Heathrow to Surrey", quantity: 1, unitPrice: 520 },
       { description: "Meet & Greet service — Terminal 4", quantity: 1, unitPrice: 75 },
       { description: "Evening surcharge", quantity: 1, unitPrice: 50 },
     ],

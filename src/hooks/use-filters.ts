@@ -1,9 +1,9 @@
 import { useReducer, useMemo } from "react";
-import type { FilterState, RequestStatus, Channel, SlaState } from "@/types";
+import type { ConversationFilterState, ConversationStatus, Channel, SlaState } from "@/types";
 
 type FilterAction =
   | { type: "SET_SEARCH"; payload: string }
-  | { type: "SET_STATUSES"; payload: RequestStatus[] }
+  | { type: "SET_STATUSES"; payload: ConversationStatus[] }
   | { type: "SET_CHANNELS"; payload: Channel[] }
   | { type: "SET_ASSIGNEES"; payload: string[] }
   | { type: "SET_DATE_RANGE"; payload: { from: Date | null; to: Date | null } }
@@ -11,7 +11,7 @@ type FilterAction =
   | { type: "SET_SLA_STATES"; payload: SlaState[] }
   | { type: "RESET" };
 
-const initialState: FilterState = {
+const initialState: ConversationFilterState = {
   search: "",
   statuses: [],
   channels: [],
@@ -22,7 +22,7 @@ const initialState: FilterState = {
   slaStates: [],
 };
 
-function filterReducer(state: FilterState, action: FilterAction): FilterState {
+function filterReducer(state: ConversationFilterState, action: FilterAction): ConversationFilterState {
   switch (action.type) {
     case "SET_SEARCH":
       return { ...state, search: action.payload };

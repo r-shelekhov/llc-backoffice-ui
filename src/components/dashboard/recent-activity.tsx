@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { communications, requests } from "@/lib/mock-data";
+import { communications, conversations } from "@/lib/mock-data";
 import { formatRelativeTime } from "@/lib/format";
 
 const BORDER_COLORS: Record<string, string> = {
@@ -20,7 +20,7 @@ export function RecentActivity() {
       </CardHeader>
       <CardContent className="space-y-3">
         {recentComms.map((comm) => {
-          const request = requests.find((r) => r.id === comm.requestId);
+          const conversation = conversations.find((c) => c.id === comm.conversationId);
           return (
             <div
               key={comm.id}
@@ -33,8 +33,8 @@ export function RecentActivity() {
                 </span>
               </div>
               <p className="text-sm text-muted-foreground truncate">{comm.message}</p>
-              {request && (
-                <span className="text-xs text-muted-foreground">({request.title})</span>
+              {conversation && (
+                <span className="text-xs text-muted-foreground">({conversation.title})</span>
               )}
             </div>
           );

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { MapPin, Calendar, User as UserIcon } from "lucide-react";
-import type { RequestWithRelations, User } from "@/types";
+import type { ConversationWithRelations, User } from "@/types";
 import { VipIndicator } from "@/components/shared/vip-indicator";
 import { ChannelIcon } from "@/components/shared/channel-icon";
 import { ServiceTypeIcon } from "@/components/shared/service-type-icon";
@@ -13,13 +13,13 @@ import { formatCurrency, formatDateTime } from "@/lib/format";
 import { CHANNEL_LABELS, SERVICE_TYPE_LABELS } from "@/lib/constants";
 
 interface ContactDetailPanelProps {
-  request: RequestWithRelations;
+  conversation: ConversationWithRelations;
   users: User[];
 }
 
-export function ContactDetailPanel({ request, users }: ContactDetailPanelProps) {
+export function ContactDetailPanel({ conversation, users }: ContactDetailPanelProps) {
   const navigate = useNavigate();
-  const { client, assignee } = request;
+  const { client, assignee } = conversation;
 
   return (
     <div className="space-y-0">
@@ -44,7 +44,7 @@ export function ContactDetailPanel({ request, users }: ContactDetailPanelProps) 
           <p>{client.phone}</p>
           <div className="flex gap-4 pt-1">
             <span>
-              <span className="font-medium text-foreground">{client.totalRequests}</span> requests
+              <span className="font-medium text-foreground">{client.totalConversations}</span> conversations
             </span>
             <span>
               <span className="font-medium text-foreground">{formatCurrency(client.totalSpend)}</span> spent
@@ -61,40 +61,40 @@ export function ContactDetailPanel({ request, users }: ContactDetailPanelProps) 
         </Button>
       </div>
 
-      {/* Request section */}
+      {/* Conversation section */}
       <div className="border-b p-4">
         <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Request Details
+          Conversation Details
         </h4>
         <div className="space-y-2.5">
           <div className="flex items-center gap-2 text-sm">
-            <ServiceTypeIcon serviceType={request.serviceType} className="size-4 text-muted-foreground" />
-            <span>{SERVICE_TYPE_LABELS[request.serviceType]}</span>
+            <ServiceTypeIcon serviceType={conversation.serviceType} className="size-4 text-muted-foreground" />
+            <span>{SERVICE_TYPE_LABELS[conversation.serviceType]}</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <ChannelIcon channel={request.channel} className="size-4 text-muted-foreground" />
-            <span>{CHANNEL_LABELS[request.channel]}</span>
+            <ChannelIcon channel={conversation.channel} className="size-4 text-muted-foreground" />
+            <span>{CHANNEL_LABELS[conversation.channel]}</span>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            <StatusBadge type="request" status={request.status} />
-            <PriorityBadge priority={request.priority} />
-            <SlaBadge state={request.slaState} />
+            <StatusBadge type="conversation" status={conversation.status} />
+            <PriorityBadge priority={conversation.priority} />
+            <SlaBadge state={conversation.slaState} />
           </div>
-          {request.pickupLocation && (
+          {conversation.pickupLocation && (
             <div className="flex items-start gap-2 text-sm">
               <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
               <div>
-                <p>{request.pickupLocation}</p>
-                {request.dropoffLocation && (
-                  <p className="text-muted-foreground">→ {request.dropoffLocation}</p>
+                <p>{conversation.pickupLocation}</p>
+                {conversation.dropoffLocation && (
+                  <p className="text-muted-foreground">→ {conversation.dropoffLocation}</p>
                 )}
               </div>
             </div>
           )}
-          {request.pickupDate && (
+          {conversation.pickupDate && (
             <div className="flex items-center gap-2 text-sm">
               <Calendar className="size-4 text-muted-foreground" />
-              <span>{formatDateTime(request.pickupDate)}</span>
+              <span>{formatDateTime(conversation.pickupDate)}</span>
             </div>
           )}
         </div>
@@ -127,7 +127,7 @@ export function ContactDetailPanel({ request, users }: ContactDetailPanelProps) 
 
       {/* Internal notes */}
       <div className="p-4">
-        <InternalNotesPanel notes={request.internalNotes} users={users} />
+        <InternalNotesPanel notes={conversation.internalNotes} users={users} />
       </div>
     </div>
   );

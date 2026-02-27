@@ -1,11 +1,11 @@
 import { Search } from "lucide-react";
-import type { Channel, RequestWithRelations } from "@/types";
+import type { Channel, ConversationWithRelations } from "@/types";
 import { CHANNEL_LABELS } from "@/lib/constants";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConversationItem } from "./conversation-item";
 
 interface ConversationListProps {
-  requests: RequestWithRelations[];
+  conversations: ConversationWithRelations[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   activeChannel: Channel | "all";
@@ -23,7 +23,7 @@ const channelTabs: { value: Channel | "all"; label: string }[] = [
 ];
 
 export function ConversationList({
-  requests,
+  conversations,
   selectedId,
   onSelect,
   activeChannel,
@@ -59,17 +59,17 @@ export function ConversationList({
         </Tabs>
       </div>
       <div className="flex-1 overflow-y-auto">
-        {requests.length === 0 ? (
+        {conversations.length === 0 ? (
           <p className="p-4 text-center text-sm text-muted-foreground">
             No conversations found
           </p>
         ) : (
-          requests.map((request) => (
+          conversations.map((conversation) => (
             <ConversationItem
-              key={request.id}
-              request={request}
-              isSelected={request.id === selectedId}
-              onClick={() => onSelect(request.id)}
+              key={conversation.id}
+              conversation={conversation}
+              isSelected={conversation.id === selectedId}
+              onClick={() => onSelect(conversation.id)}
             />
           ))
         )}

@@ -8,25 +8,25 @@ import {
   Crown,
   Users,
 } from "lucide-react";
-import { requests, invoices, payments, clients } from "@/lib/mock-data";
+import { conversations, invoices, payments, clients } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/format";
 import { KpiCard } from "./kpi-card";
 
 export function KpiGrid() {
   const now = new Date();
 
-  const activeRequests = requests.filter(
-    (r) => r.status !== "completed" && r.status !== "cancelled"
+  const activeConversations = conversations.filter(
+    (c) => c.status !== "converted" && c.status !== "closed"
   );
 
-  const activeRequestCount = activeRequests.length;
+  const activeConversationCount = activeConversations.length;
 
-  const actionRequiredCount = requests.filter(
-    (r) => r.status === "action_required"
+  const awaitingClientCount = conversations.filter(
+    (c) => c.status === "awaiting_client"
   ).length;
 
-  const slaBreachedCount = activeRequests.filter((r) => {
-    const dueDate = new Date(r.slaDueAt);
+  const slaBreachedCount = activeConversations.filter((c) => {
+    const dueDate = new Date(c.slaDueAt);
     return dueDate.getTime() < now.getTime();
   }).length;
 
@@ -49,13 +49,13 @@ export function KpiGrid() {
   return (
     <div className="grid grid-cols-4 gap-4">
       <KpiCard
-        label="Active Requests"
-        value={activeRequestCount}
+        label="Active Conversations"
+        value={activeConversationCount}
         icon={Activity}
       />
       <KpiCard
-        label="Action Required"
-        value={actionRequiredCount}
+        label="Awaiting Client"
+        value={awaitingClientCount}
         icon={AlertTriangle}
       />
       <KpiCard

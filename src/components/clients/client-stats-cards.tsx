@@ -4,20 +4,20 @@ import { formatCurrency, formatDate } from "@/lib/format";
 
 interface ClientStatsCardsProps {
   client: Client;
-  requestCount: number;
+  conversationCount: number;
 }
 
-export function ClientStatsCards({ client, requestCount }: ClientStatsCardsProps) {
+export function ClientStatsCards({ client, conversationCount }: ClientStatsCardsProps) {
   return (
     <div className="grid grid-cols-3 gap-4">
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Total Requests
+            Total Conversations
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">{requestCount}</p>
+          <p className="text-2xl font-bold">{conversationCount}</p>
         </CardContent>
       </Card>
       <Card>

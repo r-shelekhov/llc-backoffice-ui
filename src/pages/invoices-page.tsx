@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { InvoiceFilterState, InvoiceWithRelations, InvoiceStatus } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
-import { getAllInvoicesWithRelations, requests } from "@/lib/mock-data";
+import { getAllInvoicesWithRelations, bookings } from "@/lib/mock-data";
 import { filterInvoicesByPermission } from "@/lib/permissions";
 import { applyInvoiceFilters } from "@/lib/filters";
 import { INVOICE_STATUS_LABELS } from "@/lib/constants";
@@ -35,7 +35,7 @@ export function InvoicesPage() {
   const permittedInvoices = filterInvoicesByPermission(
     currentUser,
     allInvoices,
-    requests
+    bookings
   );
   const filteredInvoices = applyInvoiceFilters(permittedInvoices, filters);
 

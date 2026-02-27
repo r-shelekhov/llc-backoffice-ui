@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import {
   getAllPaymentsWithRelations,
   invoices,
-  requests,
+  bookings,
 } from "@/lib/mock-data";
 import { filterPaymentsByPermission } from "@/lib/permissions";
 import { applyPaymentFilters } from "@/lib/filters";
@@ -37,7 +37,7 @@ export function PaymentsPage() {
     currentUser,
     allPayments,
     invoices,
-    requests
+    bookings
   );
   const filteredPayments = applyPaymentFilters(permittedPayments, filters);
 

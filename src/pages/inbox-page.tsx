@@ -1,27 +1,27 @@
 import { useMemo, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
-import { getAllRequestsWithRelations } from "@/lib/mock-data";
-import { filterRequestsByPermission } from "@/lib/permissions";
-import type { Channel, Communication, RequestWithRelations } from "@/types";
+import { getAllConversationsWithRelations } from "@/lib/mock-data";
+import { filterConversationsByPermission } from "@/lib/permissions";
+import type { Channel, Communication, ConversationWithRelations } from "@/types";
 import { InboxLayout } from "@/components/inbox/inbox-layout";
 import { ConversationList } from "@/components/inbox/conversation-list";
 import { ConversationThread } from "@/components/inbox/conversation-thread";
 import { ContactDetailPanel } from "@/components/inbox/contact-detail-panel";
 
-function getLastCommTime(request: RequestWithRelations): number {
-  if (request.communications.length === 0) return 0;
+function getLastCommTime(conversation: ConversationWithRelations): number {
+  if (conversation.communications.length === 0) return 0;
   return Math.max(
-    ...request.communications.map((c) => new Date(c.createdAt).getTime())
+    ...conversation.communications.map((c) => new Date(c.createdAt).getTime())
   );
 }
 
-function matchesSearch(request: RequestWithRelations, query: string): boolean {
+function matchesSearch(conversation: ConversationWithRelations, query: string): boolean {
   const q = query.toLowerCase();
   return (
-    request.client.name.toLowerCase().includes(q) ||
-    request.title.toLowerCase().includes(q) ||
-    request.communications.some((c) =>
+    conversation.client.name.toLowerCase().includes(q) ||
+    conversation.title.toLowerCase().includes(q) ||
+    conversation.communications.some((c) =>
       c.message.toLowerCase().includes(q)
     )
   );
@@ -38,15 +38,15 @@ export function InboxPage() {
     Map<string, Communication[]>
   >(new Map());
 
-  const allRequests = useMemo(() => getAllRequestsWithRelations(), []);
+  const allConversations = useMemo(() => getAllConversationsWithRelations(), []);
 
-  const permittedRequests = useMemo(
-    () => filterRequestsByPermission(currentUser, allRequests),
-    [currentUser, allRequests]
+  const permittedConversations = useMemo(
+    () => filterConversationsByPermission(currentUser, allConversations),
+    [currentUser, allConversations]
   );
 
-  const filteredRequests = useMemo(() => {
-    let result = permittedRequests;
+  const filteredConversations = useMemo(() => {
+    let result = permittedConversations;
 
     // Filter by channel (concierge only visible in "all")
     if (activeChannel !== "all") {
@@ -62,11 +62,11 @@ export function InboxPage() {
     return [...result].sort(
       (a, b) => getLastCommTime(b) - getLastCommTime(a)
     );
-  }, [permittedRequests, activeChannel, search]);
+  }, [permittedConversations, activeChannel, search]);
 
-  const selectedRequest = useMemo(
-    () => (selectedId ? permittedRequests.find((r) => r.id === selectedId) ?? null : null),
-    [selectedId, permittedRequests]
+  const selectedConversation = useMemo(
+    () => (selectedId ? permittedConversations.find((r) => r.id === selectedId) ?? null : null),
+    [selectedId, permittedConversations]
   );
 
   const handleSelect = useCallback(
@@ -81,10 +81,10 @@ export function InboxPage() {
       if (!selectedId) return;
       const newComm: Communication = {
         id: `local-${Date.now()}`,
-        requestId: selectedId,
+        conversationId: selectedId,
         sender: "agent",
         senderName: currentUser.name,
-        channel: selectedRequest?.channel ?? "web",
+        channel: selectedConversation?.channel ?? "web",
         message,
         createdAt: new Date().toISOString(),
       };
@@ -95,7 +95,7 @@ export function InboxPage() {
         return next;
       });
     },
-    [selectedId, currentUser.name, selectedRequest?.channel]
+    [selectedId, currentUser.name, selectedConversation?.channel]
   );
 
   const currentLocalMessages = selectedId
@@ -106,7 +106,7 @@ export function InboxPage() {
     <InboxLayout
       left={
         <ConversationList
-          requests={filteredRequests}
+          conversations={filteredConversations}
           selectedId={selectedId}
           onSelect={handleSelect}
           activeChannel={activeChannel}
@@ -116,17 +116,17 @@ export function InboxPage() {
         />
       }
       middle={
-        selectedRequest ? (
+        selectedConversation ? (
           <ConversationThread
-            request={selectedRequest}
+            conversation={selectedConversation}
             localMessages={currentLocalMessages}
             onSend={handleSend}
           />
         ) : null
       }
       right={
-        selectedRequest ? (
-          <ContactDetailPanel request={selectedRequest} users={allUsers} />
+        selectedConversation ? (
+          <ContactDetailPanel conversation={selectedConversation} users={allUsers} />
         ) : null
       }
     />

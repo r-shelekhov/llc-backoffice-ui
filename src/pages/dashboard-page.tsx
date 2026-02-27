@@ -1,17 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { KpiGrid } from "@/components/dashboard/kpi-grid";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
-import { requests } from "@/lib/mock-data";
-import { REQUEST_STATUS_LABELS, REQUEST_STATUS_COLORS } from "@/lib/constants";
-import type { RequestStatus } from "@/types";
+import { conversations } from "@/lib/mock-data";
+import { CONVERSATION_STATUS_LABELS, CONVERSATION_STATUS_COLORS } from "@/lib/constants";
+import type { ConversationStatus } from "@/types";
 
 export function DashboardPage() {
-  const statusCounts = requests.reduce<Record<string, number>>((acc, r) => {
+  const statusCounts = conversations.reduce<Record<string, number>>((acc, r) => {
     acc[r.status] = (acc[r.status] || 0) + 1;
     return acc;
   }, {});
 
-  const allStatuses = Object.keys(REQUEST_STATUS_LABELS) as RequestStatus[];
+  const allStatuses = Object.keys(CONVERSATION_STATUS_LABELS) as ConversationStatus[];
 
   return (
     <div className="space-y-6">
@@ -21,12 +21,12 @@ export function DashboardPage() {
         <RecentActivity />
         <Card>
           <CardHeader>
-            <CardTitle>Request Status Breakdown</CardTitle>
+            <CardTitle>Conversation Status Breakdown</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {allStatuses.map((status) => {
-              const colorClass = REQUEST_STATUS_COLORS[status];
-              const label = REQUEST_STATUS_LABELS[status];
+              const colorClass = CONVERSATION_STATUS_COLORS[status];
+              const label = CONVERSATION_STATUS_LABELS[status];
               const count = statusCounts[status] || 0;
               return (
                 <div key={status} className="flex items-center justify-between">

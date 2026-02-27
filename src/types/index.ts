@@ -2,11 +2,19 @@ export type Role = "admin" | "vip_manager" | "manager";
 
 export type Priority = "critical" | "high" | "medium" | "low";
 
-export type RequestStatus =
+export type ConversationStatus =
   | "new"
-  | "assigned"
+  | "in_review"
+  | "awaiting_client"
+  | "converted"
+  | "closed";
+
+export type BookingStatus =
+  | "draft"
+  | "awaiting_payment"
+  | "paid"
+  | "scheduled"
   | "in_progress"
-  | "action_required"
   | "completed"
   | "cancelled";
 
@@ -41,15 +49,15 @@ export interface Client {
   avatarUrl: string;
   createdAt: string;
   updatedAt: string;
-  totalRequests: number;
+  totalConversations: number;
   totalSpend: number;
 }
 
-export interface Request {
+export interface Conversation {
   id: string;
   clientId: string;
   assigneeId: string | null;
-  status: RequestStatus;
+  status: ConversationStatus;
   priority: Priority;
   channel: Channel;
   serviceType: ServiceType;
@@ -63,9 +71,24 @@ export interface Request {
   updatedAt: string;
 }
 
+export interface Booking {
+  id: string;
+  conversationId: string;
+  clientId: string;
+  assigneeId: string | null;
+  status: BookingStatus;
+  title: string;
+  category: ServiceType;
+  executionAt: string;
+  location: string;
+  price: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Communication {
   id: string;
-  requestId: string;
+  conversationId: string;
   sender: "client" | "agent" | "system";
   senderName: string;
   channel: Channel;
@@ -77,7 +100,7 @@ export interface Communication {
 
 export interface InternalNote {
   id: string;
-  requestId: string;
+  conversationId: string;
   authorId: string;
   content: string;
   createdAt: string;
@@ -92,7 +115,7 @@ export interface InvoiceLineItem {
 
 export interface Invoice {
   id: string;
-  requestId: string;
+  bookingId: string;
   clientId: string;
   status: InvoiceStatus;
   lineItems: InvoiceLineItem[];
@@ -127,7 +150,7 @@ export interface Attachment {
   url: string;
 }
 
-export interface RequestWithRelations extends Request {
+export interface ConversationWithRelations extends Conversation {
   client: Client;
   assignee: User | null;
   communications: Communication[];
@@ -137,27 +160,42 @@ export interface RequestWithRelations extends Request {
   slaState: SlaState;
 }
 
+export interface BookingWithRelations extends Booking {
+  client: Client;
+  assignee: User | null;
+  conversation: Conversation;
+  invoices: Invoice[];
+  payments: Payment[];
+}
+
 export interface InvoiceWithRelations extends Invoice {
   client: Client;
-  request: Request;
+  booking: Booking;
   payments: Payment[];
 }
 
 export interface PaymentWithRelations extends Payment {
   invoice: Invoice;
   client: Client;
-  request: Request;
+  booking: Booking;
 }
 
-export interface FilterState {
+export interface ConversationFilterState {
   search: string;
-  statuses: RequestStatus[];
+  statuses: ConversationStatus[];
   channels: Channel[];
   assigneeIds: string[];
   dateFrom: Date | null;
   dateTo: Date | null;
   vipOnly: boolean;
   slaStates: SlaState[];
+}
+
+export interface BookingFilterState {
+  search: string;
+  statuses: BookingStatus[];
+  dateFrom: Date | null;
+  dateTo: Date | null;
 }
 
 export interface InvoiceFilterState {

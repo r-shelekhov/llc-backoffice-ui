@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import type { InvoiceWithRelations } from "@/types";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { formatCurrency, formatRelativeTime } from "@/lib/format";
@@ -44,15 +43,12 @@ export function InvoiceDetailPanel({
             </SheetHeader>
 
             <div className="space-y-6 px-4 pb-4">
-              {/* Request link */}
+              {/* Booking link */}
               <div>
-                <p className="text-sm text-muted-foreground">Request</p>
-                <Link
-                  to={`/requests/${invoice.requestId}`}
-                  className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-                >
-                  {invoice.request.title}
-                </Link>
+                <p className="text-sm text-muted-foreground">Booking</p>
+                <p className="text-sm font-medium">
+                  {invoice.booking.title}
+                </p>
               </div>
 
               {/* Line items */}

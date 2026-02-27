@@ -10,7 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { ROLE_LABELS } from "@/lib/constants";
-import { requests } from "@/lib/mock-data";
+import { conversations } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,8 +19,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const actionRequiredCount = requests.filter(
-  (r) => r.status === "action_required",
+const awaitingClientCount = conversations.filter(
+  (c) => c.status === "awaiting_client",
 ).length;
 
 interface NavItemProps {
@@ -68,7 +68,7 @@ export function Sidebar() {
           to="/inbox"
           icon={Inbox}
           label="Inbox"
-          badge={actionRequiredCount}
+          badge={awaitingClientCount}
         />
         <NavItem to="/invoices" icon={FileText} label="Invoices" />
         <NavItem to="/payments" icon={CreditCard} label="Payments" />

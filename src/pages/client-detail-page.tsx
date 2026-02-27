@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
-import { clients, requests, getAllRequestsWithRelations } from "@/lib/mock-data";
-import { canViewClient, filterRequestsByPermission } from "@/lib/permissions";
+import { clients, conversations, getAllConversationsWithRelations } from "@/lib/mock-data";
+import { canViewClient, filterConversationsByPermission } from "@/lib/permissions";
 import { PermissionDenied } from "@/components/shared/permission-denied";
 import { ErrorState } from "@/components/shared/error-state";
 import { ClientProfileHeader } from "@/components/clients/client-profile-header";
@@ -12,7 +12,7 @@ export function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { currentUser } = useAuth();
 
-  if (!id || !canViewClient(currentUser, id, requests)) {
+  if (!id || !canViewClient(currentUser, id, conversations)) {
     return <PermissionDenied />;
   }
 
@@ -22,15 +22,15 @@ export function ClientDetailPage() {
     return <ErrorState message="Client not found" />;
   }
 
-  const allRequests = getAllRequestsWithRelations();
-  const clientAllRequests = allRequests.filter((r) => r.clientId === client.id);
-  const clientRequests = filterRequestsByPermission(currentUser, clientAllRequests);
+  const allConversations = getAllConversationsWithRelations();
+  const clientAllConversations = allConversations.filter((c) => c.clientId === client.id);
+  const clientConversations = filterConversationsByPermission(currentUser, clientAllConversations);
 
   return (
     <div className="space-y-6">
       <ClientProfileHeader client={client} />
-      <ClientStatsCards client={client} requestCount={clientRequests.length} />
-      <ClientRequestHistory requests={clientRequests} />
+      <ClientStatsCards client={client} conversationCount={clientConversations.length} />
+      <ClientRequestHistory conversations={clientConversations} />
     </div>
   );
 }

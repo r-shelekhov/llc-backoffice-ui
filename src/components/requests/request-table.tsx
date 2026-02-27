@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowUpDown } from "lucide-react";
-import type { RequestWithRelations } from "@/types";
+import type { ConversationWithRelations } from "@/types";
 import {
   Table,
   TableHeader,
@@ -20,26 +20,25 @@ import { formatRelativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 interface RequestTableProps {
-  requests: RequestWithRelations[];
+  conversations: ConversationWithRelations[];
 }
 
 type SortColumn = "status" | "priority" | "createdAt" | "title" | "client";
 type SortDirection = "asc" | "desc";
 
 const STATUS_ORDER = [
-  "action_required",
+  "awaiting_client",
   "new",
-  "assigned",
-  "in_progress",
-  "completed",
-  "cancelled",
+  "in_review",
+  "converted",
+  "closed",
 ] as const;
 
 const PRIORITY_ORDER = ["critical", "high", "medium", "low"] as const;
 
 function compareSortValues(
-  a: RequestWithRelations,
-  b: RequestWithRelations,
+  a: ConversationWithRelations,
+  b: ConversationWithRelations,
   column: SortColumn,
   direction: SortDirection
 ): number {
@@ -76,7 +75,7 @@ function compareSortValues(
   return direction === "desc" ? -result : result;
 }
 
-export function RequestTable({ requests }: RequestTableProps) {
+export function RequestTable({ conversations }: RequestTableProps) {
   const navigate = useNavigate();
   const [sortColumn, setSortColumn] = useState<SortColumn>("createdAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -90,11 +89,11 @@ export function RequestTable({ requests }: RequestTableProps) {
     }
   };
 
-  const sortedRequests = useMemo(() => {
-    return [...requests].sort((a, b) =>
+  const sortedConversations = useMemo(() => {
+    return [...conversations].sort((a, b) =>
       compareSortValues(a, b, sortColumn, sortDirection)
     );
-  }, [requests, sortColumn, sortDirection]);
+  }, [conversations, sortColumn, sortDirection]);
 
   return (
     <Table>
@@ -158,54 +157,54 @@ export function RequestTable({ requests }: RequestTableProps) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {sortedRequests.map((request) => (
+        {sortedConversations.map((conversation) => (
           <TableRow
-            key={request.id}
+            key={conversation.id}
             className={cn(
               "cursor-pointer",
-              request.status === "action_required" &&
+              conversation.status === "awaiting_client" &&
                 "border-l-2 border-l-red-400"
             )}
-            onClick={() => navigate(`/requests/${request.id}`)}
+            onClick={() => navigate(`/requests/${conversation.id}`)}
           >
             <TableCell>
-              <StatusBadge type="request" status={request.status} />
+              <StatusBadge type="conversation" status={conversation.status} />
             </TableCell>
             <TableCell>
-              <PriorityBadge priority={request.priority} />
+              <PriorityBadge priority={conversation.priority} />
             </TableCell>
             <TableCell>
-              <SlaBadge state={request.slaState} />
+              <SlaBadge state={conversation.slaState} />
             </TableCell>
             <TableCell className="text-xs font-mono text-muted-foreground truncate max-w-[100px]">
-              {request.id}
+              {conversation.id}
             </TableCell>
             <TableCell>
               <span className="block truncate max-w-[250px] text-sm font-medium">
-                {request.title}
+                {conversation.title}
               </span>
             </TableCell>
             <TableCell>
               <div className="flex items-center gap-1.5">
-                <span className="text-sm">{request.client.name}</span>
-                {request.client.isVip && <VipIndicator />}
+                <span className="text-sm">{conversation.client.name}</span>
+                {conversation.client.isVip && <VipIndicator />}
               </div>
             </TableCell>
             <TableCell>
-              <ServiceTypeIcon serviceType={request.serviceType} />
+              <ServiceTypeIcon serviceType={conversation.serviceType} />
             </TableCell>
             <TableCell>
-              <ChannelIcon channel={request.channel} />
+              <ChannelIcon channel={conversation.channel} />
             </TableCell>
             <TableCell>
-              {request.assignee ? (
+              {conversation.assignee ? (
                 <div className="flex items-center gap-2">
                   <img
-                    src={request.assignee.avatarUrl}
-                    alt={request.assignee.name}
+                    src={conversation.assignee.avatarUrl}
+                    alt={conversation.assignee.name}
                     className="w-6 h-6 rounded-full"
                   />
-                  <span className="text-sm">{request.assignee.name}</span>
+                  <span className="text-sm">{conversation.assignee.name}</span>
                 </div>
               ) : (
                 <span className="text-sm text-muted-foreground">
@@ -214,7 +213,7 @@ export function RequestTable({ requests }: RequestTableProps) {
               )}
             </TableCell>
             <TableCell className="text-sm text-muted-foreground">
-              {formatRelativeTime(request.createdAt)}
+              {formatRelativeTime(conversation.createdAt)}
             </TableCell>
           </TableRow>
         ))}

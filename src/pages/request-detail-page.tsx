@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
-import { getRequestWithRelations, users } from "@/lib/mock-data";
-import { canViewRequest } from "@/lib/permissions";
+import { getConversationWithRelations, users } from "@/lib/mock-data";
+import { canViewConversation } from "@/lib/permissions";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ErrorState } from "@/components/shared/error-state";
 import { PermissionDenied } from "@/components/shared/permission-denied";
@@ -16,39 +16,39 @@ export function RequestDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { currentUser } = useAuth();
 
-  const request = id ? getRequestWithRelations(id) : null;
+  const conversation = id ? getConversationWithRelations(id) : null;
 
-  if (!request) {
-    return <ErrorState message="Request not found" />;
+  if (!conversation) {
+    return <ErrorState message="Conversation not found" />;
   }
 
-  if (!canViewRequest(currentUser, request)) {
+  if (!canViewConversation(currentUser, conversation)) {
     return <PermissionDenied />;
   }
 
   return (
     <div className="space-y-6">
-      <RequestDetailHeader request={request} />
+      <RequestDetailHeader conversation={conversation} />
       <div className="flex gap-6">
         <div className="flex-1 min-w-0 space-y-6">
-          <RequestInfoPanel request={request} />
+          <RequestInfoPanel conversation={conversation} />
           <Card>
             <CardHeader>
               <CardTitle>Communications</CardTitle>
             </CardHeader>
             <CardContent>
               <CommunicationTimeline
-                communications={request.communications}
+                communications={conversation.communications}
               />
             </CardContent>
           </Card>
         </div>
         <div className="w-80 shrink-0 space-y-6">
-          <ClientSummaryCard client={request.client} />
-          <InternalNotesPanel notes={request.internalNotes} users={users} />
+          <ClientSummaryCard client={conversation.client} />
+          <InternalNotesPanel notes={conversation.internalNotes} users={users} />
           <InvoicePaymentCard
-            invoices={request.invoices}
-            payments={request.payments}
+            invoices={conversation.invoices}
+            payments={conversation.payments}
           />
         </div>
       </div>

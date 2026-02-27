@@ -1,28 +1,28 @@
 import { Crown } from "lucide-react";
-import type { RequestWithRelations } from "@/types";
+import type { ConversationWithRelations } from "@/types";
 import { ChannelIcon } from "@/components/shared/channel-icon";
 import { formatRelativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 interface ConversationItemProps {
-  request: RequestWithRelations;
+  conversation: ConversationWithRelations;
   isSelected: boolean;
   onClick: () => void;
 }
 
 export function ConversationItem({
-  request,
+  conversation,
   isSelected,
   onClick,
 }: ConversationItemProps) {
-  const lastComm = request.communications.length
-    ? request.communications.reduce((a, b) =>
+  const lastComm = conversation.communications.length
+    ? conversation.communications.reduce((a, b) =>
         a.createdAt > b.createdAt ? a : b
       )
     : null;
 
   const isUnread =
-    request.status === "new" || request.status === "action_required";
+    conversation.status === "new" || conversation.status === "awaiting_client";
 
   const preview = lastComm
     ? `${lastComm.sender === "agent" ? "You: " : ""}${lastComm.message}`
@@ -37,17 +37,17 @@ export function ConversationItem({
       )}
     >
       <img
-        src={request.client.avatarUrl}
-        alt={request.client.name}
+        src={conversation.client.avatarUrl}
+        alt={conversation.client.name}
         className="size-10 shrink-0 rounded-full object-cover"
       />
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 truncate">
             <span className="truncate text-sm font-medium">
-              {request.client.name}
+              {conversation.client.name}
             </span>
-            {request.client.isVip && (
+            {conversation.client.isVip && (
               <Crown className="size-3 shrink-0 text-amber-500" />
             )}
           </div>
@@ -56,7 +56,7 @@ export function ConversationItem({
           </span>
         </div>
         <p className="truncate text-sm text-muted-foreground">
-          {request.title}
+          {conversation.title}
         </p>
         <div className="flex items-center justify-between gap-2">
           <p className="truncate text-xs text-muted-foreground/70">
@@ -64,7 +64,7 @@ export function ConversationItem({
           </p>
           <div className="flex shrink-0 items-center gap-1.5">
             <ChannelIcon
-              channel={request.channel}
+              channel={conversation.channel}
               className="size-3 text-muted-foreground"
             />
             {isUnread && (

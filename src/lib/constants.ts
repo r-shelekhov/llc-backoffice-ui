@@ -1,10 +1,19 @@
-import type { RequestStatus, InvoiceStatus, PaymentStatus, Role, Channel, ServiceType, SlaState, Priority } from "@/types";
+import type { ConversationStatus, BookingStatus, InvoiceStatus, PaymentStatus, Role, Channel, ServiceType, SlaState, Priority } from "@/types";
 
-export const REQUEST_STATUS_LABELS: Record<RequestStatus, string> = {
+export const CONVERSATION_STATUS_LABELS: Record<ConversationStatus, string> = {
   new: "New",
-  assigned: "Assigned",
+  in_review: "In Review",
+  awaiting_client: "Awaiting Client",
+  converted: "Converted",
+  closed: "Closed",
+};
+
+export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
+  draft: "Draft",
+  awaiting_payment: "Awaiting Payment",
+  paid: "Paid",
+  scheduled: "Scheduled",
   in_progress: "In Progress",
-  action_required: "Action Required",
   completed: "Completed",
   cancelled: "Cancelled",
 };
@@ -59,11 +68,20 @@ export const PRIORITY_LABELS: Record<Priority, string> = {
 };
 
 // Badge color classes
-export const REQUEST_STATUS_COLORS: Record<RequestStatus, string> = {
+export const CONVERSATION_STATUS_COLORS: Record<ConversationStatus, string> = {
   new: "bg-blue-100 text-blue-700",
-  assigned: "bg-purple-100 text-purple-700",
-  in_progress: "bg-amber-100 text-amber-700",
-  action_required: "bg-red-100 text-red-700",
+  in_review: "bg-purple-100 text-purple-700",
+  awaiting_client: "bg-amber-100 text-amber-700",
+  converted: "bg-green-100 text-green-700",
+  closed: "bg-gray-100 text-gray-500",
+};
+
+export const BOOKING_STATUS_COLORS: Record<BookingStatus, string> = {
+  draft: "bg-gray-100 text-gray-600",
+  awaiting_payment: "bg-amber-100 text-amber-700",
+  paid: "bg-emerald-100 text-emerald-700",
+  scheduled: "bg-blue-100 text-blue-700",
+  in_progress: "bg-purple-100 text-purple-700",
   completed: "bg-green-100 text-green-700",
   cancelled: "bg-gray-100 text-gray-500",
 };
