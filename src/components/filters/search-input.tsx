@@ -13,27 +13,25 @@ export function SearchInput({
   placeholder = "Search...",
 }: SearchInputProps) {
   const [localValue, setLocalValue] = useState(value);
-  const isExternalUpdate = useRef(false);
+  const [prevPropValue, setPrevPropValue] = useState(value);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Sync local state when the prop value changes externally (e.g. reset)
-  useEffect(() => {
-    isExternalUpdate.current = true;
+  if (prevPropValue !== value) {
+    setPrevPropValue(value);
     setLocalValue(value);
-  }, [value]);
+  }
 
-  // Debounce: call onChange 300ms after the user stops typing
+  // Cleanup timer on unmount
   useEffect(() => {
-    if (isExternalUpdate.current) {
-      isExternalUpdate.current = false;
-      return;
-    }
+    return () => clearTimeout(timerRef.current);
+  }, []);
 
-    const timer = setTimeout(() => {
-      onChange(localValue);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [localValue, onChange]);
+  function handleChange(newValue: string) {
+    setLocalValue(newValue);
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => onChange(newValue), 300);
+  }
 
   return (
     <div className="relative">
@@ -41,7 +39,7 @@ export function SearchInput({
       <input
         type="text"
         value={localValue}
-        onChange={(e) => setLocalValue(e.target.value)}
+        onChange={(e) => handleChange(e.target.value)}
         placeholder={placeholder}
         className="placeholder:text-muted-foreground border-input dark:bg-input/30 h-9 w-full min-w-[200px] rounded-md border bg-transparent py-1 pl-8 pr-3 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
       />
