@@ -11,7 +11,9 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { ROLE_LABELS } from "@/lib/constants";
-import { conversations, clients } from "@/lib/mock-data";
+import { getAllConversationsWithRelations } from "@/lib/mock-data";
+import { filterConversationsByPermission, filterVipConversations } from "@/lib/permissions";
+import { isConversationUnread } from "@/lib/unread";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -52,18 +54,15 @@ function NavItem({ to, icon: Icon, label, badge }: NavItemProps) {
 }
 
 export function Sidebar() {
-  const { currentUser, setCurrentUser, allUsers } = useAuth();
+  const { currentUser, setCurrentUser, allUsers, conversationLastReadAt } = useAuth();
 
-  const isPrivileged = currentUser.role === "admin" || currentUser.role === "vip_manager";
-  const awaitingClientCount = conversations.filter((c) => {
-    if (c.status !== "awaiting_client") return false;
-    if (!isPrivileged) {
-      const client = clients.find((cl) => cl.id === c.clientId);
-      if (client?.isVip) return false;
-      if (c.assigneeId !== currentUser.id) return false;
-    }
-    return true;
-  }).length;
+  const permittedConversations = filterVipConversations(
+    currentUser,
+    filterConversationsByPermission(currentUser, getAllConversationsWithRelations())
+  );
+  const unreadCount = permittedConversations.filter((conversation) =>
+    isConversationUnread(conversation, conversationLastReadAt)
+  ).length;
 
   return (
     <aside className="flex h-full w-60 flex-col border-r bg-white">
@@ -75,7 +74,7 @@ export function Sidebar() {
           to="/inbox"
           icon={Inbox}
           label="Inbox"
-          badge={awaitingClientCount}
+          badge={unreadCount}
         />
         <NavItem to="/dashboard" icon={BarChart3} label="Analytics" />
         <NavItem to="/bookings" icon={CalendarCheck} label="Bookings" />

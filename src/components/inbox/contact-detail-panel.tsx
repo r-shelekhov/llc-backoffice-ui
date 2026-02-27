@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { MapPin, Calendar, User as UserIcon, ChevronDown } from "lucide-react";
+import { MapPin, Calendar, User as UserIcon, ChevronDown, CircleDot, Flag, Clock3 } from "lucide-react";
 import type { ConversationStatus, ConversationWithRelations, User } from "@/types";
 import { VipIndicator } from "@/components/shared/vip-indicator";
 import { ChannelIcon } from "@/components/shared/channel-icon";
@@ -27,6 +27,7 @@ interface ContactDetailPanelProps {
 export function ContactDetailPanel({ conversation, users, onStatusChange }: ContactDetailPanelProps) {
   const navigate = useNavigate();
   const { client, assignee } = conversation;
+  const transitions = CONVERSATION_STATUS_TRANSITIONS[conversation.status];
 
   return (
     <div className="space-y-0">
@@ -73,56 +74,88 @@ export function ContactDetailPanel({ conversation, users, onStatusChange }: Cont
         <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Conversation Details
         </h4>
-        <div className="space-y-2.5">
-          <div className="flex items-center gap-2 text-sm">
-            <ServiceTypeIcon serviceType={conversation.serviceType} className="size-4 text-muted-foreground" />
-            <span>{SERVICE_TYPE_LABELS[conversation.serviceType]}</span>
+        <div className="space-y-4">
+          <div className="flex items-start gap-3">
+            <ServiceTypeIcon serviceType={conversation.serviceType} className="mt-0.5 size-4 text-muted-foreground" />
+            <div className="min-w-0">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Service</p>
+              <p className="text-sm">{SERVICE_TYPE_LABELS[conversation.serviceType]}</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <ChannelIcon channel={conversation.channel} className="size-4 text-muted-foreground" />
-            <span>{CHANNEL_LABELS[conversation.channel]}</span>
+          <div className="flex items-start gap-3">
+            <ChannelIcon channel={conversation.channel} className="mt-0.5 size-4 text-muted-foreground" />
+            <div className="min-w-0">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Channel</p>
+              <p className="text-sm">{CHANNEL_LABELS[conversation.channel]}</p>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-1.5">
-            {CONVERSATION_STATUS_TRANSITIONS[conversation.status].length > 0 ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button type="button" className="flex cursor-pointer items-center gap-1">
-                    <StatusBadge type="conversation" status={conversation.status} />
-                    <ChevronDown className="size-3 text-muted-foreground" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  {CONVERSATION_STATUS_TRANSITIONS[conversation.status].map((status) => (
-                    <DropdownMenuItem
-                      key={status}
-                      onClick={() => onStatusChange(conversation.id, status)}
-                    >
-                      {CONVERSATION_STATUS_LABELS[status]}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <StatusBadge type="conversation" status={conversation.status} />
-            )}
-            <PriorityBadge priority={conversation.priority} />
-            <SlaBadge state={conversation.slaState} />
+          <div className="flex items-start gap-3">
+            <CircleDot className="mt-0.5 size-4 text-muted-foreground" />
+            <div className="min-w-0">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Workflow</p>
+              <div className="mt-1">
+                {transitions.length > 0 ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button type="button" className="inline-flex cursor-pointer items-center gap-1">
+                        <StatusBadge type="conversation" status={conversation.status} />
+                        <ChevronDown className="size-3 text-muted-foreground" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      {transitions.map((status) => (
+                        <DropdownMenuItem
+                          key={status}
+                          onClick={() => onStatusChange(conversation.id, status)}
+                        >
+                          {CONVERSATION_STATUS_LABELS[status]}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <StatusBadge type="conversation" status={conversation.status} />
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Flag className="mt-0.5 size-4 text-muted-foreground" />
+            <div className="min-w-0">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Priority</p>
+              <div className="mt-1">
+                <PriorityBadge priority={conversation.priority} />
+              </div>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Clock3 className="mt-0.5 size-4 text-muted-foreground" />
+            <div className="min-w-0">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">SLA</p>
+              <div className="mt-1">
+                <SlaBadge state={conversation.slaState} />
+              </div>
+            </div>
           </div>
           {conversation.pickupLocation && (
-            <div className="flex items-start gap-2 text-sm">
+            <div className="flex items-start gap-3">
               <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
               <div>
-                <p>{conversation.pickupLocation}</p>
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Route</p>
+                <p className="text-sm leading-snug">{conversation.pickupLocation}</p>
                 {conversation.dropoffLocation && (
-                  <p className="text-muted-foreground">→ {conversation.dropoffLocation}</p>
+                  <p className="text-sm text-muted-foreground leading-snug">→ {conversation.dropoffLocation}</p>
                 )}
               </div>
             </div>
           )}
           {conversation.pickupDate && (
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="size-4 text-muted-foreground" />
-              <span>{formatDateTime(conversation.pickupDate)}</span>
+            <div className="flex items-start gap-3">
+              <Calendar className="mt-0.5 size-4 text-muted-foreground" />
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Pickup Time</p>
+                <p className="text-sm">{formatDateTime(conversation.pickupDate)}</p>
+              </div>
             </div>
           )}
         </div>

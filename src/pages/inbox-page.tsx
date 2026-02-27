@@ -1,8 +1,9 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { getAllConversationsWithRelations, conversations as sourceConversations } from "@/lib/mock-data";
 import { filterConversationsByPermission, filterVipConversations } from "@/lib/permissions";
+import { isConversationUnread } from "@/lib/unread";
 import type { Channel, Communication, ConversationStatus, ConversationWithRelations, SortField, SortDirection, Priority } from "@/types";
 import { InboxLayout } from "@/components/inbox/inbox-layout";
 import { ConversationList } from "@/components/inbox/conversation-list";
@@ -77,7 +78,7 @@ function matchesSearch(conversation: ConversationWithRelations, query: string): 
 }
 
 export function InboxPage() {
-  const { currentUser, allUsers } = useAuth();
+  const { currentUser, allUsers, conversationLastReadAt, markConversationRead } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedId = searchParams.get("id");
 
@@ -140,6 +141,20 @@ export function InboxPage() {
     [selectedId, permittedConversations]
   );
 
+  useEffect(() => {
+    if (!selectedConversation) return;
+    markConversationRead(selectedConversation.id);
+  }, [selectedConversation, markConversationRead]);
+
+  const unreadConversationIds = useMemo(
+    () => new Set(
+      permittedConversations
+        .filter((conversation) => isConversationUnread(conversation, conversationLastReadAt))
+        .map((conversation) => conversation.id)
+    ),
+    [permittedConversations, conversationLastReadAt]
+  );
+
   const handleStatusChange = useCallback(
     (conversationId: string, newStatus: ConversationStatus) => {
       const conv = sourceConversations.find((c) => c.id === conversationId);
@@ -160,13 +175,14 @@ export function InboxPage() {
 
   const handleSelect = useCallback(
     (id: string) => {
+      markConversationRead(id);
       setSearchParams((prev) => {
         const next = new URLSearchParams(prev);
         next.set("id", id);
         return next;
       });
     },
-    [setSearchParams]
+    [markConversationRead, setSearchParams]
   );
 
   const handleSend = useCallback(
@@ -200,6 +216,7 @@ export function InboxPage() {
       left={
         <ConversationList
           conversations={filteredConversations}
+          unreadConversationIds={unreadConversationIds}
           selectedId={selectedId}
           onSelect={handleSelect}
           activeChannel={activeChannel}

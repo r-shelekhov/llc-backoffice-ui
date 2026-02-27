@@ -16,6 +16,7 @@ const SORT_FIELD_LABELS: Record<SortField, string> = {
 
 interface ConversationListProps {
   conversations: ConversationWithRelations[];
+  unreadConversationIds: Set<string>;
   selectedId: string | null;
   onSelect: (id: string) => void;
   activeChannel: Channel | "all";
@@ -38,6 +39,7 @@ const channelTabs: { value: Channel | "all"; label: string }[] = [
 
 export function ConversationList({
   conversations,
+  unreadConversationIds,
   selectedId,
   onSelect,
   activeChannel,
@@ -106,6 +108,7 @@ export function ConversationList({
             <ConversationItem
               key={conversation.id}
               conversation={conversation}
+              isUnread={unreadConversationIds.has(conversation.id)}
               isSelected={conversation.id === selectedId}
               onClick={() => onSelect(conversation.id)}
             />

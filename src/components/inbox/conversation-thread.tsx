@@ -65,31 +65,46 @@ export function ConversationThread({
             )}
           </div>
         </div>
-        <div className="mt-2 flex items-center gap-2">
-          {transitions.length > 0 ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button type="button" className="flex cursor-pointer items-center gap-1">
+        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
+          <div>
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Workflow</p>
+              <div className="mt-1">
+                {transitions.length > 0 ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button type="button" className="inline-flex cursor-pointer items-center gap-1">
+                        <StatusBadge type="conversation" status={conversation.status} />
+                        <ChevronDown className="size-3 text-muted-foreground" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      {transitions.map((status) => (
+                        <DropdownMenuItem
+                          key={status}
+                          onClick={() => onStatusChange(conversation.id, status)}
+                        >
+                          {CONVERSATION_STATUS_LABELS[status]}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
                   <StatusBadge type="conversation" status={conversation.status} />
-                  <ChevronDown className="size-3 text-muted-foreground" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                {transitions.map((status) => (
-                  <DropdownMenuItem
-                    key={status}
-                    onClick={() => onStatusChange(conversation.id, status)}
-                  >
-                    {CONVERSATION_STATUS_LABELS[status]}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <StatusBadge type="conversation" status={conversation.status} />
-          )}
-          <PriorityBadge priority={conversation.priority} />
-          <SlaBadge state={conversation.slaState} />
+                )}
+              </div>
+          </div>
+          <div>
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Priority</p>
+              <div className="mt-1">
+                <PriorityBadge priority={conversation.priority} />
+              </div>
+          </div>
+          <div>
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">SLA</p>
+              <div className="mt-1">
+                <SlaBadge state={conversation.slaState} />
+              </div>
+          </div>
         </div>
       </div>
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4">

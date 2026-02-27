@@ -8,12 +8,14 @@ import { cn } from "@/lib/utils";
 interface ConversationItemProps {
   conversation: ConversationWithRelations;
   isSelected: boolean;
+  isUnread: boolean;
   onClick: () => void;
 }
 
 export function ConversationItem({
   conversation,
   isSelected,
+  isUnread,
   onClick,
 }: ConversationItemProps) {
   const lastComm = conversation.communications.length
@@ -21,9 +23,6 @@ export function ConversationItem({
         a.createdAt > b.createdAt ? a : b
       )
     : null;
-
-  const isUnread =
-    conversation.status === "new" || conversation.status === "awaiting_client";
 
   const preview = lastComm
     ? `${lastComm.sender === "agent" ? "You: " : ""}${lastComm.message}`
