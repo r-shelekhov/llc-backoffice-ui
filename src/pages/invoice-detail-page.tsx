@@ -1,14 +1,14 @@
 import { Link, useParams, useLocation } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { getInvoiceWithRelations } from "@/lib/mock-data";
 import { canViewInvoice } from "@/lib/permissions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ServiceTypeIcon } from "@/components/shared/service-type-icon";
+import { VipIndicator } from "@/components/shared/vip-indicator";
 import { SERVICE_TYPE_LABELS, PAYMENT_METHOD_LABELS } from "@/lib/constants";
-import { formatCurrency, formatDateTime, formatRelativeTime } from "@/lib/format";
+import { formatCurrency, formatDateTime, formatDate, formatRelativeTime } from "@/lib/format";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -19,6 +19,11 @@ import {
 } from "@/components/ui/table";
 import { NotFoundPage } from "@/pages/not-found-page";
 import { PermissionDenied } from "@/components/shared/permission-denied";
+import { DetailShell } from "@/components/detail/detail-shell";
+import { DetailTopBar } from "@/components/detail/detail-topbar";
+import { DetailSection } from "@/components/detail/detail-section";
+import { DetailKv } from "@/components/detail/detail-kv";
+import { DetailRailCard } from "@/components/detail/detail-rail-card";
 
 export function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -46,116 +51,160 @@ export function InvoiceDetailPage() {
       ? "Back to Payments"
       : "Back to Invoices";
 
+  const latestPayment = invoice.payments.length > 0
+    ? invoice.payments[invoice.payments.length - 1]
+    : null;
+
+  const isOverdue = invoice.status === "overdue";
+
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-8">
-      <Button variant="ghost" size="sm" asChild>
-        <Link to={backTo}>
-          <ArrowLeft className="size-4" />
-          {backLabel}
-        </Link>
-      </Button>
+    <>
+      <DetailShell
+        topBar={
+          <DetailTopBar
+            backTo={backTo}
+            backLabel={backLabel}
+            title={<span className="font-mono">{invoice.id}</span>}
+            subtitle={invoice.client.name}
+            statusBadge={<StatusBadge type="invoice" status={invoice.status} />}
+            actions={
+              <div className="flex items-center gap-3 text-sm">
+                <span className="text-muted-foreground">Due {formatDate(invoice.dueDate)}</span>
+                <Separator orientation="vertical" className="h-4" />
+                <span className="font-semibold">{formatCurrency(invoice.total)}</span>
+              </div>
+            }
+          />
+        }
+        rail={
+          <div className="space-y-4">
+            {/* Financial Summary */}
+            <DetailRailCard title="Financial Summary">
+              <dl className="space-y-2">
+                <DetailKv label="Subtotal" value={formatCurrency(invoice.subtotal)} />
+                <DetailKv
+                  label={`Tax (${invoice.taxRate}%)`}
+                  value={formatCurrency(invoice.taxAmount)}
+                />
+                <Separator />
+                <DetailKv
+                  label="Total"
+                  value={
+                    <span className="text-base font-semibold">
+                      {formatCurrency(invoice.total)}
+                    </span>
+                  }
+                />
+                <DetailKv label="Due Date" value={formatDate(invoice.dueDate)} />
+                {invoice.paidAt && (
+                  <DetailKv label="Paid Date" value={formatDate(invoice.paidAt)} />
+                )}
+              </dl>
+            </DetailRailCard>
 
-      {/* Header */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <CardTitle className="font-mono text-xl">{invoice.id}</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {invoice.client.name}
-              </p>
-            </div>
-            <StatusBadge type="invoice" status={invoice.status} />
+            {/* Client Snapshot */}
+            <DetailRailCard title="Client">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{invoice.client.name}</span>
+                  {invoice.client.isVip && <VipIndicator />}
+                </div>
+                {invoice.client.company && (
+                  <p className="text-xs text-muted-foreground">{invoice.client.company}</p>
+                )}
+                <Button variant="outline" size="sm" className="h-7 text-xs" asChild>
+                  <Link to={`/clients/${invoice.client.id}`}>View Profile</Link>
+                </Button>
+              </div>
+            </DetailRailCard>
+
+            {/* Collection Status */}
+            <DetailRailCard title="Collection Status">
+              <dl className="space-y-2">
+                <DetailKv
+                  label="Payment Attempts"
+                  value={invoice.payments.length}
+                />
+                {latestPayment && (
+                  <>
+                    <DetailKv
+                      label="Latest Method"
+                      value={PAYMENT_METHOD_LABELS[latestPayment.method]}
+                    />
+                    <DetailKv
+                      label="Latest Status"
+                      value={<StatusBadge type="payment" status={latestPayment.status} />}
+                    />
+                  </>
+                )}
+                {isOverdue && (
+                  <div className="rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700">
+                    Overdue
+                  </div>
+                )}
+              </dl>
+            </DetailRailCard>
           </div>
-        </CardHeader>
-      </Card>
-
-      {/* Booking */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Booking</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-2">
-            <StatusBadge type="booking" status={invoice.booking.status} />
-            <span className="flex items-center gap-1 text-sm text-muted-foreground">
-              <ServiceTypeIcon serviceType={invoice.booking.category} />
-              {SERVICE_TYPE_LABELS[invoice.booking.category]}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-            <span className="text-muted-foreground">Execution</span>
-            <span>{formatDateTime(invoice.booking.executionAt)}</span>
-            <span className="text-muted-foreground">Location</span>
-            <span>{invoice.booking.location}</span>
-          </div>
-
-          <Button variant="outline" size="sm" asChild>
-            <Link to={`/bookings/${invoice.booking.id}`} state={{ from: "invoice", invoiceId: invoice.id }}>
-              {invoice.booking.title} &rarr;
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Line Items */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Line Items</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Description</TableHead>
-                <TableHead className="text-right">Qty</TableHead>
-                <TableHead className="text-right">Unit Price</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {invoice.lineItems.map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell>{item.description}</TableCell>
-                  <TableCell className="text-right">{item.quantity}</TableCell>
-                  <TableCell className="text-right">
-                    {formatCurrency(item.unitPrice)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {formatCurrency(item.quantity * item.unitPrice)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-
-          {/* Summary */}
-          <div className="mt-4 space-y-1 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span>{formatCurrency(invoice.subtotal)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">
-                Tax ({invoice.taxRate}%)
+        }
+      >
+        {/* Linked Booking */}
+        <DetailSection title="Linked Booking">
+          <div className="rounded-lg border p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <StatusBadge type="booking" status={invoice.booking.status} />
+              <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                <ServiceTypeIcon serviceType={invoice.booking.category} />
+                {SERVICE_TYPE_LABELS[invoice.booking.category]}
               </span>
-              <span>{formatCurrency(invoice.taxAmount)}</span>
             </div>
-            <div className="flex justify-between border-t pt-1 font-medium">
-              <span>Total</span>
-              <span>{formatCurrency(invoice.total)}</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Payment History */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment History</CardTitle>
-        </CardHeader>
-        <CardContent>
+            <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+              <span className="text-muted-foreground">Execution</span>
+              <span>{formatDateTime(invoice.booking.executionAt)}</span>
+              <span className="text-muted-foreground">Location</span>
+              <span>{invoice.booking.location}</span>
+            </div>
+
+            <Button variant="outline" size="sm" asChild>
+              <Link to={`/bookings/${invoice.booking.id}`} state={{ from: "invoice", invoiceId: invoice.id }}>
+                {invoice.booking.title} &rarr;
+              </Link>
+            </Button>
+          </div>
+        </DetailSection>
+
+        {/* Line Items */}
+        <DetailSection title="Line Items">
+          <div className="rounded-lg border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Description</TableHead>
+                  <TableHead className="text-right">Qty</TableHead>
+                  <TableHead className="text-right">Unit Price</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {invoice.lineItems.map((item, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{item.description}</TableCell>
+                    <TableCell className="text-right">{item.quantity}</TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(item.unitPrice)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(item.quantity * item.unitPrice)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </DetailSection>
+
+        {/* Payment History */}
+        <DetailSection title="Payment History">
           {invoice.payments.length === 0 ? (
             <p className="text-sm text-muted-foreground">No payments yet.</p>
           ) : (
@@ -163,7 +212,7 @@ export function InvoiceDetailPage() {
               {invoice.payments.map((payment) => (
                 <div
                   key={payment.id}
-                  className="flex items-start justify-between rounded-md border p-3"
+                  className="flex items-start justify-between rounded-lg border p-3"
                 >
                   <div className="space-y-1">
                     <StatusBadge type="payment" status={payment.status} />
@@ -186,8 +235,8 @@ export function InvoiceDetailPage() {
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </DetailSection>
+      </DetailShell>
+    </>
   );
 }

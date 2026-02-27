@@ -5,14 +5,16 @@ import { cn } from "@/lib/utils";
 export function AppLayout() {
   const { pathname } = useLocation();
   const isFullBleed = pathname === "/inbox";
+  const isDetailPage = /^\/(bookings|invoices)\/[^/]+$/.test(pathname);
 
   return (
     <div className="flex h-screen">
       <Sidebar />
       <main
         className={cn(
-          "flex-1",
-          isFullBleed ? "overflow-hidden" : "overflow-y-auto p-6"
+          "flex-1 overflow-y-auto",
+          !isFullBleed && !isDetailPage && "p-6",
+          isFullBleed && "overflow-hidden"
         )}
       >
         <Outlet />

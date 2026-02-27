@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { ArrowLeft, Zap } from "lucide-react";
+import { Zap } from "lucide-react";
 import type { BookingStatus, PaymentMethod } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import { getBookingWithRelations, payments, invoices, bookings, users } from "@/lib/mock-data";
@@ -12,10 +12,11 @@ import { PriorityBadge } from "@/components/shared/priority-badge";
 import { ChannelIcon } from "@/components/shared/channel-icon";
 import { SlaBadge } from "@/components/shared/sla-badge";
 import { ServiceTypeIcon } from "@/components/shared/service-type-icon";
-import { formatCurrency, formatDateTime, formatDate } from "@/lib/format";
+import { VipIndicator } from "@/components/shared/vip-indicator";
+import { formatCurrency, formatDateTime, formatDate, formatRelativeTime } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import {
   Select,
   SelectContent,
@@ -26,6 +27,11 @@ import {
 import { ConfirmPaymentDialog } from "@/components/bookings/confirm-payment-dialog";
 import { NotFoundPage } from "@/pages/not-found-page";
 import { PermissionDenied } from "@/components/shared/permission-denied";
+import { DetailShell } from "@/components/detail/detail-shell";
+import { DetailTopBar } from "@/components/detail/detail-topbar";
+import { DetailSection } from "@/components/detail/detail-section";
+import { DetailKv } from "@/components/detail/detail-kv";
+import { DetailRailCard } from "@/components/detail/detail-rail-card";
 
 type BillingState =
   | "no_invoice"
@@ -118,14 +124,19 @@ export function BookingDetailPage() {
     booking.assigneeId !== null &&
     booking.executionAt !== "";
 
-  // Derive billing state
   const billingState = deriveBillingState();
   const billingConfig = BILLING_STATE_CONFIG[billingState];
 
-  // Find first sent invoice for payment confirmation
   const sentInvoice = booking.invoices.find((i) => i.status === "sent");
   const hasSentInvoice = booking.invoices.some((i) => i.status === "sent");
   const isEditable = !["completed", "cancelled"].includes(booking.status);
+
+  const latestPayment = booking.payments.length > 0
+    ? booking.payments[booking.payments.length - 1]
+    : null;
+  const latestInvoice = booking.invoices.length > 0
+    ? booking.invoices[booking.invoices.length - 1]
+    : null;
 
   function checkAutoSchedule(bookingRef: typeof bookings[number]) {
     if (
@@ -162,10 +173,8 @@ export function BookingDetailPage() {
     const allowed = BOOKING_STATUS_TRANSITIONS[bookingRef.status];
     if (!allowed.includes(newStatus)) return;
 
-    // For draft → awaiting_payment, require a sent invoice
     if (bookingRef.status === "draft" && newStatus === "awaiting_payment" && !hasSentInvoice) return;
 
-    // For awaiting_payment → paid, open dialog instead
     if (bookingRef.status === "awaiting_payment" && newStatus === "paid") {
       setPaymentDialogOpen(true);
       return;
@@ -189,288 +198,396 @@ export function BookingDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-8">
-      <Button variant="ghost" size="sm" asChild>
-        <Link to={backTo}>
-          <ArrowLeft className="size-4" />
-          {backLabel}
-        </Link>
-      </Button>
+    <>
+      <DetailShell
+        topBar={
+          <DetailTopBar
+            backTo={backTo}
+            backLabel={backLabel}
+            title={booking.title}
+            subtitle={booking.client.name}
+            statusBadge={<StatusBadge type="booking" status={booking.status} />}
+            actions={
+              transitions.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {transitions.map((nextStatus) => {
+                    const disabled =
+                      booking.status === "draft" &&
+                      nextStatus === "awaiting_payment" &&
+                      !hasSentInvoice;
 
-      {/* Header */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <CardTitle className="text-xl">{booking.title}</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {booking.client.name}
-              </p>
-            </div>
-            <StatusBadge type="booking" status={booking.status} />
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isAutoScheduled && (
-            <div className="mb-4 flex items-center gap-2 rounded-md bg-blue-50 p-3 text-sm text-blue-700">
-              <Zap className="size-4" />
-              <span>Will auto-transition to Scheduled (assignee &amp; execution date set)</span>
-            </div>
-          )}
+                    const label =
+                      booking.status === "awaiting_payment" && nextStatus === "paid"
+                        ? "Confirm Payment"
+                        : BOOKING_STATUS_ACTION_LABELS[nextStatus];
 
-          {transitions.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {transitions.map((nextStatus) => {
-                // Disable "Send for Payment" if no sent invoice
-                const disabled =
-                  booking.status === "draft" &&
-                  nextStatus === "awaiting_payment" &&
-                  !hasSentInvoice;
+                    return (
+                      <Button
+                        key={nextStatus}
+                        variant={nextStatus === "cancelled" ? "outline" : "default"}
+                        size="sm"
+                        disabled={disabled}
+                        title={disabled ? "Send an invoice first" : undefined}
+                        onClick={() => handleStatusChange(nextStatus)}
+                      >
+                        {label}
+                      </Button>
+                    );
+                  })}
+                </div>
+              ) : undefined
+            }
+            infoStrip={
+              isAutoScheduled ? (
+                <div className="flex items-center gap-2 rounded-md bg-blue-50 px-3 py-1.5 text-sm text-blue-700">
+                  <Zap className="size-4" />
+                  <span>Will auto-transition to Scheduled (assignee &amp; execution date set)</span>
+                </div>
+              ) : undefined
+            }
+          />
+        }
+        rail={
+          <div className="space-y-4">
+            {/* Client Snapshot */}
+            <DetailRailCard title="Client">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{booking.client.name}</span>
+                  {booking.client.isVip && <VipIndicator />}
+                </div>
+                {booking.client.company && (
+                  <p className="text-xs text-muted-foreground">{booking.client.company}</p>
+                )}
+                <Button variant="outline" size="sm" className="h-7 text-xs" asChild>
+                  <Link to={`/clients/${booking.client.id}`}>View Profile</Link>
+                </Button>
+              </div>
+            </DetailRailCard>
 
-                const label =
-                  booking.status === "awaiting_payment" && nextStatus === "paid"
-                    ? "Confirm Payment"
-                    : BOOKING_STATUS_ACTION_LABELS[nextStatus];
-
-                return (
-                  <Button
-                    key={nextStatus}
-                    variant={nextStatus === "cancelled" ? "outline" : "default"}
-                    size="sm"
-                    disabled={disabled}
-                    title={disabled ? "Send an invoice first" : undefined}
-                    onClick={() => handleStatusChange(nextStatus)}
-                  >
-                    {label}
-                  </Button>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Details */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-muted-foreground">Category</p>
-              <p className="flex items-center gap-1.5 font-medium">
-                <ServiceTypeIcon serviceType={booking.category} />
-                {SERVICE_TYPE_LABELS[booking.category]}
-              </p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Price</p>
-              <p className="font-medium">{formatCurrency(booking.price)}</p>
-            </div>
-            <div className="col-span-2">
-              <p className="text-muted-foreground">Location</p>
-              <p className="font-medium">{booking.location}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Execution Date</p>
-              {isEditable ? (
-                <Input
-                  type="datetime-local"
-                  className="mt-1"
-                  value={booking.executionAt ? booking.executionAt.slice(0, 16) : ""}
-                  onChange={(e) => {
-                    const bookingRef = bookings.find((b) => b.id === id);
-                    if (bookingRef) {
-                      bookingRef.executionAt = e.target.value ? new Date(e.target.value).toISOString() : "";
-                      bookingRef.updatedAt = new Date().toISOString();
-                      checkAutoSchedule(bookingRef);
-                      forceUpdate((n) => n + 1);
-                    }
-                  }}
+            {/* Execution Readiness */}
+            <DetailRailCard title="Execution Readiness">
+              <dl className="space-y-2">
+                <DetailKv
+                  label="Assignee"
+                  value={
+                    booking.assignee ? (
+                      <span className="text-green-700">{booking.assignee.name}</span>
+                    ) : (
+                      <span className="text-amber-600">Unassigned</span>
+                    )
+                  }
                 />
-              ) : (
-                <p className="font-medium">{formatDateTime(booking.executionAt)}</p>
-              )}
-            </div>
-            <div>
-              <p className="text-muted-foreground">Assignee</p>
-              {isEditable ? (
-                <Select
-                  value={booking.assigneeId ?? "unassigned"}
-                  onValueChange={(val) => {
-                    const bookingRef = bookings.find((b) => b.id === id);
-                    if (bookingRef) {
-                      bookingRef.assigneeId = val === "unassigned" ? null : val;
-                      bookingRef.updatedAt = new Date().toISOString();
-                      checkAutoSchedule(bookingRef);
-                      forceUpdate((n) => n + 1);
-                    }
-                  }}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
-                    {users.map((u) => (
-                      <SelectItem key={u.id} value={u.id}>
-                        {u.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="font-medium">{booking.assignee?.name ?? "Unassigned"}</p>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+                <DetailKv
+                  label="Execution Date"
+                  value={
+                    booking.executionAt ? (
+                      <span className="text-green-700">{formatDate(booking.executionAt)}</span>
+                    ) : (
+                      <span className="text-amber-600">Not set</span>
+                    )
+                  }
+                />
+                <DetailKv
+                  label="Payment"
+                  value={
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${billingConfig.className}`}>
+                      <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />
+                      {billingConfig.label}
+                    </span>
+                  }
+                />
+              </dl>
+            </DetailRailCard>
 
-      {/* Billing */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Billing</CardTitle>
+            {/* Linked Records */}
+            <DetailRailCard title="Linked Records">
+              <dl className="space-y-2">
+                <DetailKv
+                  label="Invoices"
+                  value={
+                    booking.invoices.length === 0
+                      ? "None"
+                      : `${booking.invoices.length} invoice${booking.invoices.length > 1 ? "s" : ""}`
+                  }
+                />
+                {latestInvoice && (
+                  <DetailKv
+                    label="Latest Invoice"
+                    value={
+                      <Link
+                        to={`/invoices/${latestInvoice.id}`}
+                        state={{ from: "booking" }}
+                        className="text-sm font-medium text-primary hover:underline"
+                      >
+                        {latestInvoice.id}
+                      </Link>
+                    }
+                  />
+                )}
+                <DetailKv
+                  label="Payments"
+                  value={
+                    booking.payments.length === 0
+                      ? "None"
+                      : `${booking.payments.length} payment${booking.payments.length > 1 ? "s" : ""}`
+                  }
+                />
+                {latestPayment && (
+                  <DetailKv
+                    label="Latest Payment"
+                    value={
+                      <div className="flex items-center gap-2">
+                        <StatusBadge type="payment" status={latestPayment.status} />
+                        {latestPayment.processedAt && (
+                          <span className="text-xs text-muted-foreground">
+                            {formatDate(latestPayment.processedAt)}
+                          </span>
+                        )}
+                      </div>
+                    }
+                  />
+                )}
+              </dl>
+            </DetailRailCard>
+
+            {/* Timeline */}
+            <DetailRailCard title="Timeline">
+              <dl className="space-y-2">
+                <DetailKv label="Created" value={formatRelativeTime(booking.createdAt)} />
+                <DetailKv label="Updated" value={formatRelativeTime(booking.updatedAt)} />
+              </dl>
+            </DetailRailCard>
+          </div>
+        }
+      >
+        {/* Overview */}
+        <DetailSection title="Overview">
+          <div className="rounded-lg border p-4">
+            <dl className="grid grid-cols-2 gap-4">
+              <DetailKv
+                label="Category"
+                value={
+                  <span className="flex items-center gap-1.5">
+                    <ServiceTypeIcon serviceType={booking.category} />
+                    {SERVICE_TYPE_LABELS[booking.category]}
+                  </span>
+                }
+              />
+              <DetailKv label="Price" value={formatCurrency(booking.price)} />
+              <div className="col-span-2">
+                <DetailKv label="Location" value={booking.location} />
+              </div>
+              {!isEditable && (
+                <>
+                  <DetailKv
+                    label="Execution Date"
+                    value={formatDateTime(booking.executionAt)}
+                  />
+                  <DetailKv
+                    label="Assignee"
+                    value={booking.assignee?.name ?? "Unassigned"}
+                  />
+                </>
+              )}
+            </dl>
+          </div>
+        </DetailSection>
+
+        {/* Operational Details (editable only) */}
+        {isEditable && (
+          <DetailSection title="Operational Details">
+            <div className="rounded-lg border p-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-muted-foreground">Execution Date</label>
+                  <Input
+                    type="datetime-local"
+                    className="mt-1"
+                    value={booking.executionAt ? booking.executionAt.slice(0, 16) : ""}
+                    onChange={(e) => {
+                      const bookingRef = bookings.find((b) => b.id === id);
+                      if (bookingRef) {
+                        bookingRef.executionAt = e.target.value ? new Date(e.target.value).toISOString() : "";
+                        bookingRef.updatedAt = new Date().toISOString();
+                        checkAutoSchedule(bookingRef);
+                        forceUpdate((n) => n + 1);
+                      }
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Assignee</label>
+                  <Select
+                    value={booking.assigneeId ?? "unassigned"}
+                    onValueChange={(val) => {
+                      const bookingRef = bookings.find((b) => b.id === id);
+                      if (bookingRef) {
+                        bookingRef.assigneeId = val === "unassigned" ? null : val;
+                        bookingRef.updatedAt = new Date().toISOString();
+                        checkAutoSchedule(bookingRef);
+                        forceUpdate((n) => n + 1);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      {users.map((u) => (
+                        <SelectItem key={u.id} value={u.id}>
+                          {u.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </DetailSection>
+        )}
+
+        {/* Billing */}
+        <DetailSection
+          title="Billing"
+          action={
             <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${billingConfig.className}`}>
               <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />
               {billingConfig.label}
             </span>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Billing actions */}
-          {billingState === "no_invoice" && (
-            <Button
-              size="sm"
-              onClick={() => {
-                const subtotal = booking.price;
-                const taxRate = 10;
-                const taxAmount = Math.round(subtotal * taxRate) / 100;
-                const total = subtotal + taxAmount;
-                invoices.push({
-                  id: `inv-${Date.now()}`,
-                  bookingId: booking.id,
-                  clientId: booking.clientId,
-                  status: "draft",
-                  lineItems: [{ description: booking.title, quantity: 1, unitPrice: subtotal }],
-                  subtotal,
-                  taxRate,
-                  taxAmount,
-                  total,
-                  dueDate: new Date(Date.now() + 30 * 86400000).toISOString(),
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString(),
-                });
-                forceUpdate((n) => n + 1);
-              }}
-            >
-              Create Invoice
-            </Button>
-          )}
-          {billingState === "invoice_draft" && (
-            <Button
-              size="sm"
-              onClick={() => {
-                const draftInvoice = invoices.find(
-                  (i) => i.bookingId === booking.id && i.status === "draft"
-                );
-                if (draftInvoice) {
-                  draftInvoice.status = "sent";
-                  draftInvoice.updatedAt = new Date().toISOString();
+          }
+        >
+          <div className="space-y-4">
+            {/* Billing actions */}
+            {billingState === "no_invoice" && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  const subtotal = booking.price;
+                  const taxRate = 10;
+                  const taxAmount = Math.round(subtotal * taxRate) / 100;
+                  const total = subtotal + taxAmount;
+                  invoices.push({
+                    id: `inv-${Date.now()}`,
+                    bookingId: booking.id,
+                    clientId: booking.clientId,
+                    status: "draft",
+                    lineItems: [{ description: booking.title, quantity: 1, unitPrice: subtotal }],
+                    subtotal,
+                    taxRate,
+                    taxAmount,
+                    total,
+                    dueDate: new Date(Date.now() + 30 * 86400000).toISOString(),
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                  });
                   forceUpdate((n) => n + 1);
-                }
-              }}
-            >
-              Send Invoice
-            </Button>
-          )}
+                }}
+              >
+                Create Invoice
+              </Button>
+            )}
+            {billingState === "invoice_draft" && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  const draftInvoice = invoices.find(
+                    (i) => i.bookingId === booking.id && i.status === "draft"
+                  );
+                  if (draftInvoice) {
+                    draftInvoice.status = "sent";
+                    draftInvoice.updatedAt = new Date().toISOString();
+                    forceUpdate((n) => n + 1);
+                  }
+                }}
+              >
+                Send Invoice
+              </Button>
+            )}
 
-          {/* Invoice summary */}
-          {booking.invoices.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No invoices yet.</p>
-          ) : (
-            <div className="space-y-2">
-              {booking.invoices.map((invoice) => (
-                <Link
-                  key={invoice.id}
-                  to={`/invoices/${invoice.id}`}
-                  state={{ from: "booking" }}
-                  className="flex items-center justify-between rounded-md border p-3 hover:bg-muted/50 transition-colors"
-                >
-                  <div className="space-y-1">
-                    <p className="font-mono text-sm">{invoice.id}</p>
-                    <StatusBadge type="invoice" status={invoice.status} />
-                  </div>
-                  <p className="text-sm font-medium">
-                    {formatCurrency(invoice.total)}
-                  </p>
-                </Link>
-              ))}
-            </div>
-          )}
+            {/* Invoice summary */}
+            {booking.invoices.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No invoices yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {booking.invoices.map((invoice) => (
+                  <Link
+                    key={invoice.id}
+                    to={`/invoices/${invoice.id}`}
+                    state={{ from: "booking" }}
+                    className="flex items-center justify-between rounded-md border p-3 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="space-y-1">
+                      <p className="font-mono text-sm">{invoice.id}</p>
+                      <StatusBadge type="invoice" status={invoice.status} />
+                    </div>
+                    <p className="text-sm font-medium">
+                      {formatCurrency(invoice.total)}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            )}
 
-          {/* Payment summary */}
-          {booking.payments.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No payments yet.</p>
-          ) : (
-            <div className="space-y-2">
-              {booking.payments.map((payment) => (
-                <div
-                  key={payment.id}
-                  className="flex items-center justify-between rounded-md border p-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <StatusBadge type="payment" status={payment.status} />
-                    <span className="text-xs text-muted-foreground">
-                      {PAYMENT_METHOD_LABELS[payment.method as keyof typeof PAYMENT_METHOD_LABELS] ?? payment.method}
-                    </span>
-                    {payment.processedAt && (
+            {/* Payment summary */}
+            {booking.payments.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No payments yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {booking.payments.map((payment) => (
+                  <div
+                    key={payment.id}
+                    className="flex items-center justify-between rounded-md border p-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <StatusBadge type="payment" status={payment.status} />
                       <span className="text-xs text-muted-foreground">
-                        {formatDate(payment.processedAt)}
+                        {PAYMENT_METHOD_LABELS[payment.method as keyof typeof PAYMENT_METHOD_LABELS] ?? payment.method}
                       </span>
-                    )}
+                      {payment.processedAt && (
+                        <span className="text-xs text-muted-foreground">
+                          {formatDate(payment.processedAt)}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm font-medium">
+                      {formatCurrency(payment.amount)}
+                    </p>
                   </div>
-                  <p className="text-sm font-medium">
-                    {formatCurrency(payment.amount)}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Conversation */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Conversation</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <StatusBadge type="conversation" status={booking.conversation.status} />
-            <PriorityBadge priority={booking.conversation.priority} />
-            <span className="flex items-center gap-1 text-sm text-muted-foreground">
-              <ChannelIcon channel={booking.conversation.channel} />
-              {CHANNEL_LABELS[booking.conversation.channel]}
-            </span>
-            <SlaBadge state={computeSlaState(booking.conversation.status, booking.conversation.slaDueAt)} />
+                ))}
+              </div>
+            )}
           </div>
+        </DetailSection>
 
-          {booking.conversation.description && (
-            <p className="text-sm text-muted-foreground line-clamp-3">
-              {booking.conversation.description}
-            </p>
-          )}
+        {/* Conversation */}
+        <DetailSection title="Conversation">
+          <div className="rounded-lg border p-4 space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusBadge type="conversation" status={booking.conversation.status} />
+              <PriorityBadge priority={booking.conversation.priority} />
+              <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                <ChannelIcon channel={booking.conversation.channel} />
+                {CHANNEL_LABELS[booking.conversation.channel]}
+              </span>
+              <SlaBadge state={computeSlaState(booking.conversation.status, booking.conversation.slaDueAt)} />
+            </div>
 
-          <Button variant="outline" size="sm" asChild>
-            <Link to={`/inbox?id=${booking.conversationId}`}>
-              View Conversation
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
+            {booking.conversation.description && (
+              <p className="text-sm text-muted-foreground line-clamp-3">
+                {booking.conversation.description}
+              </p>
+            )}
+
+            <Button variant="outline" size="sm" asChild>
+              <Link to={`/inbox?id=${booking.conversationId}`}>
+                View Conversation
+              </Link>
+            </Button>
+          </div>
+        </DetailSection>
+      </DetailShell>
 
       {/* Payment confirmation dialog */}
       {sentInvoice && (
@@ -481,6 +598,6 @@ export function BookingDetailPage() {
           onConfirm={handleConfirmPayment}
         />
       )}
-    </div>
+    </>
   );
 }
