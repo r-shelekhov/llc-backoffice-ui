@@ -1,4 +1,4 @@
-import type { User, Conversation, Booking, Invoice, Payment } from "@/types";
+import type { User, Conversation, ConversationWithRelations, Booking, Invoice, Payment } from "@/types";
 
 export function canAccessRoute(role: User["role"], path: string): boolean {
   if (role === "admin") return true;
@@ -19,6 +19,11 @@ export function canViewBooking(user: User, booking: Booking): boolean {
 export function canViewClient(user: User, clientId: string, conversations: Conversation[]): boolean {
   if (user.role === "admin" || user.role === "vip_manager") return true;
   return conversations.some((c) => c.clientId === clientId && c.assigneeId === user.id);
+}
+
+export function filterVipConversations<T extends ConversationWithRelations>(user: User, conversations: T[]): T[] {
+  if (user.role === "admin" || user.role === "vip_manager") return conversations;
+  return conversations.filter((c) => !c.client.isVip);
 }
 
 export function filterConversationsByPermission<T extends Conversation>(user: User, conversations: T[]): T[] {

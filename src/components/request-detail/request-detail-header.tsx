@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PriorityBadge } from "@/components/shared/priority-badge";
@@ -35,6 +35,15 @@ export function RequestDetailHeader({ conversation }: RequestDetailHeaderProps) 
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
+          {conversation.status !== "converted" && conversation.status !== "closed" && (
+            <Button
+              size="sm"
+              onClick={() => navigate(`/bookings/new?conversationId=${conversation.id}`)}
+            >
+              <Plus className="size-4" />
+              Create Booking
+            </Button>
+          )}
           {conversation.assignee ? (
             <div className="flex items-center gap-2">
               <img

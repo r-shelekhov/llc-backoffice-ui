@@ -1,6 +1,7 @@
 import { Crown } from "lucide-react";
 import type { ConversationWithRelations } from "@/types";
 import { ChannelIcon } from "@/components/shared/channel-icon";
+import { StatusBadge } from "@/components/shared/status-badge";
 import { formatRelativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -63,6 +64,7 @@ export function ConversationItem({
             {preview}
           </p>
           <div className="flex shrink-0 items-center gap-1.5">
+            <StatusBadge type="conversation" status={conversation.status} />
             <ChannelIcon
               channel={conversation.channel}
               className="size-3 text-muted-foreground"

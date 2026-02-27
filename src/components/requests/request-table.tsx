@@ -165,7 +165,7 @@ export function RequestTable({ conversations }: RequestTableProps) {
               conversation.status === "awaiting_client" &&
                 "border-l-2 border-l-red-400"
             )}
-            onClick={() => navigate(`/requests/${conversation.id}`)}
+            onClick={() => navigate(`/conversations/${conversation.id}`)}
           >
             <TableCell>
               <StatusBadge type="conversation" status={conversation.status} />

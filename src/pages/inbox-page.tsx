@@ -2,8 +2,8 @@ import { useMemo, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { getAllConversationsWithRelations } from "@/lib/mock-data";
-import { filterConversationsByPermission } from "@/lib/permissions";
-import type { Channel, Communication, ConversationWithRelations } from "@/types";
+import { filterConversationsByPermission, filterVipConversations } from "@/lib/permissions";
+import type { Channel, Communication, ConversationStatus, ConversationWithRelations } from "@/types";
 import { InboxLayout } from "@/components/inbox/inbox-layout";
 import { ConversationList } from "@/components/inbox/conversation-list";
 import { ConversationThread } from "@/components/inbox/conversation-thread";
@@ -37,16 +37,27 @@ export function InboxPage() {
   const [localMessages, setLocalMessages] = useState<
     Map<string, Communication[]>
   >(new Map());
+  const [statusOverrides, setStatusOverrides] = useState<
+    Map<string, ConversationStatus>
+  >(new Map());
 
   const allConversations = useMemo(() => getAllConversationsWithRelations(), []);
 
   const permittedConversations = useMemo(
-    () => filterConversationsByPermission(currentUser, allConversations),
+    () => filterVipConversations(currentUser, filterConversationsByPermission(currentUser, allConversations)),
     [currentUser, allConversations]
   );
 
+  const conversationsWithOverrides = useMemo(() => {
+    if (statusOverrides.size === 0) return permittedConversations;
+    return permittedConversations.map((c) => {
+      const override = statusOverrides.get(c.id);
+      return override ? { ...c, status: override } : c;
+    });
+  }, [permittedConversations, statusOverrides]);
+
   const filteredConversations = useMemo(() => {
-    let result = permittedConversations;
+    let result = conversationsWithOverrides;
 
     // Filter by channel (concierge only visible in "all")
     if (activeChannel !== "all") {
@@ -62,11 +73,22 @@ export function InboxPage() {
     return [...result].sort(
       (a, b) => getLastCommTime(b) - getLastCommTime(a)
     );
-  }, [permittedConversations, activeChannel, search]);
+  }, [conversationsWithOverrides, activeChannel, search]);
 
   const selectedConversation = useMemo(
-    () => (selectedId ? permittedConversations.find((r) => r.id === selectedId) ?? null : null),
-    [selectedId, permittedConversations]
+    () => (selectedId ? conversationsWithOverrides.find((r) => r.id === selectedId) ?? null : null),
+    [selectedId, conversationsWithOverrides]
+  );
+
+  const handleStatusChange = useCallback(
+    (conversationId: string, newStatus: ConversationStatus) => {
+      setStatusOverrides((prev) => {
+        const next = new Map(prev);
+        next.set(conversationId, newStatus);
+        return next;
+      });
+    },
+    []
   );
 
   const handleSelect = useCallback(
@@ -121,12 +143,13 @@ export function InboxPage() {
             conversation={selectedConversation}
             localMessages={currentLocalMessages}
             onSend={handleSend}
+            onStatusChange={handleStatusChange}
           />
         ) : null
       }
       right={
         selectedConversation ? (
-          <ContactDetailPanel conversation={selectedConversation} users={allUsers} />
+          <ContactDetailPanel conversation={selectedConversation} users={allUsers} onStatusChange={handleStatusChange} />
         ) : null
       }
     />

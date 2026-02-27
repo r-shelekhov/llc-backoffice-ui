@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { MapPin, Calendar, User as UserIcon } from "lucide-react";
-import type { ConversationWithRelations, User } from "@/types";
+import { MapPin, Calendar, User as UserIcon, ChevronDown } from "lucide-react";
+import type { ConversationStatus, ConversationWithRelations, User } from "@/types";
 import { VipIndicator } from "@/components/shared/vip-indicator";
 import { ChannelIcon } from "@/components/shared/channel-icon";
 import { ServiceTypeIcon } from "@/components/shared/service-type-icon";
@@ -9,15 +9,22 @@ import { PriorityBadge } from "@/components/shared/priority-badge";
 import { SlaBadge } from "@/components/shared/sla-badge";
 import { InternalNotesPanel } from "@/components/request-detail/internal-notes-panel";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { formatCurrency, formatDateTime } from "@/lib/format";
-import { CHANNEL_LABELS, SERVICE_TYPE_LABELS } from "@/lib/constants";
+import { CHANNEL_LABELS, SERVICE_TYPE_LABELS, CONVERSATION_STATUS_TRANSITIONS, CONVERSATION_STATUS_LABELS } from "@/lib/constants";
 
 interface ContactDetailPanelProps {
   conversation: ConversationWithRelations;
   users: User[];
+  onStatusChange: (conversationId: string, newStatus: ConversationStatus) => void;
 }
 
-export function ContactDetailPanel({ conversation, users }: ContactDetailPanelProps) {
+export function ContactDetailPanel({ conversation, users, onStatusChange }: ContactDetailPanelProps) {
   const navigate = useNavigate();
   const { client, assignee } = conversation;
 
@@ -76,7 +83,28 @@ export function ContactDetailPanel({ conversation, users }: ContactDetailPanelPr
             <span>{CHANNEL_LABELS[conversation.channel]}</span>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            <StatusBadge type="conversation" status={conversation.status} />
+            {CONVERSATION_STATUS_TRANSITIONS[conversation.status].length > 0 ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button type="button" className="flex cursor-pointer items-center gap-1">
+                    <StatusBadge type="conversation" status={conversation.status} />
+                    <ChevronDown className="size-3 text-muted-foreground" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  {CONVERSATION_STATUS_TRANSITIONS[conversation.status].map((status) => (
+                    <DropdownMenuItem
+                      key={status}
+                      onClick={() => onStatusChange(conversation.id, status)}
+                    >
+                      {CONVERSATION_STATUS_LABELS[status]}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <StatusBadge type="conversation" status={conversation.status} />
+            )}
             <PriorityBadge priority={conversation.priority} />
             <SlaBadge state={conversation.slaState} />
           </div>

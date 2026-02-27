@@ -113,3 +113,11 @@ export const SLA_STATE_COLORS: Record<SlaState, string> = {
   at_risk: "text-amber-600",
   breached: "text-red-600 bg-red-50",
 };
+
+export const CONVERSATION_STATUS_TRANSITIONS: Record<ConversationStatus, ConversationStatus[]> = {
+  new: ["in_review"],
+  in_review: ["awaiting_client", "converted"],
+  awaiting_client: ["in_review"],
+  converted: ["closed"],
+  closed: [],
+};
