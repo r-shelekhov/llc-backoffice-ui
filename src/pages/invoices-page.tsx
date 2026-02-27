@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import type { InvoiceFilterState, InvoiceStatus } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import { getAllInvoicesWithRelations, bookings } from "@/lib/mock-data";
@@ -28,7 +28,14 @@ const statusOptions = Object.entries(INVOICE_STATUS_LABELS).map(
 export function InvoicesPage() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<InvoiceFilterState>(initialFilters);
+  const [searchParams] = useSearchParams();
+  const [filters, setFilters] = useState<InvoiceFilterState>(() => {
+    const status = searchParams.get("status");
+    if (status) {
+      return { ...initialFilters, statuses: [status as InvoiceStatus] };
+    }
+    return initialFilters;
+  });
 
   const allInvoices = getAllInvoicesWithRelations();
   const permittedInvoices = filterVipInvoices(

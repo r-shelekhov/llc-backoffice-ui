@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import type { PaymentFilterState, PaymentStatus } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -32,7 +32,14 @@ const statusOptions = Object.entries(PAYMENT_STATUS_LABELS).map(
 export function PaymentsPage() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<PaymentFilterState>(initialFilters);
+  const [searchParams] = useSearchParams();
+  const [filters, setFilters] = useState<PaymentFilterState>(() => {
+    const status = searchParams.get("status");
+    if (status) {
+      return { ...initialFilters, statuses: [status as PaymentStatus] };
+    }
+    return initialFilters;
+  });
 
   const allPayments = getAllPaymentsWithRelations();
   const permittedPayments = filterVipPayments(
