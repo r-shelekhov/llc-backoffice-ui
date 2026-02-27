@@ -1,4 +1,5 @@
 import type { ConversationWithRelations, BookingWithRelations, InvoiceWithRelations, PaymentWithRelations } from "@/types";
+import { computeSlaState } from "@/lib/sla";
 
 export { users } from "./users";
 export { clients } from "./clients";
@@ -17,26 +18,6 @@ import { communications } from "./communications";
 import { internalNotes } from "./internal-notes";
 import { invoices } from "./invoices";
 import { payments } from "./payments";
-
-function computeSlaState(status: string, slaDueAt: string): "on_track" | "at_risk" | "breached" {
-  if (status === "converted" || status === "closed") {
-    return "on_track";
-  }
-
-  const now = new Date();
-  const dueDate = new Date(slaDueAt);
-  const twoHoursMs = 2 * 60 * 60 * 1000;
-
-  if (dueDate.getTime() < now.getTime()) {
-    return "breached";
-  }
-
-  if (dueDate.getTime() - now.getTime() <= twoHoursMs) {
-    return "at_risk";
-  }
-
-  return "on_track";
-}
 
 export function getConversationWithRelations(conversationId: string): ConversationWithRelations | null {
   const conversation = conversations.find((c) => c.id === conversationId);

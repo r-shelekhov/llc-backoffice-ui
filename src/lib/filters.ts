@@ -1,4 +1,4 @@
-import type { ConversationFilterState, InvoiceFilterState, PaymentFilterState, ConversationWithRelations, InvoiceWithRelations, PaymentWithRelations } from "@/types";
+import type { ConversationFilterState, BookingFilterState, InvoiceFilterState, PaymentFilterState, ConversationWithRelations, BookingWithRelations, InvoiceWithRelations, PaymentWithRelations } from "@/types";
 
 export function applyConversationFilters(
   conversations: ConversationWithRelations[],
@@ -51,6 +51,32 @@ export function applyConversationFilters(
     if (filters.dateTo) {
       if (new Date(r.createdAt) > filters.dateTo) return false;
     }
+
+    return true;
+  });
+}
+
+export function applyBookingFilters(
+  bookings: BookingWithRelations[],
+  filters: BookingFilterState
+): BookingWithRelations[] {
+  return bookings.filter((b) => {
+    if (filters.search) {
+      const q = filters.search.toLowerCase();
+      const matches =
+        b.id.toLowerCase().includes(q) ||
+        b.title.toLowerCase().includes(q) ||
+        b.client.name.toLowerCase().includes(q) ||
+        b.location.toLowerCase().includes(q);
+      if (!matches) return false;
+    }
+
+    if (filters.statuses.length > 0 && !filters.statuses.includes(b.status)) {
+      return false;
+    }
+
+    if (filters.dateFrom && new Date(b.createdAt) < filters.dateFrom) return false;
+    if (filters.dateTo && new Date(b.createdAt) > filters.dateTo) return false;
 
     return true;
   });

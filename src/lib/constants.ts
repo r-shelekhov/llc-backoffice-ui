@@ -18,6 +18,16 @@ export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
   cancelled: "Cancelled",
 };
 
+export const BOOKING_STATUS_ACTION_LABELS: Record<BookingStatus, string> = {
+  draft: "Draft",
+  awaiting_payment: "Send for Payment",
+  paid: "Mark as Paid",
+  scheduled: "Schedule",
+  in_progress: "Start",
+  completed: "Complete",
+  cancelled: "Cancel",
+};
+
 export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
   draft: "Draft",
   sent: "Sent",
@@ -120,4 +130,14 @@ export const CONVERSATION_STATUS_TRANSITIONS: Record<ConversationStatus, Convers
   awaiting_client: ["in_review"],
   converted: ["closed"],
   closed: [],
+};
+
+export const BOOKING_STATUS_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
+  draft: ["awaiting_payment", "cancelled"],
+  awaiting_payment: ["paid", "cancelled"],
+  paid: ["scheduled", "cancelled"],
+  scheduled: ["in_progress", "cancelled"],
+  in_progress: ["completed"],
+  completed: [],
+  cancelled: [],
 };

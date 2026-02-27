@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   Inbox,
+  CalendarCheck,
   FileText,
   CreditCard,
   Users,
@@ -70,6 +71,7 @@ export function Sidebar() {
           label="Inbox"
           badge={awaitingClientCount}
         />
+        <NavItem to="/bookings" icon={CalendarCheck} label="Bookings" />
         <NavItem to="/invoices" icon={FileText} label="Invoices" />
         <NavItem to="/payments" icon={CreditCard} label="Payments" />
 
