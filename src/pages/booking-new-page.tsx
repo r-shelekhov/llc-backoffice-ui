@@ -101,7 +101,7 @@ export function BookingNewPage() {
   return (
     <div className="mx-auto max-w-2xl p-8">
       <Button variant="ghost" size="sm" asChild className="mb-6">
-        <Link to={`/conversations/${conversationId}`}>
+        <Link to={`/inbox?id=${conversationId}`}>
           <ArrowLeft className="size-4" />
           Back
         </Link>

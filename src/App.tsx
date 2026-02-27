@@ -1,9 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { AuthProvider } from "@/contexts/auth-context";
 import { AppLayout } from "@/components/layout/app-layout";
 import { DashboardPage } from "@/pages/dashboard-page";
 import { InboxPage } from "@/pages/inbox-page";
-import { ConversationDetailPage } from "@/pages/conversation-detail-page";
 import { BookingsPage } from "@/pages/bookings-page";
 import { BookingDetailPage } from "@/pages/booking-detail-page";
 import { BookingNewPage } from "@/pages/booking-new-page";
@@ -14,6 +13,11 @@ import { PaymentsPage } from "@/pages/payments-page";
 import { AdminUsersPage } from "@/pages/admin-users-page";
 import { NotFoundPage } from "@/pages/not-found-page";
 
+function ConversationRedirect() {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={`/inbox?id=${id}`} replace />;
+}
+
 export function App() {
   return (
     <AuthProvider>
@@ -23,7 +27,7 @@ export function App() {
             <Route index element={<Navigate to="/inbox" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="inbox" element={<InboxPage />} />
-            <Route path="conversations/:id" element={<ConversationDetailPage />} />
+            <Route path="conversations/:id" element={<ConversationRedirect />} />
             <Route path="bookings" element={<BookingsPage />} />
             <Route path="bookings/new" element={<BookingNewPage />} />
             <Route path="bookings/:id" element={<BookingDetailPage />} />

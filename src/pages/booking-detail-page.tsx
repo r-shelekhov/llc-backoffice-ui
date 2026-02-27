@@ -465,7 +465,7 @@ export function BookingDetailPage() {
           )}
 
           <Button variant="outline" size="sm" asChild>
-            <Link to={`/conversations/${booking.conversationId}`}>
+            <Link to={`/inbox?id=${booking.conversationId}`}>
               View Conversation
             </Link>
           </Button>

@@ -63,13 +63,6 @@ export function ConversationThread({
                 Create Booking
               </Button>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate(`/conversations/${conversation.id}`)}
-            >
-              Full Details
-            </Button>
           </div>
         </div>
         <div className="mt-2 flex items-center gap-2">

@@ -165,7 +165,7 @@ export function ConversationTable({ conversations }: ConversationTableProps) {
               conversation.status === "awaiting_client" &&
                 "border-l-2 border-l-red-400"
             )}
-            onClick={() => navigate(`/conversations/${conversation.id}`)}
+            onClick={() => navigate(`/inbox?id=${conversation.id}`)}
           >
             <TableCell>
               <StatusBadge type="conversation" status={conversation.status} />
