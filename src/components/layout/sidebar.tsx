@@ -58,7 +58,10 @@ export function Sidebar() {
   const { currentUser, setCurrentUser, allUsers } = useAuth();
 
   return (
-    <aside className="flex h-full w-60 flex-col border-r bg-white pt-14">
+    <aside className="flex h-full w-60 flex-col border-r bg-white">
+      <div className="flex h-14 items-center px-6">
+        <span className="text-lg font-bold">LLC Car</span>
+      </div>
       <nav className="flex flex-1 flex-col gap-1 p-3">
         <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" />
         <NavItem
