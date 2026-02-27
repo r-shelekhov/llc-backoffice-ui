@@ -138,7 +138,7 @@ export function InvoiceDetailPage() {
                   </>
                 )}
                 {isOverdue && (
-                  <div className="rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700">
+                  <div className="rounded-md bg-tone-danger-light px-2 py-1 text-xs font-medium text-tone-danger-foreground">
                     Overdue
                   </div>
                 )}

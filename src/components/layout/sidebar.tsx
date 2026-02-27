@@ -35,7 +35,7 @@ function NavItem({ to, icon: Icon, label, badge }: NavItemProps) {
         cn(
           "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
           isActive
-            ? "bg-accent text-accent-foreground"
+            ? "bg-accent text-accent-foreground font-semibold"
             : "text-muted-foreground hover:bg-muted",
         )
       }
@@ -43,7 +43,7 @@ function NavItem({ to, icon: Icon, label, badge }: NavItemProps) {
       <Icon className="size-4 shrink-0" />
       <span>{label}</span>
       {badge !== undefined && badge > 0 && (
-        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-medium text-destructive-foreground">
+        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-medium text-white">
           {badge}
         </span>
       )}

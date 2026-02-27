@@ -42,12 +42,12 @@ type BillingState =
   | "overdue";
 
 const BILLING_STATE_CONFIG: Record<BillingState, { label: string; className: string }> = {
-  no_invoice: { label: "No Invoice", className: "bg-gray-100 text-gray-600" },
-  invoice_draft: { label: "Invoice Draft", className: "bg-gray-100 text-gray-600" },
-  awaiting_payment: { label: "Awaiting Payment", className: "bg-amber-100 text-amber-700" },
-  payment_processing: { label: "Payment Processing", className: "bg-amber-100 text-amber-700" },
-  paid: { label: "Paid", className: "bg-green-100 text-green-700" },
-  overdue: { label: "Overdue", className: "bg-red-100 text-red-700" },
+  no_invoice: { label: "No Invoice", className: "bg-tone-neutral-light text-tone-neutral-foreground" },
+  invoice_draft: { label: "Invoice Draft", className: "bg-tone-neutral-light text-tone-neutral-foreground" },
+  awaiting_payment: { label: "Awaiting Payment", className: "bg-tone-warning-light text-tone-warning-foreground" },
+  payment_processing: { label: "Payment Processing", className: "bg-tone-warning-light text-tone-warning-foreground" },
+  paid: { label: "Paid", className: "bg-tone-success-light text-tone-success-foreground" },
+  overdue: { label: "Overdue", className: "bg-tone-danger-light text-tone-danger-foreground" },
 };
 
 function confirmPayment(
@@ -239,7 +239,7 @@ export function BookingDetailPage() {
             }
             infoStrip={
               isAutoScheduled ? (
-                <div className="flex items-center gap-2 rounded-md bg-blue-50 px-3 py-1.5 text-sm text-blue-700">
+                <div className="flex items-center gap-2 rounded-md bg-tone-info-light px-3 py-1.5 text-sm text-tone-info-foreground">
                   <Zap className="size-4" />
                   <span>Will auto-transition to Scheduled (assignee &amp; execution date set)</span>
                 </div>
@@ -272,9 +272,9 @@ export function BookingDetailPage() {
                   label="Assignee"
                   value={
                     booking.assignee ? (
-                      <span className="text-green-700">{booking.assignee.name}</span>
+                      <span className="text-tone-success-foreground">{booking.assignee.name}</span>
                     ) : (
-                      <span className="text-amber-600">Unassigned</span>
+                      <span className="text-tone-warning">Unassigned</span>
                     )
                   }
                 />
@@ -282,9 +282,9 @@ export function BookingDetailPage() {
                   label="Execution Date"
                   value={
                     booking.executionAt ? (
-                      <span className="text-green-700">{formatDate(booking.executionAt)}</span>
+                      <span className="text-tone-success-foreground">{formatDate(booking.executionAt)}</span>
                     ) : (
-                      <span className="text-amber-600">Not set</span>
+                      <span className="text-tone-warning">Not set</span>
                     )
                   }
                 />

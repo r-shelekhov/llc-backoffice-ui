@@ -57,7 +57,7 @@ export function UserTable({ users }: UserTableProps) {
               <div className="flex items-center gap-2">
                 <span
                   className={`size-2 rounded-full ${
-                    user.isActive ? "bg-green-500" : "bg-gray-400"
+                    user.isActive ? "bg-tone-success" : "bg-tone-neutral"
                   }`}
                 />
                 <span className="text-sm">

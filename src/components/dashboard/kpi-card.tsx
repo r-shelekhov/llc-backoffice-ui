@@ -21,14 +21,14 @@ export function KpiCard({ label, value, icon: Icon, trend, trendValue }: KpiCard
         <div className="mt-2 text-2xl font-bold">{value}</div>
         {trend && trendValue && (
           <div className="mt-1 flex items-center gap-1">
-            {trend === "up" && <TrendingUp className="size-3 text-green-600" />}
-            {trend === "down" && <TrendingDown className="size-3 text-red-600" />}
+            {trend === "up" && <TrendingUp className="size-3 text-tone-success" />}
+            {trend === "down" && <TrendingDown className="size-3 text-tone-danger" />}
             <span
               className={`text-xs ${
                 trend === "up"
-                  ? "text-green-600"
+                  ? "text-tone-success"
                   : trend === "down"
-                    ? "text-red-600"
+                    ? "text-tone-danger"
                     : "text-muted-foreground"
               }`}
             >

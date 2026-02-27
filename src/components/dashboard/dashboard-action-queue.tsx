@@ -36,7 +36,7 @@ export function DashboardActionQueue({ data }: DashboardActionQueueProps) {
         ) : (
           <>
             {data.slaBreached.length > 0 && (
-              <Section icon={AlertCircle} title="SLA Breached" color="text-red-600">
+              <Section icon={AlertCircle} title="SLA Breached" color="text-tone-danger">
                 {data.slaBreached.slice(0, MAX_ITEMS).map((item) => (
                   <Link
                     key={item.id}
@@ -59,7 +59,7 @@ export function DashboardActionQueue({ data }: DashboardActionQueueProps) {
             )}
 
             {data.newUnassignedOver24h.length > 0 && (
-              <Section icon={Clock} title="New Unassigned >24h" color="text-amber-600">
+              <Section icon={Clock} title="New Unassigned >24h" color="text-tone-warning">
                 {data.newUnassignedOver24h.slice(0, MAX_ITEMS).map((item) => (
                   <Link
                     key={item.id}
@@ -82,7 +82,7 @@ export function DashboardActionQueue({ data }: DashboardActionQueueProps) {
             )}
 
             {data.awaitingClientStaleOver48h.length > 0 && (
-              <Section icon={MessageSquare} title="Awaiting Client >48h" color="text-amber-600">
+              <Section icon={MessageSquare} title="Awaiting Client >48h" color="text-tone-warning">
                 {data.awaitingClientStaleOver48h.slice(0, MAX_ITEMS).map((item) => (
                   <Link
                     key={item.id}
@@ -105,7 +105,7 @@ export function DashboardActionQueue({ data }: DashboardActionQueueProps) {
             )}
 
             {data.failedPayments.length > 0 && (
-              <Section icon={CreditCard} title="Failed Payments" color="text-red-600">
+              <Section icon={CreditCard} title="Failed Payments" color="text-tone-danger">
                 {data.failedPayments.slice(0, MAX_ITEMS).map((item) => (
                   <Link
                     key={item.id}

@@ -34,17 +34,17 @@ export function DashboardExecutionRadar({ data }: DashboardExecutionRadarProps) 
                 </div>
                 <div className="flex gap-1 shrink-0 ml-2">
                   {item.paymentRisk && (
-                    <Badge variant="outline" className="bg-red-50 text-red-700 text-[10px] px-1.5">
+                    <Badge variant="outline" className="bg-tone-danger-light text-tone-danger-foreground text-[10px] px-1.5">
                       Payment
                     </Badge>
                   )}
                   {item.assignmentRisk && (
-                    <Badge variant="outline" className="bg-amber-50 text-amber-700 text-[10px] px-1.5">
+                    <Badge variant="outline" className="bg-tone-warning-light text-tone-warning-foreground text-[10px] px-1.5">
                       Assignee
                     </Badge>
                   )}
                   {item.slaRisk && (
-                    <Badge variant="outline" className="bg-red-50 text-red-700 text-[10px] px-1.5">
+                    <Badge variant="outline" className="bg-tone-danger-light text-tone-danger-foreground text-[10px] px-1.5">
                       SLA
                     </Badge>
                   )}

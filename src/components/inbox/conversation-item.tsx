@@ -49,7 +49,7 @@ export function ConversationItem({
               {conversation.client.name}
             </span>
             {conversation.client.isVip && (
-              <Crown className="size-3 shrink-0 text-amber-500" />
+              <Crown className="size-3 shrink-0 text-tone-vip-foreground" />
             )}
           </div>
           <span className="shrink-0 text-xs text-muted-foreground">

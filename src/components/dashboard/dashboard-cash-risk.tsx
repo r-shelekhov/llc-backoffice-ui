@@ -19,20 +19,20 @@ export function DashboardCashRisk({ data }: DashboardCashRiskProps) {
       <CardContent className="space-y-4">
         {/* Primary metrics */}
         <div className="grid grid-cols-2 gap-3">
-          <MetricBox label="Paid Revenue" value={formatCurrency(data.paidRevenue)} color="text-green-600" />
-          <MetricBox label="Accounts Receivable" value={formatCurrency(data.accountsReceivable)} color="text-blue-600" />
+          <MetricBox label="Paid Revenue" value={formatCurrency(data.paidRevenue)} color="text-tone-success" />
+          <MetricBox label="Accounts Receivable" value={formatCurrency(data.accountsReceivable)} color="text-tone-info" />
           <Link to="/invoices?status=overdue" className="hover:bg-muted rounded-md transition-colors">
-            <MetricBox label="Overdue" value={formatCurrency(data.overdueAmount)} color="text-red-600" />
+            <MetricBox label="Overdue" value={formatCurrency(data.overdueAmount)} color="text-tone-danger" />
           </Link>
           <Link to="/payments?status=pending" className="hover:bg-muted rounded-md transition-colors">
-            <MetricBox label="Pending" value={formatCurrency(data.pendingAmount)} color="text-amber-600" />
+            <MetricBox label="Pending" value={formatCurrency(data.pendingAmount)} color="text-tone-warning" />
           </Link>
         </div>
 
         {/* Compact sub-row for Failed + Refunded */}
         <div className="grid grid-cols-2 gap-3 border-t pt-3">
-          <MetricBox label="Failed" value={formatCurrency(data.failedAmount)} color="text-red-600" compact />
-          <MetricBox label="Refunded" value={formatCurrency(data.refundedAmount)} color="text-purple-600" compact />
+          <MetricBox label="Failed" value={formatCurrency(data.failedAmount)} color="text-tone-danger" compact />
+          <MetricBox label="Refunded" value={formatCurrency(data.refundedAmount)} color="text-tone-purple" compact />
         </div>
 
         {data.topRiskyInvoices.length > 0 && (

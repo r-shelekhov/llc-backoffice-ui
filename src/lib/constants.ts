@@ -87,49 +87,49 @@ export const PRIORITY_LABELS: Record<Priority, string> = {
 
 // Badge color classes
 export const CONVERSATION_STATUS_COLORS: Record<ConversationStatus, string> = {
-  new: "bg-blue-100 text-blue-700",
-  in_review: "bg-purple-100 text-purple-700",
-  awaiting_client: "bg-amber-100 text-amber-700",
-  converted: "bg-green-100 text-green-700",
-  closed: "bg-gray-100 text-gray-500",
+  new: "bg-tone-info-light text-tone-info-foreground",
+  in_review: "bg-tone-purple-light text-tone-purple-foreground",
+  awaiting_client: "bg-tone-warning-light text-tone-warning-foreground",
+  converted: "bg-tone-success-light text-tone-success-foreground",
+  closed: "bg-tone-neutral-light text-tone-neutral-foreground",
 };
 
 export const BOOKING_STATUS_COLORS: Record<BookingStatus, string> = {
-  draft: "bg-gray-100 text-gray-600",
-  awaiting_payment: "bg-amber-100 text-amber-700",
-  paid: "bg-emerald-100 text-emerald-700",
-  scheduled: "bg-blue-100 text-blue-700",
-  in_progress: "bg-purple-100 text-purple-700",
-  completed: "bg-green-100 text-green-700",
-  cancelled: "bg-gray-100 text-gray-500",
+  draft: "bg-tone-neutral-light text-tone-neutral-foreground",
+  awaiting_payment: "bg-tone-warning-light text-tone-warning-foreground",
+  paid: "bg-tone-success-light text-tone-success-foreground",
+  scheduled: "bg-tone-info-light text-tone-info-foreground",
+  in_progress: "bg-tone-purple-light text-tone-purple-foreground",
+  completed: "bg-tone-success-light text-tone-success-foreground",
+  cancelled: "bg-tone-neutral-light text-tone-neutral-foreground",
 };
 
 export const INVOICE_STATUS_COLORS: Record<InvoiceStatus, string> = {
-  draft: "bg-gray-100 text-gray-600",
-  sent: "bg-blue-100 text-blue-700",
-  paid: "bg-green-100 text-green-700",
-  overdue: "bg-red-100 text-red-700",
-  cancelled: "bg-gray-100 text-gray-500",
+  draft: "bg-tone-neutral-light text-tone-neutral-foreground",
+  sent: "bg-tone-info-light text-tone-info-foreground",
+  paid: "bg-tone-success-light text-tone-success-foreground",
+  overdue: "bg-tone-danger-light text-tone-danger-foreground",
+  cancelled: "bg-tone-neutral-light text-tone-neutral-foreground",
 };
 
 export const PAYMENT_STATUS_COLORS: Record<PaymentStatus, string> = {
-  pending: "bg-amber-100 text-amber-700",
-  succeeded: "bg-green-100 text-green-700",
-  failed: "bg-red-100 text-red-700",
-  refunded: "bg-purple-100 text-purple-700",
+  pending: "bg-tone-warning-light text-tone-warning-foreground",
+  succeeded: "bg-tone-success-light text-tone-success-foreground",
+  failed: "bg-tone-danger-light text-tone-danger-foreground",
+  refunded: "bg-tone-purple-light text-tone-purple-foreground",
 };
 
 export const PRIORITY_COLORS: Record<Priority, string> = {
-  critical: "bg-red-100 text-red-700",
-  high: "bg-amber-100 text-amber-700",
-  medium: "bg-blue-100 text-blue-700",
-  low: "bg-gray-100 text-gray-500",
+  critical: "bg-tone-danger-light text-tone-danger-foreground",
+  high: "bg-tone-warning-light text-tone-warning-foreground",
+  medium: "bg-tone-info-light text-tone-info-foreground",
+  low: "bg-tone-neutral-light text-tone-neutral-foreground",
 };
 
 export const SLA_STATE_COLORS: Record<SlaState, string> = {
-  on_track: "text-green-600",
-  at_risk: "text-amber-600",
-  breached: "text-red-600 bg-red-50",
+  on_track: "text-tone-success",
+  at_risk: "text-tone-warning",
+  breached: "text-tone-danger bg-tone-danger-light",
 };
 
 export const CONVERSATION_STATUS_TRANSITIONS: Record<ConversationStatus, ConversationStatus[]> = {
