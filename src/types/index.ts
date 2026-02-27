@@ -220,3 +220,7 @@ export interface KpiData {
   trend?: "up" | "down" | "neutral";
   trendValue?: string;
 }
+
+export type SortField = "last_activity" | "date_started" | "priority" | "waiting_since" | "sla_due";
+
+export type SortDirection = "asc" | "desc";

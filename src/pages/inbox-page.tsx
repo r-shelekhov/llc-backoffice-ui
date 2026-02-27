@@ -3,17 +3,66 @@ import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { getAllConversationsWithRelations, conversations as sourceConversations } from "@/lib/mock-data";
 import { filterConversationsByPermission, filterVipConversations } from "@/lib/permissions";
-import type { Channel, Communication, ConversationStatus, ConversationWithRelations } from "@/types";
+import type { Channel, Communication, ConversationStatus, ConversationWithRelations, SortField, SortDirection, Priority } from "@/types";
 import { InboxLayout } from "@/components/inbox/inbox-layout";
 import { ConversationList } from "@/components/inbox/conversation-list";
 import { ConversationThread } from "@/components/inbox/conversation-thread";
 import { ContactDetailPanel } from "@/components/inbox/contact-detail-panel";
 
+const VALID_SORT_FIELDS: SortField[] = ["last_activity", "date_started", "priority", "waiting_since", "sla_due"];
+const PRIORITY_WEIGHT: Record<Priority, number> = { critical: 4, high: 3, medium: 2, low: 1 };
+
 function getLastCommTime(conversation: ConversationWithRelations): number {
-  if (conversation.communications.length === 0) return 0;
+  if (conversation.communications.length === 0) return new Date(conversation.createdAt).getTime();
   return Math.max(
     ...conversation.communications.map((c) => new Date(c.createdAt).getTime())
   );
+}
+
+function getWaitingSince(conversation: ConversationWithRelations): number | null {
+  const comms = conversation.communications.filter((c) => c.sender !== "system");
+  if (comms.length === 0) return null;
+  const latestClient = comms.filter((c) => c.sender === "client").reduce<number | null>(
+    (max, c) => { const t = new Date(c.createdAt).getTime(); return max === null || t > max ? t : max; }, null
+  );
+  if (latestClient === null) return null;
+  const latestAgent = comms.filter((c) => c.sender === "agent").reduce<number | null>(
+    (max, c) => { const t = new Date(c.createdAt).getTime(); return max === null || t > max ? t : max; }, null
+  );
+  if (latestAgent === null || latestClient > latestAgent) return Date.now() - latestClient;
+  return null;
+}
+
+function getSortValue(conversation: ConversationWithRelations, field: SortField): number | null {
+  switch (field) {
+    case "last_activity": return getLastCommTime(conversation);
+    case "date_started": return new Date(conversation.createdAt).getTime();
+    case "priority": return PRIORITY_WEIGHT[conversation.priority];
+    case "waiting_since": return getWaitingSince(conversation);
+    case "sla_due": return new Date(conversation.slaDueAt).getTime();
+  }
+}
+
+function compareConversations(a: ConversationWithRelations, b: ConversationWithRelations, field: SortField, direction: SortDirection): number {
+  const av = getSortValue(a, field);
+  const bv = getSortValue(b, field);
+
+  // Nulls always sort to bottom
+  if (av === null && bv === null) return 0;
+  if (av === null) return 1;
+  if (bv === null) return -1;
+
+  const primary = direction === "asc" ? av - bv : bv - av;
+  if (primary !== 0) return primary;
+
+  // Tie-breakers: priority desc, then last_activity desc, then id asc
+  const priDiff = PRIORITY_WEIGHT[b.priority] - PRIORITY_WEIGHT[a.priority];
+  if (priDiff !== 0) return priDiff;
+
+  const actDiff = getLastCommTime(b) - getLastCommTime(a);
+  if (actDiff !== 0) return actDiff;
+
+  return a.id.localeCompare(b.id);
 }
 
 function matchesSearch(conversation: ConversationWithRelations, query: string): boolean {
@@ -31,6 +80,30 @@ export function InboxPage() {
   const { currentUser, allUsers } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedId = searchParams.get("id");
+
+  const sortBy = (VALID_SORT_FIELDS.includes(searchParams.get("sort") as SortField)
+    ? searchParams.get("sort") as SortField
+    : "last_activity") satisfies SortField;
+  const sortDirection = (searchParams.get("order") === "asc" ? "asc" : "desc") satisfies SortDirection;
+
+  const handleSortChange = useCallback(
+    (field: SortField) => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("sort", field);
+        return next;
+      });
+    },
+    [setSearchParams]
+  );
+
+  const handleDirectionToggle = useCallback(() => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("order", prev.get("order") === "asc" ? "desc" : "asc");
+      return next;
+    });
+  }, [setSearchParams]);
 
   const [activeChannel, setActiveChannel] = useState<Channel | "all">("all");
   const [search, setSearch] = useState("");
@@ -59,11 +132,8 @@ export function InboxPage() {
       result = result.filter((r) => matchesSearch(r, search));
     }
 
-    // Sort by most recent communication
-    return [...result].sort(
-      (a, b) => getLastCommTime(b) - getLastCommTime(a)
-    );
-  }, [permittedConversations, activeChannel, search]);
+    return [...result].sort((a, b) => compareConversations(a, b, sortBy, sortDirection));
+  }, [permittedConversations, activeChannel, search, sortBy, sortDirection]);
 
   const selectedConversation = useMemo(
     () => (selectedId ? permittedConversations.find((r) => r.id === selectedId) ?? null : null),
@@ -90,7 +160,11 @@ export function InboxPage() {
 
   const handleSelect = useCallback(
     (id: string) => {
-      setSearchParams({ id });
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("id", id);
+        return next;
+      });
     },
     [setSearchParams]
   );
@@ -132,6 +206,10 @@ export function InboxPage() {
           onChannelChange={setActiveChannel}
           search={search}
           onSearchChange={setSearch}
+          sortBy={sortBy}
+          sortDirection={sortDirection}
+          onSortByChange={handleSortChange}
+          onSortDirectionChange={handleDirectionToggle}
         />
       }
       middle={

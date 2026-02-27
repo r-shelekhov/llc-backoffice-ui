@@ -1,8 +1,18 @@
-import { Search } from "lucide-react";
-import type { Channel, ConversationWithRelations } from "@/types";
+import { ArrowDownNarrowWide, ArrowUpNarrowWide, Search } from "lucide-react";
+import type { Channel, ConversationWithRelations, SortField, SortDirection } from "@/types";
 import { CHANNEL_LABELS } from "@/lib/constants";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConversationItem } from "./conversation-item";
+
+const SORT_FIELD_LABELS: Record<SortField, string> = {
+  last_activity: "Last Activity",
+  date_started: "Date Started",
+  priority: "Priority",
+  waiting_since: "Waiting Since",
+  sla_due: "SLA Due",
+};
 
 interface ConversationListProps {
   conversations: ConversationWithRelations[];
@@ -12,6 +22,10 @@ interface ConversationListProps {
   onChannelChange: (channel: Channel | "all") => void;
   search: string;
   onSearchChange: (value: string) => void;
+  sortBy: SortField;
+  sortDirection: SortDirection;
+  onSortByChange: (field: SortField) => void;
+  onSortDirectionChange: () => void;
 }
 
 const channelTabs: { value: Channel | "all"; label: string }[] = [
@@ -30,6 +44,10 @@ export function ConversationList({
   onChannelChange,
   search,
   onSearchChange,
+  sortBy,
+  sortDirection,
+  onSortByChange,
+  onSortDirectionChange,
 }: ConversationListProps) {
   return (
     <div className="flex h-full flex-col">
@@ -44,6 +62,26 @@ export function ConversationList({
             onChange={(e) => onSearchChange(e.target.value)}
             className="h-9 w-full rounded-md border bg-background pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-ring"
           />
+        </div>
+        <div className="flex items-center gap-2">
+          <Select value={sortBy} onValueChange={(v) => onSortByChange(v as SortField)}>
+            <SelectTrigger size="sm" className="flex-1 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {(Object.entries(SORT_FIELD_LABELS) as [SortField, string][]).map(([value, label]) => (
+                <SelectItem key={value} value={value}>{label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="icon-sm"
+            onClick={onSortDirectionChange}
+            aria-label={sortDirection === "asc" ? "Sort ascending" : "Sort descending"}
+          >
+            {sortDirection === "asc" ? <ArrowUpNarrowWide className="size-4" /> : <ArrowDownNarrowWide className="size-4" />}
+          </Button>
         </div>
         <Tabs
           value={activeChannel}
