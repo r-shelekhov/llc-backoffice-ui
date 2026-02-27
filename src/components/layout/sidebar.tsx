@@ -11,7 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { ROLE_LABELS } from "@/lib/constants";
-import { conversations } from "@/lib/mock-data";
+import { conversations, clients } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,10 +19,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-const awaitingClientCount = conversations.filter(
-  (c) => c.status === "awaiting_client",
-).length;
 
 interface NavItemProps {
   to: string;
@@ -57,6 +53,17 @@ function NavItem({ to, icon: Icon, label, badge }: NavItemProps) {
 
 export function Sidebar() {
   const { currentUser, setCurrentUser, allUsers } = useAuth();
+
+  const isPrivileged = currentUser.role === "admin" || currentUser.role === "vip_manager";
+  const awaitingClientCount = conversations.filter((c) => {
+    if (c.status !== "awaiting_client") return false;
+    if (!isPrivileged) {
+      const client = clients.find((cl) => cl.id === c.clientId);
+      if (client?.isVip) return false;
+      if (c.assigneeId !== currentUser.id) return false;
+    }
+    return true;
+  }).length;
 
   return (
     <aside className="flex h-full w-60 flex-col border-r bg-white">

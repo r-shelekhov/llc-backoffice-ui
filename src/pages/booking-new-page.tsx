@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import type { ServiceType } from "@/types";
-import { getConversationWithRelations, bookings } from "@/lib/mock-data";
+import { useAuth } from "@/hooks/use-auth";
+import { getConversationWithRelations, bookings, conversations } from "@/lib/mock-data";
+import { canViewConversation } from "@/lib/permissions";
 import { SERVICE_TYPE_LABELS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,9 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PermissionDenied } from "@/components/shared/permission-denied";
 
 export function BookingNewPage() {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [searchParams] = useSearchParams();
   const conversationId = searchParams.get("conversationId");
   const conversation = conversationId
@@ -39,15 +43,41 @@ export function BookingNewPage() {
   );
   const [price, setPrice] = useState("");
 
+  // Guard: must have a valid conversation
+  if (!conversationId || !conversation) {
+    return (
+      <div className="mx-auto max-w-2xl p-8">
+        <Button variant="ghost" size="sm" asChild className="mb-6">
+          <Link to="/inbox">
+            <ArrowLeft className="size-4" />
+            Back to Inbox
+          </Link>
+        </Button>
+        <Card>
+          <CardContent className="py-10 text-center">
+            <p className="text-muted-foreground">
+              No valid conversation. Please create a booking from the Inbox.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Guard: permission check
+  if (!canViewConversation(currentUser, conversation)) {
+    return <PermissionDenied />;
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     const newId = `bk-${Date.now()}`;
     bookings.push({
       id: newId,
-      conversationId: conversationId ?? "",
-      clientId: conversation?.clientId ?? "",
-      assigneeId: conversation?.assigneeId ?? null,
+      conversationId: conversationId!,
+      clientId: conversation!.clientId,
+      assigneeId: conversation!.assigneeId ?? null,
       status: "draft",
       title,
       category,
@@ -58,13 +88,20 @@ export function BookingNewPage() {
       updatedAt: new Date().toISOString(),
     });
 
+    // Mark conversation as converted
+    const sourceConv = conversations.find((c) => c.id === conversationId);
+    if (sourceConv) {
+      sourceConv.status = "converted";
+      sourceConv.updatedAt = new Date().toISOString();
+    }
+
     navigate(`/bookings/${newId}`);
   }
 
   return (
     <div className="mx-auto max-w-2xl p-8">
       <Button variant="ghost" size="sm" asChild className="mb-6">
-        <Link to={conversationId ? `/conversations/${conversationId}` : "/bookings"}>
+        <Link to={`/conversations/${conversationId}`}>
           <ArrowLeft className="size-4" />
           Back
         </Link>
@@ -72,15 +109,13 @@ export function BookingNewPage() {
 
       <h1 className="mb-6 text-2xl font-bold">Create Booking</h1>
 
-      {conversation && (
-        <div className="mb-6 rounded-lg border bg-muted/30 p-4">
-          <p className="text-sm font-medium">From conversation</p>
-          <p className="mt-1 text-sm text-muted-foreground">{conversation.title}</p>
-          <p className="text-sm text-muted-foreground">
-            Client: {conversation.client.name}
-          </p>
-        </div>
-      )}
+      <div className="mb-6 rounded-lg border bg-muted/30 p-4">
+        <p className="text-sm font-medium">From conversation</p>
+        <p className="mt-1 text-sm text-muted-foreground">{conversation.title}</p>
+        <p className="text-sm text-muted-foreground">
+          Client: {conversation.client.name}
+        </p>
+      </div>
 
       <Card>
         <CardHeader>
@@ -138,9 +173,8 @@ export function BookingNewPage() {
             <div className="space-y-1.5">
               <span className="text-sm font-medium">Price (GBP)</span>
               <Input
-                type="number"
-                min="0"
-                step="0.01"
+                type="text"
+                inputMode="decimal"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="0.00"

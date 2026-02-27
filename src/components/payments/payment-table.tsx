@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import type { PaymentWithRelations } from "@/types";
+import { PAYMENT_METHOD_LABELS } from "@/lib/constants";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { formatCurrency, formatRelativeTime } from "@/lib/format";
 import {
@@ -70,7 +71,7 @@ export function PaymentTable({ payments, onSelect }: PaymentTableProps) {
                 )}
               </div>
             </TableCell>
-            <TableCell>{formatPaymentMethod(payment.method)}</TableCell>
+            <TableCell>{PAYMENT_METHOD_LABELS[payment.method]}</TableCell>
             <TableCell>
               {payment.processedAt
                 ? formatRelativeTime(payment.processedAt)
@@ -81,14 +82,4 @@ export function PaymentTable({ payments, onSelect }: PaymentTableProps) {
       </TableBody>
     </Table>
   );
-}
-
-function formatPaymentMethod(method: string): string {
-  const parts = method.split("_");
-  if (parts.length >= 2) {
-    const brand = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
-    const lastFour = parts[parts.length - 1];
-    return `${brand} ****${lastFour}`;
-  }
-  return method;
 }

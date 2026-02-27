@@ -56,7 +56,6 @@ export function ConversationThread({
               <Button
                 size="sm"
                 onClick={() => {
-                  onStatusChange(conversation.id, "converted");
                   navigate(`/bookings/new?conversationId=${conversation.id}`);
                 }}
               >

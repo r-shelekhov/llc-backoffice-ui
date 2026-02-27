@@ -143,7 +143,7 @@ export const CONVERSATION_STATUS_TRANSITIONS: Record<ConversationStatus, Convers
 export const BOOKING_STATUS_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
   draft: ["awaiting_payment", "cancelled"],
   awaiting_payment: ["paid", "cancelled"],
-  paid: ["scheduled", "cancelled"],
+  paid: ["cancelled"],
   scheduled: ["in_progress", "cancelled"],
   in_progress: ["completed"],
   completed: [],

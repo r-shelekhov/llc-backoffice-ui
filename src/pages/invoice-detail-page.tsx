@@ -5,7 +5,7 @@ import { getInvoiceWithRelations } from "@/lib/mock-data";
 import { canViewInvoice } from "@/lib/permissions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ServiceTypeIcon } from "@/components/shared/service-type-icon";
-import { SERVICE_TYPE_LABELS } from "@/lib/constants";
+import { SERVICE_TYPE_LABELS, PAYMENT_METHOD_LABELS } from "@/lib/constants";
 import { formatCurrency, formatDateTime, formatRelativeTime } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -169,7 +169,7 @@ export function InvoiceDetailPage() {
                     <StatusBadge type="payment" status={payment.status} />
                     <p className="text-sm">{formatCurrency(payment.amount)}</p>
                     <p className="text-xs text-muted-foreground">
-                      {payment.method}
+                      {PAYMENT_METHOD_LABELS[payment.method]}
                     </p>
                     {payment.refundReason && (
                       <p className="text-xs text-muted-foreground italic">

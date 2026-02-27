@@ -3,7 +3,7 @@ import { Link, useParams, useLocation } from "react-router-dom";
 import { ArrowLeft, Zap } from "lucide-react";
 import type { BookingStatus, PaymentMethod } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
-import { getBookingWithRelations, payments, invoices, bookings } from "@/lib/mock-data";
+import { getBookingWithRelations, payments, invoices, bookings, users } from "@/lib/mock-data";
 import { canViewBooking } from "@/lib/permissions";
 import { computeSlaState } from "@/lib/sla";
 import { BOOKING_STATUS_TRANSITIONS, BOOKING_STATUS_ACTION_LABELS, PAYMENT_METHOD_LABELS, SERVICE_TYPE_LABELS, CHANNEL_LABELS } from "@/lib/constants";
@@ -14,7 +14,15 @@ import { SlaBadge } from "@/components/shared/sla-badge";
 import { ServiceTypeIcon } from "@/components/shared/service-type-icon";
 import { formatCurrency, formatDateTime, formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ConfirmPaymentDialog } from "@/components/bookings/confirm-payment-dialog";
 import { NotFoundPage } from "@/pages/not-found-page";
 import { PermissionDenied } from "@/components/shared/permission-denied";
@@ -116,7 +124,18 @@ export function BookingDetailPage() {
 
   // Find first sent invoice for payment confirmation
   const sentInvoice = booking.invoices.find((i) => i.status === "sent");
-  const hasInvoice = booking.invoices.length > 0;
+  const hasSentInvoice = booking.invoices.some((i) => i.status === "sent");
+  const isEditable = !["completed", "cancelled"].includes(booking.status);
+
+  function checkAutoSchedule(bookingRef: typeof bookings[number]) {
+    if (
+      bookingRef.status === "paid" &&
+      bookingRef.assigneeId !== null &&
+      bookingRef.executionAt !== ""
+    ) {
+      bookingRef.status = "scheduled";
+    }
+  }
 
   function deriveBillingState(): BillingState {
     if (booking!.invoices.length === 0) return "no_invoice";
@@ -137,29 +156,24 @@ export function BookingDetailPage() {
   }
 
   function handleStatusChange(newStatus: BookingStatus) {
-    const allowed = BOOKING_STATUS_TRANSITIONS[booking!.status];
+    const bookingRef = bookings.find((b) => b.id === id);
+    if (!bookingRef) return;
+
+    const allowed = BOOKING_STATUS_TRANSITIONS[bookingRef.status];
     if (!allowed.includes(newStatus)) return;
 
-    // For draft → awaiting_payment, require invoice
-    if (booking!.status === "draft" && newStatus === "awaiting_payment" && !hasInvoice) return;
+    // For draft → awaiting_payment, require a sent invoice
+    if (bookingRef.status === "draft" && newStatus === "awaiting_payment" && !hasSentInvoice) return;
 
     // For awaiting_payment → paid, open dialog instead
-    if (booking!.status === "awaiting_payment" && newStatus === "paid") {
+    if (bookingRef.status === "awaiting_payment" && newStatus === "paid") {
       setPaymentDialogOpen(true);
       return;
     }
 
-    booking!.status = newStatus;
-    booking!.updatedAt = new Date().toISOString();
-
-    // Auto-schedule: if paid + assignee + executionAt → scheduled
-    if (
-      newStatus === "paid" &&
-      booking!.assigneeId !== null &&
-      booking!.executionAt !== ""
-    ) {
-      booking!.status = "scheduled";
-    }
+    bookingRef.status = newStatus;
+    bookingRef.updatedAt = new Date().toISOString();
+    checkAutoSchedule(bookingRef);
 
     forceUpdate((n) => n + 1);
   }
@@ -207,11 +221,11 @@ export function BookingDetailPage() {
           {transitions.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {transitions.map((nextStatus) => {
-                // Disable "Send for Payment" if no invoice
+                // Disable "Send for Payment" if no sent invoice
                 const disabled =
                   booking.status === "draft" &&
                   nextStatus === "awaiting_payment" &&
-                  !hasInvoice;
+                  !hasSentInvoice;
 
                 const label =
                   booking.status === "awaiting_payment" && nextStatus === "paid"
@@ -224,7 +238,7 @@ export function BookingDetailPage() {
                     variant={nextStatus === "cancelled" ? "outline" : "default"}
                     size="sm"
                     disabled={disabled}
-                    title={disabled ? "Create an invoice first" : undefined}
+                    title={disabled ? "Send an invoice first" : undefined}
                     onClick={() => handleStatusChange(nextStatus)}
                   >
                     {label}
@@ -259,12 +273,56 @@ export function BookingDetailPage() {
               <p className="font-medium">{booking.location}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">Execution</p>
-              <p className="font-medium">{formatDateTime(booking.executionAt)}</p>
+              <p className="text-muted-foreground">Execution Date</p>
+              {isEditable ? (
+                <Input
+                  type="datetime-local"
+                  className="mt-1"
+                  value={booking.executionAt ? booking.executionAt.slice(0, 16) : ""}
+                  onChange={(e) => {
+                    const bookingRef = bookings.find((b) => b.id === id);
+                    if (bookingRef) {
+                      bookingRef.executionAt = e.target.value ? new Date(e.target.value).toISOString() : "";
+                      bookingRef.updatedAt = new Date().toISOString();
+                      checkAutoSchedule(bookingRef);
+                      forceUpdate((n) => n + 1);
+                    }
+                  }}
+                />
+              ) : (
+                <p className="font-medium">{formatDateTime(booking.executionAt)}</p>
+              )}
             </div>
             <div>
               <p className="text-muted-foreground">Assignee</p>
-              <p className="font-medium">{booking.assignee?.name ?? "Unassigned"}</p>
+              {isEditable ? (
+                <Select
+                  value={booking.assigneeId ?? "unassigned"}
+                  onValueChange={(val) => {
+                    const bookingRef = bookings.find((b) => b.id === id);
+                    if (bookingRef) {
+                      bookingRef.assigneeId = val === "unassigned" ? null : val;
+                      bookingRef.updatedAt = new Date().toISOString();
+                      checkAutoSchedule(bookingRef);
+                      forceUpdate((n) => n + 1);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    {users.map((u) => (
+                      <SelectItem key={u.id} value={u.id}>
+                        {u.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="font-medium">{booking.assignee?.name ?? "Unassigned"}</p>
+              )}
             </div>
           </div>
         </CardContent>
@@ -282,6 +340,53 @@ export function BookingDetailPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Billing actions */}
+          {billingState === "no_invoice" && (
+            <Button
+              size="sm"
+              onClick={() => {
+                const subtotal = booking.price;
+                const taxRate = 10;
+                const taxAmount = Math.round(subtotal * taxRate) / 100;
+                const total = subtotal + taxAmount;
+                invoices.push({
+                  id: `inv-${Date.now()}`,
+                  bookingId: booking.id,
+                  clientId: booking.clientId,
+                  status: "draft",
+                  lineItems: [{ description: booking.title, quantity: 1, unitPrice: subtotal }],
+                  subtotal,
+                  taxRate,
+                  taxAmount,
+                  total,
+                  dueDate: new Date(Date.now() + 30 * 86400000).toISOString(),
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                });
+                forceUpdate((n) => n + 1);
+              }}
+            >
+              Create Invoice
+            </Button>
+          )}
+          {billingState === "invoice_draft" && (
+            <Button
+              size="sm"
+              onClick={() => {
+                const draftInvoice = invoices.find(
+                  (i) => i.bookingId === booking.id && i.status === "draft"
+                );
+                if (draftInvoice) {
+                  draftInvoice.status = "sent";
+                  draftInvoice.updatedAt = new Date().toISOString();
+                  forceUpdate((n) => n + 1);
+                }
+              }}
+            >
+              Send Invoice
+            </Button>
+          )}
+
           {/* Invoice summary */}
           {booking.invoices.length === 0 ? (
             <p className="text-sm text-muted-foreground">No invoices yet.</p>

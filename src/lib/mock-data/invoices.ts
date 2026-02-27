@@ -29,9 +29,9 @@ export const invoices: Invoice[] = [
     clientId: "cli-1",
     status: "sent",
     lineItems: [
-      { description: "Gulfstream G650 Charter — London to Geneva (one way)", quantity: 1, unitPrice: 68000 },
+      { description: "Gulfstream G650 Charter — London to Newcastle (one way)", quantity: 1, unitPrice: 68000 },
       { description: "Dorchester Full Menu Catering — 6 guests", quantity: 1, unitPrice: 4200 },
-      { description: "Ground transport — 2x Range Rover Sport, Geneva", quantity: 1, unitPrice: 2800 },
+      { description: "Ground transport — 2x Range Rover Sport, Newcastle", quantity: 1, unitPrice: 2800 },
       { description: "FBO handling fees — Farnborough", quantity: 1, unitPrice: 850 },
     ],
     subtotal: 75850,
@@ -95,7 +95,7 @@ export const invoices: Invoice[] = [
     clientId: "cli-8",
     status: "draft",
     lineItems: [
-      { description: "Bombardier Challenger 350 — London to Edinburgh", quantity: 1, unitPrice: 42000 },
+      { description: "Bombardier Challenger 350 — London to Manchester", quantity: 1, unitPrice: 42000 },
       { description: "Crew premium", quantity: 1, unitPrice: 2500 },
       { description: "Custom catering (no shellfish, Chinese tea service)", quantity: 1, unitPrice: 1800 },
       { description: "FBO handling — Farnborough", quantity: 1, unitPrice: 650 },
@@ -234,7 +234,7 @@ export const invoices: Invoice[] = [
     status: "paid",
     lineItems: [
       { description: "Mercedes S-Class Transfer — Heathrow T5 to Mayfair", quantity: 1, unitPrice: 380 },
-      { description: "Flight tracking service (BA117)", quantity: 1, unitPrice: 50 },
+      { description: "Flight tracking service (BA arrival)", quantity: 1, unitPrice: 50 },
     ],
     subtotal: 430,
     taxRate: 10,
@@ -271,7 +271,7 @@ export const invoices: Invoice[] = [
     clientId: "cli-6",
     status: "cancelled",
     lineItems: [
-      { description: "Citation XLS Charter — London to Nice (CANCELLED)", quantity: 1, unitPrice: 22000 },
+      { description: "Citation XLS Charter — London to Newquay (CANCELLED)", quantity: 1, unitPrice: 22000 },
       { description: "FBO handling — Luton", quantity: 1, unitPrice: 450 },
     ],
     subtotal: 22450,

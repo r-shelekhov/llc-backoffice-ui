@@ -136,7 +136,7 @@ export interface Payment {
   invoiceId: string;
   clientId: string;
   status: PaymentStatus;
-  method: string;
+  method: PaymentMethod;
   amount: number;
   processedAt?: string;
   refundReason?: string;

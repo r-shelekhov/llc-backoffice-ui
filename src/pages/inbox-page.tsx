@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
-import { getAllConversationsWithRelations } from "@/lib/mock-data";
+import { getAllConversationsWithRelations, conversations as sourceConversations } from "@/lib/mock-data";
 import { filterConversationsByPermission, filterVipConversations } from "@/lib/permissions";
 import type { Channel, Communication, ConversationStatus, ConversationWithRelations } from "@/types";
 import { InboxLayout } from "@/components/inbox/inbox-layout";
@@ -37,9 +37,7 @@ export function InboxPage() {
   const [localMessages, setLocalMessages] = useState<
     Map<string, Communication[]>
   >(new Map());
-  const [statusOverrides, setStatusOverrides] = useState<
-    Map<string, ConversationStatus>
-  >(new Map());
+  const [, forceUpdate] = useState(0);
 
   const allConversations = useMemo(() => getAllConversationsWithRelations(), []);
 
@@ -48,16 +46,8 @@ export function InboxPage() {
     [currentUser, allConversations]
   );
 
-  const conversationsWithOverrides = useMemo(() => {
-    if (statusOverrides.size === 0) return permittedConversations;
-    return permittedConversations.map((c) => {
-      const override = statusOverrides.get(c.id);
-      return override ? { ...c, status: override } : c;
-    });
-  }, [permittedConversations, statusOverrides]);
-
   const filteredConversations = useMemo(() => {
-    let result = conversationsWithOverrides;
+    let result = permittedConversations;
 
     // Filter by channel (concierge only visible in "all")
     if (activeChannel !== "all") {
@@ -73,22 +63,29 @@ export function InboxPage() {
     return [...result].sort(
       (a, b) => getLastCommTime(b) - getLastCommTime(a)
     );
-  }, [conversationsWithOverrides, activeChannel, search]);
+  }, [permittedConversations, activeChannel, search]);
 
   const selectedConversation = useMemo(
-    () => (selectedId ? conversationsWithOverrides.find((r) => r.id === selectedId) ?? null : null),
-    [selectedId, conversationsWithOverrides]
+    () => (selectedId ? permittedConversations.find((r) => r.id === selectedId) ?? null : null),
+    [selectedId, permittedConversations]
   );
 
   const handleStatusChange = useCallback(
     (conversationId: string, newStatus: ConversationStatus) => {
-      setStatusOverrides((prev) => {
-        const next = new Map(prev);
-        next.set(conversationId, newStatus);
-        return next;
-      });
+      const conv = sourceConversations.find((c) => c.id === conversationId);
+      if (conv) {
+        conv.status = newStatus;
+        conv.updatedAt = new Date().toISOString();
+      }
+      // Also update the WithRelations copy in allConversations
+      const convWR = allConversations.find((c) => c.id === conversationId);
+      if (convWR) {
+        convWR.status = newStatus;
+        convWR.updatedAt = new Date().toISOString();
+      }
+      forceUpdate((n) => n + 1);
     },
-    []
+    [allConversations]
   );
 
   const handleSelect = useCallback(
