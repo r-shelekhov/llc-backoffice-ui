@@ -221,6 +221,20 @@ export interface KpiData {
   trendValue?: string;
 }
 
+export interface ClientRow extends Client {
+  visibleConversationCount: number;
+  lastActivityAt: string;
+  isActive: boolean;
+}
+
+export interface ClientFilterState {
+  search: string;
+  vipStatuses: string[];
+  dateFrom: Date | null;
+  dateTo: Date | null;
+  activeOnly: boolean;
+}
+
 export type SortField = "last_activity" | "date_started" | "priority" | "waiting_since" | "sla_due";
 
 export type SortDirection = "asc" | "desc";

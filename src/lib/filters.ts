@@ -1,4 +1,4 @@
-import type { ConversationFilterState, BookingFilterState, InvoiceFilterState, PaymentFilterState, ConversationWithRelations, BookingWithRelations, InvoiceWithRelations, PaymentWithRelations } from "@/types";
+import type { ConversationFilterState, BookingFilterState, InvoiceFilterState, PaymentFilterState, ClientFilterState, ConversationWithRelations, BookingWithRelations, InvoiceWithRelations, PaymentWithRelations, ClientRow } from "@/types";
 
 export function applyConversationFilters(
   conversations: ConversationWithRelations[],
@@ -126,6 +126,36 @@ export function applyPaymentFilters(
 
     if (filters.dateFrom && new Date(p.createdAt) < filters.dateFrom) return false;
     if (filters.dateTo && new Date(p.createdAt) > filters.dateTo) return false;
+
+    return true;
+  });
+}
+
+export function applyClientFilters(
+  clients: ClientRow[],
+  filters: ClientFilterState
+): ClientRow[] {
+  return clients.filter((c) => {
+    if (filters.search) {
+      const q = filters.search.toLowerCase();
+      const matches =
+        c.name.toLowerCase().includes(q) ||
+        c.email.toLowerCase().includes(q) ||
+        c.phone.toLowerCase().includes(q) ||
+        c.company.toLowerCase().includes(q) ||
+        c.id.toLowerCase().includes(q);
+      if (!matches) return false;
+    }
+
+    if (filters.vipStatuses.length === 1) {
+      if (filters.vipStatuses[0] === "vip" && !c.isVip) return false;
+      if (filters.vipStatuses[0] === "non_vip" && c.isVip) return false;
+    }
+
+    if (filters.dateFrom && new Date(c.createdAt) < filters.dateFrom) return false;
+    if (filters.dateTo && new Date(c.createdAt) > filters.dateTo) return false;
+
+    if (filters.activeOnly && !c.isActive) return false;
 
     return true;
   });

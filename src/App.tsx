@@ -6,6 +6,7 @@ import { InboxPage } from "@/pages/inbox-page";
 import { BookingsPage } from "@/pages/bookings-page";
 import { BookingDetailPage } from "@/pages/booking-detail-page";
 import { BookingNewPage } from "@/pages/booking-new-page";
+import { ClientsPage } from "@/pages/clients-page";
 import { ClientDetailPage } from "@/pages/client-detail-page";
 import { InvoicesPage } from "@/pages/invoices-page";
 import { InvoiceDetailPage } from "@/pages/invoice-detail-page";
@@ -31,6 +32,7 @@ export function App() {
             <Route path="bookings" element={<BookingsPage />} />
             <Route path="bookings/new" element={<BookingNewPage />} />
             <Route path="bookings/:id" element={<BookingDetailPage />} />
+            <Route path="clients" element={<ClientsPage />} />
             <Route path="clients/:id" element={<ClientDetailPage />} />
             <Route path="invoices" element={<InvoicesPage />} />
             <Route path="invoices/:id" element={<InvoiceDetailPage />} />

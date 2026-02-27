@@ -6,6 +6,7 @@ import {
   FileText,
   CreditCard,
   Users,
+  UserRound,
   ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -76,6 +77,7 @@ export function Sidebar() {
           label="Inbox"
           badge={unreadCount}
         />
+        <NavItem to="/clients" icon={UserRound} label="Clients" />
         <NavItem to="/dashboard" icon={BarChart3} label="Analytics" />
         <NavItem to="/bookings" icon={CalendarCheck} label="Bookings" />
         <NavItem to="/invoices" icon={FileText} label="Invoices" />
