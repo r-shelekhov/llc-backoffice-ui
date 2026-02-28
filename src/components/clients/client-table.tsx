@@ -72,7 +72,7 @@ export function ClientTable({ clients, onSelect }: ClientTableProps) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>
+          <TableHead className="min-w-[220px]">
             <button
               type="button"
               className="flex cursor-pointer items-center gap-1"
@@ -124,11 +124,11 @@ export function ClientTable({ clients, onSelect }: ClientTableProps) {
             onClick={() => onSelect(client)}
           >
             <TableCell>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 whitespace-nowrap">
                 <img
                   src={client.avatarUrl}
                   alt={client.name}
-                  className="w-8 h-8 rounded-full"
+                  className="w-8 h-8 shrink-0 rounded-full"
                 />
                 <span className="text-sm font-medium">{client.name}</span>
                 {client.isVip && <VipIndicator />}
