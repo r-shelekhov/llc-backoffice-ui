@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import { ChevronDown, Plus } from "lucide-react";
 import type { Communication, ConversationStatus, ConversationWithRelations } from "@/types";
 import { ChannelIcon } from "@/components/shared/channel-icon";
@@ -22,6 +21,7 @@ interface ConversationThreadProps {
   localMessages: Communication[];
   onSend: (message: string) => void;
   onStatusChange: (conversationId: string, newStatus: ConversationStatus) => void;
+  onCreateBooking: (conversationId: string) => void;
 }
 
 export function ConversationThread({
@@ -29,8 +29,8 @@ export function ConversationThread({
   localMessages,
   onSend,
   onStatusChange,
+  onCreateBooking,
 }: ConversationThreadProps) {
-  const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const allMessages = [...conversation.communications, ...localMessages];
@@ -55,9 +55,7 @@ export function ConversationThread({
             {showCreateBooking && (
               <Button
                 size="sm"
-                onClick={() => {
-                  navigate(`/bookings/new?conversationId=${conversation.id}`);
-                }}
+                onClick={() => onCreateBooking(conversation.id)}
               >
                 <Plus className="size-4" />
                 Create Booking

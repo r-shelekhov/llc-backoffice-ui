@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { getAllConversationsWithRelations, conversations as sourceConversations } from "@/lib/mock-data";
 import { filterConversationsByPermission, filterVipConversations } from "@/lib/permissions";
@@ -9,6 +9,13 @@ import { InboxLayout } from "@/components/inbox/inbox-layout";
 import { ConversationList } from "@/components/inbox/conversation-list";
 import { ConversationThread } from "@/components/inbox/conversation-thread";
 import { ContactDetailPanel } from "@/components/inbox/contact-detail-panel";
+import { BookingCreateForm } from "@/components/bookings/booking-create-form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const VALID_SORT_FIELDS: SortField[] = ["last_activity", "date_started", "priority", "waiting_since", "sla_due"];
 const PRIORITY_WEIGHT: Record<Priority, number> = { critical: 4, high: 3, medium: 2, low: 1 };
@@ -78,6 +85,7 @@ function matchesSearch(conversation: ConversationWithRelations, query: string): 
 }
 
 export function InboxPage() {
+  const navigate = useNavigate();
   const { currentUser, allUsers, conversationLastReadAt, markConversationRead } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedId = searchParams.get("id");
@@ -211,7 +219,25 @@ export function InboxPage() {
     ? localMessages.get(selectedId) ?? []
     : [];
 
+  const [createBookingConvId, setCreateBookingConvId] = useState<string | null>(null);
+
+  const createBookingConversation = createBookingConvId
+    ? allConversations.find((c) => c.id === createBookingConvId) ?? null
+    : null;
+
+  const handleBookingCreated = useCallback(
+    (bookingId: string) => {
+      if (createBookingConvId) {
+        handleStatusChange(createBookingConvId, "converted");
+      }
+      setCreateBookingConvId(null);
+      navigate(`/bookings/${bookingId}`);
+    },
+    [createBookingConvId, handleStatusChange, navigate]
+  );
+
   return (
+    <>
     <InboxLayout
       left={
         <ConversationList
@@ -236,6 +262,7 @@ export function InboxPage() {
             localMessages={currentLocalMessages}
             onSend={handleSend}
             onStatusChange={handleStatusChange}
+            onCreateBooking={(id) => setCreateBookingConvId(id)}
           />
         ) : null
       }
@@ -245,5 +272,25 @@ export function InboxPage() {
         ) : null
       }
     />
+    <Dialog
+      open={!!createBookingConvId}
+      onOpenChange={(open) => {
+        if (!open) setCreateBookingConvId(null);
+      }}
+    >
+      <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogHeader>
+          <DialogTitle>Create Booking</DialogTitle>
+        </DialogHeader>
+        {createBookingConversation && (
+          <BookingCreateForm
+            conversation={createBookingConversation}
+            onSubmit={handleBookingCreated}
+            onCancel={() => setCreateBookingConvId(null)}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
