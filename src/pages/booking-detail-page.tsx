@@ -104,19 +104,24 @@ export function BookingDetailPage() {
     return <PermissionDenied />;
   }
 
-  const state = location.state as { from?: string; invoiceId?: string } | null;
+  const state = location.state as { from?: string; invoiceId?: string; conversationId?: string } | null;
   const fromInvoice = state?.from === "invoice";
   const fromPayment = state?.from === "payment";
+  const fromConversation = state?.from === "conversation";
   const backTo = fromInvoice
     ? `/invoices/${state.invoiceId}`
     : fromPayment
       ? "/payments"
-      : "/bookings";
+      : fromConversation
+        ? `/inbox?id=${state.conversationId}`
+        : "/bookings";
   const backLabel = fromInvoice
     ? "Back to Invoice"
     : fromPayment
       ? "Back to Payments"
-      : "Back to Bookings";
+      : fromConversation
+        ? "Back to Conversation"
+        : "Back to Bookings";
 
   const transitions = BOOKING_STATUS_TRANSITIONS[booking.status];
   const isAutoScheduled =
