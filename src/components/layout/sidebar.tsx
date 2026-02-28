@@ -1,6 +1,5 @@
 import { NavLink } from "react-router-dom";
 import {
-  BarChart3,
   Inbox,
   CalendarCheck,
   FileText,
@@ -78,7 +77,6 @@ export function Sidebar() {
           badge={unreadCount}
         />
         <NavItem to="/clients" icon={UserRound} label="Clients" />
-        <NavItem to="/dashboard" icon={BarChart3} label="Analytics" />
         <NavItem to="/bookings" icon={CalendarCheck} label="Bookings" />
         <NavItem to="/invoices" icon={FileText} label="Invoices" />
         <NavItem to="/payments" icon={CreditCard} label="Payments" />
