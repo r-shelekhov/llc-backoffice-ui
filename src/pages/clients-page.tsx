@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, Crown, Activity, PoundSterling } from "lucide-react";
+import { Users } from "lucide-react";
 import type { ClientFilterState, ClientRow, ConversationStatus } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -12,16 +12,11 @@ import {
   filterVipConversations,
 } from "@/lib/permissions";
 import { applyClientFilters } from "@/lib/filters";
-import { formatCurrency } from "@/lib/format";
-import { KpiCard } from "@/components/dashboard/kpi-card";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { SearchInput } from "@/components/filters/search-input";
-import { StatusFilter } from "@/components/filters/status-filter";
-import { DateRangePicker } from "@/components/shared/date-range-picker";
 import { ClientTable } from "@/components/clients/client-table";
 import { EmptyState } from "@/components/shared/empty-state";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const ACTIVE_STATUSES: ConversationStatus[] = [
   "new",
@@ -29,16 +24,9 @@ const ACTIVE_STATUSES: ConversationStatus[] = [
   "awaiting_client",
 ];
 
-const vipOptions = [
-  { value: "vip", label: "VIP" },
-  { value: "non_vip", label: "Non-VIP" },
-];
-
 const initialFilters: ClientFilterState = {
   search: "",
-  vipStatuses: [],
-  dateFrom: null,
-  dateTo: null,
+  vipOnly: false,
   activeOnly: false,
 };
 
@@ -105,33 +93,12 @@ export function ClientsPage() {
 
   const activeFilterCount =
     (filters.search ? 1 : 0) +
-    filters.vipStatuses.length +
-    (filters.dateFrom ? 1 : 0) +
-    (filters.dateTo ? 1 : 0) +
+    (filters.vipOnly ? 1 : 0) +
     (filters.activeOnly ? 1 : 0);
-
-  const totalSpend = clientRows.reduce((sum, c) => sum + c.totalSpend, 0);
-  const vipCount = clientRows.filter((c) => c.isVip).length;
-  const activeCount = clientRows.filter((c) => c.isActive).length;
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Clients</h1>
-
-      <div className="grid grid-cols-4 gap-4">
-        <KpiCard
-          label="Total Clients"
-          value={clientRows.length}
-          icon={Users}
-        />
-        <KpiCard label="VIP Clients" value={vipCount} icon={Crown} />
-        <KpiCard label="Active Clients" value={activeCount} icon={Activity} />
-        <KpiCard
-          label="Total Spend"
-          value={formatCurrency(totalSpend)}
-          icon={PoundSterling}
-        />
-      </div>
 
       <FilterBar
         onReset={() => setFilters(initialFilters)}
@@ -142,36 +109,24 @@ export function ClientsPage() {
           onChange={(search) => setFilters((prev) => ({ ...prev, search }))}
           placeholder="Search clients..."
         />
-        <StatusFilter
-          values={filters.vipStatuses}
-          onChange={(vipStatuses) =>
-            setFilters((prev) => ({ ...prev, vipStatuses }))
-          }
-          options={vipOptions}
-        />
-        <DateRangePicker
-          from={filters.dateFrom ?? undefined}
-          to={filters.dateTo ?? undefined}
-          onSelect={(range) =>
-            setFilters((prev) => ({
-              ...prev,
-              dateFrom: range.from ?? null,
-              dateTo: range.to ?? null,
-            }))
-          }
-        />
-        <Button
-          variant="outline"
-          size="sm"
-          className={cn(
-            filters.activeOnly && "bg-accent text-accent-foreground"
-          )}
-          onClick={() =>
-            setFilters((prev) => ({ ...prev, activeOnly: !prev.activeOnly }))
-          }
-        >
+        <label className="flex items-center gap-2 text-sm">
+          <Checkbox
+            checked={filters.vipOnly}
+            onCheckedChange={(checked) =>
+              setFilters((prev) => ({ ...prev, vipOnly: checked === true }))
+            }
+          />
+          VIP only
+        </label>
+        <label className="flex items-center gap-2 text-sm">
+          <Checkbox
+            checked={filters.activeOnly}
+            onCheckedChange={(checked) =>
+              setFilters((prev) => ({ ...prev, activeOnly: checked === true }))
+            }
+          />
           Active only
-        </Button>
+        </label>
       </FilterBar>
 
       {filteredClients.length === 0 ? (

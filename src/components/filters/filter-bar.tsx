@@ -10,7 +10,7 @@ interface FilterBarProps {
 
 export function FilterBar({ children, onReset, activeCount }: FilterBarProps) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-6">
       {children}
       {activeCount > 0 && (
         <Button variant="ghost" size="sm" onClick={onReset} className="gap-1">

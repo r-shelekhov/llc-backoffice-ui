@@ -84,7 +84,6 @@ export function ClientTable({ clients, onSelect }: ClientTableProps) {
           </TableHead>
           <TableHead>Company</TableHead>
           <TableHead>Contact</TableHead>
-          <TableHead>Conversations</TableHead>
           <TableHead>
             <button
               type="button"
@@ -145,9 +144,6 @@ export function ClientTable({ clients, onSelect }: ClientTableProps) {
               <div className="text-xs text-muted-foreground">
                 {client.phone}
               </div>
-            </TableCell>
-            <TableCell className="text-sm">
-              {client.visibleConversationCount}
             </TableCell>
             <TableCell className="text-sm">
               {formatCurrency(client.totalSpend)}

@@ -147,13 +147,7 @@ export function applyClientFilters(
       if (!matches) return false;
     }
 
-    if (filters.vipStatuses.length === 1) {
-      if (filters.vipStatuses[0] === "vip" && !c.isVip) return false;
-      if (filters.vipStatuses[0] === "non_vip" && c.isVip) return false;
-    }
-
-    if (filters.dateFrom && new Date(c.createdAt) < filters.dateFrom) return false;
-    if (filters.dateTo && new Date(c.createdAt) > filters.dateTo) return false;
+    if (filters.vipOnly && !c.isVip) return false;
 
     if (filters.activeOnly && !c.isActive) return false;
 

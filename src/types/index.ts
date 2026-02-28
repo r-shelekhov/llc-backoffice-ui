@@ -97,6 +97,15 @@ export interface Communication {
   message: string;
   attachments?: Attachment[];
   tags?: string[];
+  event?: {
+    type: "booking_created";
+    bookingId: string;
+    title: string;
+    category: ServiceType;
+    executionAt: string;
+    location: string;
+    price: number;
+  };
   createdAt: string;
 }
 
@@ -229,9 +238,7 @@ export interface ClientRow extends Client {
 
 export interface ClientFilterState {
   search: string;
-  vipStatuses: string[];
-  dateFrom: Date | null;
-  dateTo: Date | null;
+  vipOnly: boolean;
   activeOnly: boolean;
 }
 
