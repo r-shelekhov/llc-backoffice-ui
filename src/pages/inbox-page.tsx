@@ -1,10 +1,10 @@
 import { useMemo, useState, useCallback, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
-import { getAllConversationsWithRelations, conversations as sourceConversations } from "@/lib/mock-data";
+import { getAllConversationsWithRelations, conversations as sourceConversations, communications } from "@/lib/mock-data";
 import { filterConversationsByPermission, filterVipConversations } from "@/lib/permissions";
 import { isConversationUnread } from "@/lib/unread";
-import type { Channel, Communication, ConversationStatus, ConversationWithRelations, SortField, SortDirection, Priority } from "@/types";
+import type { Booking, Channel, Communication, ConversationStatus, ConversationWithRelations, SortField, SortDirection, Priority } from "@/types";
 import { InboxLayout } from "@/components/inbox/inbox-layout";
 import { ConversationList } from "@/components/inbox/conversation-list";
 import { ConversationThread } from "@/components/inbox/conversation-thread";
@@ -85,7 +85,6 @@ function matchesSearch(conversation: ConversationWithRelations, query: string): 
 }
 
 export function InboxPage() {
-  const navigate = useNavigate();
   const { currentUser, allUsers, conversationLastReadAt, markConversationRead } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedId = searchParams.get("id");
@@ -226,14 +225,39 @@ export function InboxPage() {
     : null;
 
   const handleBookingCreated = useCallback(
-    (bookingId: string) => {
-      if (createBookingConvId) {
-        handleStatusChange(createBookingConvId, "converted");
-      }
+    (booking: Booking) => {
+      if (!createBookingConvId) return;
+      handleStatusChange(createBookingConvId, "converted");
       setCreateBookingConvId(null);
-      navigate(`/bookings/${bookingId}`);
+
+      const systemComm: Communication = {
+        id: `sys-${Date.now()}`,
+        conversationId: createBookingConvId,
+        sender: "system",
+        senderName: "System",
+        channel: "web",
+        message: `Booking created: ${booking.title}`,
+        event: {
+          type: "booking_created",
+          bookingId: booking.id,
+          title: booking.title,
+          category: booking.category,
+          executionAt: booking.executionAt,
+          location: booking.location,
+          price: booking.price,
+        },
+        createdAt: new Date().toISOString(),
+      };
+      // Persist into the source mock data so it survives navigation
+      communications.push(systemComm);
+      // Also push into the current snapshot so it's visible immediately
+      const convWR = allConversations.find((c) => c.id === createBookingConvId);
+      if (convWR) {
+        convWR.communications.push(systemComm);
+      }
+      forceUpdate((n) => n + 1);
     },
-    [createBookingConvId, handleStatusChange, navigate]
+    [createBookingConvId, handleStatusChange, allConversations]
   );
 
   return (
