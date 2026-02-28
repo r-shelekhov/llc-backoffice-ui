@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { ConversationWithRelations, ServiceType } from "@/types";
+import type { Booking, ConversationWithRelations, ServiceType } from "@/types";
 import { bookings, conversations } from "@/lib/mock-data";
 import { SERVICE_TYPE_LABELS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import {
 
 interface BookingCreateFormProps {
   conversation: ConversationWithRelations;
-  onSubmit: (bookingId: string) => void;
+  onSubmit: (booking: Booking) => void;
   onCancel: () => void;
 }
 
@@ -41,7 +41,7 @@ export function BookingCreateForm({
     e.preventDefault();
 
     const newId = `bk-${Date.now()}`;
-    bookings.push({
+    const newBooking: Booking = {
       id: newId,
       conversationId: conversation.id,
       clientId: conversation.clientId,
@@ -54,7 +54,8 @@ export function BookingCreateForm({
       price: Number(price) || 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    });
+    };
+    bookings.push(newBooking);
 
     // Mark conversation as converted
     const sourceConv = conversations.find((c) => c.id === conversation.id);
@@ -63,7 +64,7 @@ export function BookingCreateForm({
       sourceConv.updatedAt = new Date().toISOString();
     }
 
-    onSubmit(newId);
+    onSubmit(newBooking);
   }
 
   return (

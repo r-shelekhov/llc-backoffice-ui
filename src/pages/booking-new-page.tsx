@@ -61,7 +61,7 @@ export function BookingNewPage() {
         <CardContent>
           <BookingCreateForm
             conversation={conversation}
-            onSubmit={(bookingId) => navigate(`/bookings/${bookingId}`)}
+            onSubmit={(booking) => navigate(`/bookings/${booking.id}`)}
             onCancel={() => navigate(-1)}
           />
         </CardContent>
