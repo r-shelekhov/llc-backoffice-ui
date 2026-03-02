@@ -5,9 +5,10 @@ interface InboxLayoutProps {
   left: ReactNode;
   middle: ReactNode | null;
   right: ReactNode | null;
+  emptyMessage?: string;
 }
 
-export function InboxLayout({ left, middle, right }: InboxLayoutProps) {
+export function InboxLayout({ left, middle, right, emptyMessage = "Select a conversation" }: InboxLayoutProps) {
   return (
     <div className="flex h-full">
       <div className="w-80 shrink-0 border-r">{left}</div>
@@ -22,7 +23,7 @@ export function InboxLayout({ left, middle, right }: InboxLayoutProps) {
         <div className="flex flex-1 items-center justify-center text-muted-foreground">
           <div className="flex flex-col items-center gap-2">
             <MessageSquare className="size-10 opacity-40" />
-            <p>Select a conversation</p>
+            <p className="max-w-xs text-center">{emptyMessage}</p>
           </div>
         </div>
       )}

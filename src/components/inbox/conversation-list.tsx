@@ -47,6 +47,7 @@ interface ConversationListProps {
   sortDirection: SortDirection;
   onSortByChange: (field: SortField) => void;
   onSortDirectionChange: () => void;
+  title?: string;
 }
 
 export function ConversationList({
@@ -65,11 +66,12 @@ export function ConversationList({
   sortDirection,
   onSortByChange,
   onSortDirectionChange,
+  title = "Inbox",
 }: ConversationListProps) {
   return (
     <div className="flex h-full flex-col">
       <div className="shrink-0 space-y-3 border-b p-4">
-        <h2 className="text-lg font-semibold">Inbox</h2>
+        <h2 className="text-lg font-semibold">{title}</h2>
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
           <input
@@ -137,7 +139,7 @@ export function ConversationList({
       <div className="flex-1 overflow-y-auto">
         {conversations.length === 0 ? (
           <p className="p-4 text-center text-sm text-muted-foreground">
-            No conversations found
+            {title === "My Conversations" ? "No conversations assigned to you" : "No conversations found"}
           </p>
         ) : (
           conversations.map((conversation) => (

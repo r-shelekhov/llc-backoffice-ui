@@ -32,6 +32,7 @@ export function App() {
             <Route index element={<Navigate to="/inbox" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="inbox" element={<InboxPage />} />
+            <Route path="my-conversations" element={<InboxPage myConversationsOnly />} />
             <Route path="conversations/:id" element={<ConversationRedirect />} />
             <Route path="bookings" element={<BookingsPage />} />
             <Route path="bookings/new" element={<BookingNewPage />} />

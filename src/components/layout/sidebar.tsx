@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import {
   Inbox,
+  MessageSquareText,
   CalendarCheck,
   Receipt,
   Users,
@@ -63,6 +64,12 @@ export function Sidebar() {
     isConversationUnread(conversation, conversationLastReadAt)
   ).length;
 
+  const myUnreadCount = permittedConversations.filter(
+    (conversation) =>
+      conversation.assigneeId === currentUser.id &&
+      isConversationUnread(conversation, conversationLastReadAt)
+  ).length;
+
   return (
     <aside className="flex h-full w-60 flex-col border-r bg-white">
       <div className="flex h-14 items-center px-6">
@@ -74,6 +81,12 @@ export function Sidebar() {
           icon={Inbox}
           label="Inbox"
           badge={unreadCount}
+        />
+        <NavItem
+          to="/my-conversations"
+          icon={MessageSquareText}
+          label="My Conversations"
+          badge={myUnreadCount}
         />
         <NavItem to="/bookings" icon={CalendarCheck} label="Bookings" />
         <NavItem to="/clients" icon={UserRound} label="Clients" />

@@ -84,7 +84,11 @@ function matchesSearch(conversation: ConversationWithRelations, query: string): 
   );
 }
 
-export function InboxPage() {
+interface InboxPageProps {
+  myConversationsOnly?: boolean;
+}
+
+export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
   const { currentUser, allUsers, conversationLastReadAt, markConversationRead } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedId = searchParams.get("id");
@@ -125,10 +129,13 @@ export function InboxPage() {
 
   const allConversations = useMemo(() => getAllConversationsWithRelations(), []);
 
-  const permittedConversations = useMemo(
-    () => filterVipConversations(currentUser, filterConversationsByPermission(currentUser, allConversations)),
-    [currentUser, allConversations]
-  );
+  const permittedConversations = useMemo(() => {
+    const base = filterVipConversations(currentUser, filterConversationsByPermission(currentUser, allConversations));
+    if (myConversationsOnly) {
+      return base.filter((c) => c.assigneeId === currentUser.id);
+    }
+    return base;
+  }, [currentUser, allConversations, myConversationsOnly]);
 
   const filteredConversations = useMemo(() => {
     let result = permittedConversations;
@@ -436,6 +443,10 @@ export function InboxPage() {
   return (
     <>
     <InboxLayout
+      emptyMessage={myConversationsOnly
+        ? "Conversations will appear here once they are assigned to you."
+        : undefined
+      }
       left={
         <ConversationList
           conversations={filteredConversations}
@@ -453,6 +464,9 @@ export function InboxPage() {
           sortDirection={sortDirection}
           onSortByChange={handleSortChange}
           onSortDirectionChange={handleDirectionToggle}
+          {...(myConversationsOnly && {
+            title: "My Conversations",
+          })}
         />
       }
       middle={
