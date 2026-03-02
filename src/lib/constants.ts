@@ -1,17 +1,17 @@
 import type { BookingStatus, InvoiceStatus, PaymentStatus, PaymentMethod, Role, Channel, ServiceType, SlaState, Priority, DeliveryStatus } from "@/types";
 
 export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
-  draft: "Draft",
+  draft: "New",
   awaiting_payment: "Awaiting Payment",
   paid: "Paid",
   scheduled: "Scheduled",
-  in_progress: "In Progress",
+  in_progress: "Active",
   completed: "Completed",
   cancelled: "Cancelled",
 };
 
 export const BOOKING_STATUS_ACTION_LABELS: Record<BookingStatus, string> = {
-  draft: "Draft",
+  draft: "New",
   awaiting_payment: "Send for Payment",
   paid: "Mark as Paid",
   scheduled: "Schedule",
