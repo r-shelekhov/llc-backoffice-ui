@@ -151,7 +151,7 @@ export const BOOKING_STATUS_TRANSITIONS: Record<BookingStatus, BookingStatus[]> 
   awaiting_payment: ["paid", "cancelled"],
   paid: ["cancelled"],
   scheduled: ["in_progress", "cancelled"],
-  in_progress: ["completed"],
+  in_progress: ["completed", "cancelled"],
   completed: [],
   cancelled: [],
 };

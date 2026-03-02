@@ -88,6 +88,7 @@ export function BookingTable({ bookings, onSelect, onStatusChange, onConfirmPaym
             <TableHead>Client</TableHead>
             <TableHead>Category</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Assignee</TableHead>
             <TableHead>Price</TableHead>
             <TableHead>Execution Date</TableHead>
             <TableHead className="w-[140px]">Actions</TableHead>
@@ -125,6 +126,13 @@ export function BookingTable({ bookings, onSelect, onStatusChange, onConfirmPaym
                 </TableCell>
                 <TableCell>
                   <StatusBadge type="booking" status={booking.status} />
+                </TableCell>
+                <TableCell>
+                  {booking.assignee ? (
+                    <span className="text-sm">{booking.assignee.name}</span>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Unassigned</span>
+                  )}
                 </TableCell>
                 <TableCell>{formatCurrency(booking.price)}</TableCell>
                 <TableCell>{formatDate(booking.executionAt)}</TableCell>
@@ -196,7 +204,9 @@ function QuickAction({
           Confirm Payment
         </Button>
       );
-    case "scheduled":
+    case "scheduled": {
+      const isPaid = booking.invoices.some((i) => i.status === "paid");
+      if (!isPaid) return null;
       return (
         <Button
           variant="outline"
@@ -206,6 +216,7 @@ function QuickAction({
           Start
         </Button>
       );
+    }
     case "in_progress":
       return (
         <Button
@@ -217,6 +228,6 @@ function QuickAction({
         </Button>
       );
     default:
-      return <span className="text-muted-foreground">—</span>;
+      return null;
   }
 }

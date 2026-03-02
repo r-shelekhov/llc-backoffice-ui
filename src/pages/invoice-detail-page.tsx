@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
-import { getInvoiceWithRelations } from "@/lib/mock-data";
+import { getInvoiceWithRelations, invoices, bookings } from "@/lib/mock-data";
 import { canViewInvoice } from "@/lib/permissions";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { ServiceTypeIcon } from "@/components/shared/service-type-icon";
@@ -29,6 +30,7 @@ export function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const { currentUser } = useAuth();
+  const [, forceUpdate] = useState(0);
   const invoice = id ? getInvoiceWithRelations(id) : null;
 
   if (!invoice) {
@@ -65,6 +67,26 @@ export function InvoiceDetailPage() {
             statusBadge={<StatusBadge type="invoice" status={invoice.status} />}
             actions={
               <div className="flex items-center gap-3 text-sm">
+                {invoice.status === "draft" && (
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const invoiceRef = invoices.find((i) => i.id === invoice.id);
+                      if (invoiceRef) {
+                        invoiceRef.status = "sent";
+                        invoiceRef.updatedAt = new Date().toISOString();
+                        const bookingRef = bookings.find((b) => b.id === invoice.booking.id);
+                        if (bookingRef && bookingRef.status === "draft") {
+                          bookingRef.status = "awaiting_payment";
+                          bookingRef.updatedAt = new Date().toISOString();
+                        }
+                        forceUpdate((n) => n + 1);
+                      }
+                    }}
+                  >
+                    Send Invoice
+                  </Button>
+                )}
                 <span className="text-muted-foreground">Due {formatDate(invoice.dueDate)}</span>
                 <Separator orientation="vertical" className="h-4" />
                 <span className="font-semibold">{formatCurrency(invoice.total)}</span>
