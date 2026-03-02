@@ -63,7 +63,6 @@ export interface Conversation {
   dropoffLocation: string;
   pickupDate: string;
   slaDueAt: string;
-  snoozedUntil?: string;
   createdAt: string;
   updatedAt: string;
 }

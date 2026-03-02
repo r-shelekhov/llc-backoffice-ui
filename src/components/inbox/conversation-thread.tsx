@@ -1,45 +1,14 @@
 import { useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Plus, Clock, Eye, AlarmClock } from "lucide-react";
+import { ArrowLeft, Plus, Clock, Eye } from "lucide-react";
 import type { Attachment, Communication, ConversationWithRelations } from "@/types";
 import { ChannelIcon } from "@/components/shared/channel-icon";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { SlaBadge } from "@/components/shared/sla-badge";
 import { CommunicationTimeline } from "@/components/conversation-detail/communication-timeline";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 import { MessageComposer } from "./message-composer";
 import { formatDuration } from "@/lib/format";
-
-const SNOOZE_OPTIONS = [
-  { label: "1 hour", ms: 3600000 },
-  { label: "3 hours", ms: 10800000 },
-  { label: "Tomorrow morning", ms: 0 },
-  { label: "Next week", ms: 0 },
-] as const;
-
-function getSnoozeUntil(option: typeof SNOOZE_OPTIONS[number]): string {
-  if (option.ms > 0) {
-    return new Date(Date.now() + option.ms).toISOString();
-  }
-  const now = new Date();
-  if (option.label === "Tomorrow morning") {
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(9, 0, 0, 0);
-    return tomorrow.toISOString();
-  }
-  // Next week - next Monday 9 AM
-  const nextMonday = new Date(now);
-  nextMonday.setDate(nextMonday.getDate() + ((8 - nextMonday.getDay()) % 7 || 7));
-  nextMonday.setHours(9, 0, 0, 0);
-  return nextMonday.toISOString();
-}
 
 // Deterministic mock collision: use conversation ID hash
 function hasCollision(conversationId: string): { active: boolean; agentName: string } {
@@ -54,7 +23,6 @@ interface ConversationThreadProps {
   localMessages: Communication[];
   onSend: (message: string, attachments?: Attachment[]) => void;
   onCreateBooking: (conversationId: string) => void;
-  onSnooze?: (conversationId: string, until: string) => void;
   previousConversationId?: string | null;
 }
 
@@ -63,7 +31,6 @@ export function ConversationThread({
   localMessages,
   onSend,
   onCreateBooking,
-  onSnooze,
   previousConversationId,
 }: ConversationThreadProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -109,25 +76,6 @@ export function ConversationThread({
             <ChannelIcon channel={conversation.channel} className="size-3.5 shrink-0 text-muted-foreground" />
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            {onSnooze && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon-sm">
-                    <AlarmClock className="size-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {SNOOZE_OPTIONS.map((opt) => (
-                    <DropdownMenuItem
-                      key={opt.label}
-                      onClick={() => onSnooze(conversation.id, getSnoozeUntil(opt))}
-                    >
-                      {opt.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
             <Button
               size="sm"
               onClick={() => onCreateBooking(conversation.id)}

@@ -139,12 +139,6 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
   const filteredConversations = useMemo(() => {
     let result = permittedConversations;
 
-    // Hide snoozed conversations from default view
-    const isSnoozed = (c: ConversationWithRelations) =>
-      c.snoozedUntil && new Date(c.snoozedUntil).getTime() > Date.now();
-
-    result = result.filter((r) => !isSnoozed(r));
-
     // Filter by channel (concierge only visible in "all")
     if (activeChannel !== "all") {
       result = result.filter((r) => r.channel === activeChannel);
@@ -182,41 +176,6 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
         .map((conversation) => conversation.id)
     ),
     [permittedConversations, conversationLastReadAt]
-  );
-
-  const handleSnooze = useCallback(
-    (conversationId: string, until: string) => {
-      const conv = sourceConversations.find((c) => c.id === conversationId);
-      if (conv) {
-        conv.snoozedUntil = until;
-      }
-      const convWR = allConversations.find((c) => c.id === conversationId);
-      if (convWR) {
-        convWR.snoozedUntil = until;
-      }
-
-      // Add system message as feedback
-      const formatted = new Date(until).toLocaleString("en-GB", {
-        dateStyle: "medium",
-        timeStyle: "short",
-      });
-      const systemComm: Communication = {
-        id: `sys-snooze-${Date.now()}`,
-        conversationId,
-        sender: "system",
-        senderName: "System",
-        channel: "web",
-        message: `Conversation snoozed until ${formatted}`,
-        createdAt: new Date().toISOString(),
-      };
-      communications.push(systemComm);
-      if (convWR) {
-        convWR.communications.push(systemComm);
-      }
-
-      forceUpdate((n) => n + 1);
-    },
-    [allConversations]
   );
 
   const handleAssigneeChange = useCallback(
@@ -411,7 +370,6 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
             localMessages={currentLocalMessages}
             onSend={handleSend}
             onCreateBooking={(id) => setCreateBookingConvId(id)}
-            onSnooze={handleSnooze}
             previousConversationId={previousSelectedId && previousSelectedId !== selectedId ? previousSelectedId : null}
           />
         ) : null
