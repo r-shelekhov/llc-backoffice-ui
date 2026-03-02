@@ -1,8 +1,21 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Paperclip } from "lucide-react";
+import { ArrowRight, Paperclip, Check, CheckCheck } from "lucide-react";
 import { formatRelativeTime, formatFileSize, formatCurrency, formatDateTime } from "@/lib/format";
-import { SERVICE_TYPE_LABELS } from "@/lib/constants";
+import { SERVICE_TYPE_LABELS, DELIVERY_STATUS_LABELS } from "@/lib/constants";
 import type { Communication } from "@/types";
+
+function getTagStyle(tag: string): string {
+  switch (tag.toLowerCase()) {
+    case "vip":
+      return "bg-tone-vip-light text-tone-vip-foreground border-tone-vip-foreground/20";
+    case "urgent":
+      return "bg-tone-danger-light text-tone-danger-foreground border-tone-danger-foreground/20";
+    case "follow-up":
+      return "bg-tone-warning-light text-tone-warning-foreground border-tone-warning-foreground/20";
+    default:
+      return "bg-tone-info-light text-tone-info-foreground border-tone-info-foreground/20";
+  }
+}
 
 interface CommunicationMessageProps {
   communication: Communication;
@@ -72,6 +85,15 @@ export function CommunicationMessage({
 
         <p className="text-sm">{communication.message}</p>
 
+        {isAgent && communication.deliveryStatus && (
+          <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+            {communication.deliveryStatus === "sent" && <Check className="size-3" />}
+            {communication.deliveryStatus === "delivered" && <CheckCheck className="size-3" />}
+            {communication.deliveryStatus === "read" && <CheckCheck className="size-3 text-primary" />}
+            <span>{DELIVERY_STATUS_LABELS[communication.deliveryStatus]}</span>
+          </div>
+        )}
+
         {communication.attachments && communication.attachments.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2">
             {communication.attachments.map((attachment) => (
@@ -94,7 +116,7 @@ export function CommunicationMessage({
             {communication.tags.map((tag) => (
               <span
                 key={tag}
-                className="text-xs bg-muted rounded-full px-2 py-0.5"
+                className={`text-[11px] font-medium rounded-full px-2 py-0.5 border ${getTagStyle(tag)}`}
               >
                 {tag}
               </span>

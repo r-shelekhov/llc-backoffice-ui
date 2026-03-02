@@ -1,4 +1,4 @@
-import type { ConversationStatus, BookingStatus, InvoiceStatus, PaymentStatus, PaymentMethod, Role, Channel, ServiceType, SlaState, Priority } from "@/types";
+import type { ConversationStatus, BookingStatus, InvoiceStatus, PaymentStatus, PaymentMethod, Role, Channel, ServiceType, SlaState, Priority, DeliveryStatus } from "@/types";
 
 export const CONVERSATION_STATUS_LABELS: Record<ConversationStatus, string> = {
   new: "New",
@@ -83,6 +83,12 @@ export const PRIORITY_LABELS: Record<Priority, string> = {
   high: "High",
   medium: "Medium",
   low: "Low",
+};
+
+export const DELIVERY_STATUS_LABELS: Record<DeliveryStatus, string> = {
+  sent: "Sent",
+  delivered: "Delivered",
+  read: "Read",
 };
 
 // Badge color classes

@@ -3,31 +3,56 @@ import { MapPin, Calendar, User as UserIcon, ChevronDown, CircleDot, Flag, Clock
 import type { ConversationStatus, ConversationWithRelations, User } from "@/types";
 import { VipIndicator } from "@/components/shared/vip-indicator";
 import { ChannelIcon } from "@/components/shared/channel-icon";
-import { ServiceTypeIcon } from "@/components/shared/service-type-icon";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { SlaBadge } from "@/components/shared/sla-badge";
 import { InternalNotesPanel } from "@/components/conversation-detail/internal-notes-panel";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { formatCurrency, formatDateTime } from "@/lib/format";
-import { CHANNEL_LABELS, SERVICE_TYPE_LABELS, CONVERSATION_STATUS_TRANSITIONS, CONVERSATION_STATUS_LABELS } from "@/lib/constants";
+import { formatCurrency, formatDateTime, formatRelativeTime } from "@/lib/format";
+import { CHANNEL_LABELS, CONVERSATION_STATUS_TRANSITIONS, CONVERSATION_STATUS_LABELS } from "@/lib/constants";
 
 interface ContactDetailPanelProps {
   conversation: ConversationWithRelations;
   users: User[];
+  allConversations: ConversationWithRelations[];
   onStatusChange: (conversationId: string, newStatus: ConversationStatus) => void;
+  onAssigneeChange: (conversationId: string, assigneeId: string | null) => void;
+  currentUserId?: string;
+  currentUserRole?: string;
+  onAddNote?: (content: string) => void;
+  onEditNote?: (noteId: string, content: string) => void;
+  onDeleteNote?: (noteId: string) => void;
 }
 
-export function ContactDetailPanel({ conversation, users, onStatusChange }: ContactDetailPanelProps) {
+export function ContactDetailPanel({
+  conversation,
+  users,
+  allConversations,
+  onStatusChange,
+  onAssigneeChange,
+  currentUserId,
+  currentUserRole,
+  onAddNote,
+  onEditNote,
+  onDeleteNote,
+}: ContactDetailPanelProps) {
   const navigate = useNavigate();
   const { client, assignee } = conversation;
   const transitions = CONVERSATION_STATUS_TRANSITIONS[conversation.status];
+  const activeUsers = users.filter((u) => u.isActive);
+
+  // Previous conversations with this client (excluding current)
+  const previousConversations = allConversations
+    .filter((c) => c.clientId === client.id && c.id !== conversation.id)
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .slice(0, 5);
 
   return (
     <div className="space-y-0">
@@ -63,7 +88,7 @@ export function ContactDetailPanel({ conversation, users, onStatusChange }: Cont
           variant="outline"
           size="sm"
           className="mt-3 w-full"
-          onClick={() => navigate(`/clients/${client.id}`)}
+          onClick={() => navigate(`/clients/${client.id}`, { state: { from: "conversation", conversationId: conversation.id } })}
         >
           View Profile
         </Button>
@@ -75,13 +100,6 @@ export function ContactDetailPanel({ conversation, users, onStatusChange }: Cont
           Conversation Details
         </h4>
         <div className="space-y-4">
-          <div className="flex items-start gap-3">
-            <ServiceTypeIcon serviceType={conversation.serviceType} className="mt-0.5 size-4 text-muted-foreground" />
-            <div className="min-w-0">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Service</p>
-              <p className="text-sm">{SERVICE_TYPE_LABELS[conversation.serviceType]}</p>
-            </div>
-          </div>
           <div className="flex items-start gap-3">
             <ChannelIcon channel={conversation.channel} className="mt-0.5 size-4 text-muted-foreground" />
             <div className="min-w-0">
@@ -166,29 +184,72 @@ export function ContactDetailPanel({ conversation, users, onStatusChange }: Cont
         <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Assignee
         </h4>
-        {assignee ? (
-          <div className="flex items-center gap-3">
-            <img
-              src={assignee.avatarUrl}
-              alt={assignee.name}
-              className="size-8 rounded-full object-cover"
-            />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium">{assignee.name}</p>
-              <p className="truncate text-xs text-muted-foreground">{assignee.email}</p>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <UserIcon className="size-4" />
-            <span>Unassigned</span>
-          </div>
-        )}
+        <Select
+          value={assignee?.id ?? "unassigned"}
+          onValueChange={(v) => onAssigneeChange(conversation.id, v === "unassigned" ? null : v)}
+        >
+          <SelectTrigger size="sm" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="unassigned">
+              <div className="flex items-center gap-2">
+                <UserIcon className="size-4 text-muted-foreground" />
+                <span>Unassigned</span>
+              </div>
+            </SelectItem>
+            {activeUsers.map((user) => (
+              <SelectItem key={user.id} value={user.id}>
+                <div className="flex items-center gap-2">
+                  <img src={user.avatarUrl} alt={user.name} className="size-5 rounded-full object-cover" />
+                  <span>{user.name}</span>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
+
+      {/* Previous conversations */}
+      {previousConversations.length > 0 && (
+        <div className="border-b p-4">
+          <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Previous Conversations
+          </h4>
+          <div className="space-y-2">
+            {previousConversations.map((conv) => (
+              <button
+                key={conv.id}
+                type="button"
+                onClick={() => navigate(`/inbox?id=${conv.id}`)}
+                className="flex w-full items-start gap-2 rounded-md p-2 text-left transition-colors hover:bg-accent/30"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-medium">{conv.title}</p>
+                  <div className="mt-0.5 flex items-center gap-2">
+                    <StatusBadge type="conversation" status={conv.status} />
+                    <span className="text-[11px] text-muted-foreground">
+                      {formatRelativeTime(conv.updatedAt)}
+                    </span>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Internal notes */}
       <div className="p-4">
-        <InternalNotesPanel notes={conversation.internalNotes} users={users} />
+        <InternalNotesPanel
+          notes={conversation.internalNotes}
+          users={users}
+          currentUserId={currentUserId}
+          currentUserRole={currentUserRole}
+          onAddNote={onAddNote}
+          onEditNote={onEditNote}
+          onDeleteNote={onDeleteNote}
+        />
       </div>
     </div>
   );

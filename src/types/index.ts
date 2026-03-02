@@ -30,6 +30,10 @@ export type ServiceType = "car" | "jet" | "helicopter" | "yacht";
 
 export type SlaState = "on_track" | "at_risk" | "breached";
 
+export type DeliveryStatus = "sent" | "delivered" | "read";
+
+export type InboxStatusTab = "all" | "open" | "awaiting" | "converted" | "closed" | "snoozed";
+
 export interface User {
   id: string;
   name: string;
@@ -69,6 +73,7 @@ export interface Conversation {
   dropoffLocation: string;
   pickupDate: string;
   slaDueAt: string;
+  snoozedUntil?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -95,6 +100,7 @@ export interface Communication {
   senderName: string;
   channel: Channel;
   message: string;
+  deliveryStatus?: DeliveryStatus;
   attachments?: Attachment[];
   tags?: string[];
   event?: {
@@ -112,6 +118,7 @@ export interface Communication {
 export interface InternalNote {
   id: string;
   conversationId: string;
+  clientId: string;
   authorId: string;
   content: string;
   createdAt: string;
