@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface KpiCardProps {
   label: string;
@@ -8,11 +9,15 @@ interface KpiCardProps {
   icon?: LucideIcon;
   trend?: "up" | "down" | "neutral";
   trendValue?: string;
+  onClick?: () => void;
 }
 
-export function KpiCard({ label, value, icon: Icon, trend, trendValue }: KpiCardProps) {
+export function KpiCard({ label, value, icon: Icon, trend, trendValue, onClick }: KpiCardProps) {
   return (
-    <Card className="relative">
+    <Card
+      className={cn("relative", onClick && "cursor-pointer hover:bg-muted/50 transition-colors")}
+      onClick={onClick}
+    >
       <CardContent className="pt-0">
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground font-medium">{label}</span>
