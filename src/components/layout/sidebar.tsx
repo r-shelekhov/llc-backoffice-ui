@@ -2,8 +2,7 @@ import { NavLink } from "react-router-dom";
 import {
   Inbox,
   CalendarCheck,
-  FileText,
-  CreditCard,
+  Receipt,
   Users,
   UserRound,
   ChevronDown,
@@ -78,8 +77,7 @@ export function Sidebar() {
         />
         <NavItem to="/bookings" icon={CalendarCheck} label="Bookings" />
         <NavItem to="/clients" icon={UserRound} label="Clients" />
-        <NavItem to="/invoices" icon={FileText} label="Invoices" />
-        <NavItem to="/payments" icon={CreditCard} label="Payments" />
+        <NavItem to="/billing" icon={Receipt} label="Billing" />
 
         {currentUser.role === "admin" && (
           <>

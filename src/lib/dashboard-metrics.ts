@@ -218,7 +218,7 @@ export function computeDashboardMetrics(input: DashboardInput): DashboardMetrics
       invoiceId: p.invoiceId,
       amount: p.amount,
       method: p.method,
-      link: `/payments?status=failed`,
+      link: `/billing?filter=payment-issues`,
     }));
 
   const actionQueue: ActionQueueData = {

@@ -109,9 +109,9 @@ export function BookingDetailPage() {
   const fromPayment = state?.from === "payment";
   const fromConversation = state?.from === "conversation";
   const backTo = fromInvoice
-    ? `/invoices/${state.invoiceId}`
+    ? `/billing/${state.invoiceId}`
     : fromPayment
-      ? "/payments"
+      ? "/billing"
       : fromConversation
         ? `/inbox?id=${state.conversationId}`
         : "/bookings";
@@ -321,7 +321,7 @@ export function BookingDetailPage() {
                     label="Latest Invoice"
                     value={
                       <Link
-                        to={`/invoices/${latestInvoice.id}`}
+                        to={`/billing/${latestInvoice.id}`}
                         state={{ from: "booking" }}
                         className="text-sm font-medium text-primary hover:underline"
                       >
@@ -519,7 +519,7 @@ export function BookingDetailPage() {
                 {booking.invoices.map((invoice) => (
                   <Link
                     key={invoice.id}
-                    to={`/invoices/${invoice.id}`}
+                    to={`/billing/${invoice.id}`}
                     state={{ from: "booking" }}
                     className="flex items-center justify-between rounded-md border p-3 hover:bg-muted/50 transition-colors"
                   >

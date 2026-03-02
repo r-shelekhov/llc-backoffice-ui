@@ -123,7 +123,7 @@ export function DashboardActionQueue({ data }: DashboardActionQueueProps) {
                   </Link>
                 ))}
                 {data.failedPayments.length > MAX_ITEMS && (
-                  <ViewAllLink to="/payments?status=failed" count={data.failedPayments.length} />
+                  <ViewAllLink to="/billing?filter=payment-issues" count={data.failedPayments.length} />
                 )}
               </Section>
             )}

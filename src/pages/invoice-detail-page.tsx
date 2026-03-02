@@ -42,14 +42,10 @@ export function InvoiceDetailPage() {
   const from = (location.state as { from?: string })?.from;
   const backTo = from === "booking"
     ? `/bookings/${invoice.booking.id}`
-    : from === "payment"
-      ? "/payments"
-      : "/invoices";
+    : "/billing";
   const backLabel = from === "booking"
     ? "Back to Booking"
-    : from === "payment"
-      ? "Back to Payments"
-      : "Back to Invoices";
+    : "Back to Billing";
 
   const latestPayment = invoice.payments.length > 0
     ? invoice.payments[invoice.payments.length - 1]

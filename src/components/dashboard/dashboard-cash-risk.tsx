@@ -21,10 +21,10 @@ export function DashboardCashRisk({ data }: DashboardCashRiskProps) {
         <div className="grid grid-cols-2 gap-3">
           <MetricBox label="Paid Revenue" value={formatCurrency(data.paidRevenue)} color="text-tone-success" />
           <MetricBox label="Accounts Receivable" value={formatCurrency(data.accountsReceivable)} color="text-tone-info" />
-          <Link to="/invoices?status=overdue" className="hover:bg-muted rounded-md transition-colors">
+          <Link to="/billing?status=overdue" className="hover:bg-muted rounded-md transition-colors">
             <MetricBox label="Overdue" value={formatCurrency(data.overdueAmount)} color="text-tone-danger" />
           </Link>
-          <Link to="/payments?status=pending" className="hover:bg-muted rounded-md transition-colors">
+          <Link to="/billing?filter=payment-issues" className="hover:bg-muted rounded-md transition-colors">
             <MetricBox label="Pending" value={formatCurrency(data.pendingAmount)} color="text-tone-warning" />
           </Link>
         </div>

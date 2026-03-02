@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 export function AppLayout() {
   const { pathname } = useLocation();
   const isFullBleed = pathname === "/inbox";
-  const isDetailPage = /^\/(bookings|invoices)\/[^/]+$/.test(pathname);
+  const isDetailPage = /^\/(bookings|billing)\/[^/]+$/.test(pathname);
 
   return (
     <div className="flex h-screen">
