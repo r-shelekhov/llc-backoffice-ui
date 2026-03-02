@@ -76,8 +76,8 @@ export function Sidebar() {
           label="Inbox"
           badge={unreadCount}
         />
-        <NavItem to="/clients" icon={UserRound} label="Clients" />
         <NavItem to="/bookings" icon={CalendarCheck} label="Bookings" />
+        <NavItem to="/clients" icon={UserRound} label="Clients" />
         <NavItem to="/invoices" icon={FileText} label="Invoices" />
         <NavItem to="/payments" icon={CreditCard} label="Payments" />
 
