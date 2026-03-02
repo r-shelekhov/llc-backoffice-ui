@@ -4,7 +4,6 @@ import { CHANNEL_LABELS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConversationItem } from "./conversation-item";
-import { cn } from "@/lib/utils";
 
 const SORT_FIELD_LABELS: Record<SortField, string> = {
   last_activity: "Last Activity",
@@ -20,6 +19,7 @@ const channelTabs: { value: Channel | "all"; label: string }[] = [
   { value: "email", label: CHANNEL_LABELS.email },
   { value: "phone", label: CHANNEL_LABELS.phone },
   { value: "web", label: CHANNEL_LABELS.web },
+  { value: "concierge", label: CHANNEL_LABELS.concierge },
 ];
 
 interface ConversationListProps {
@@ -67,24 +67,17 @@ export function ConversationList({
             className="h-9 w-full rounded-md border bg-background pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-ring"
           />
         </div>
-        <div className="flex gap-1 overflow-x-auto">
-          {channelTabs.map((tab) => (
-            <button
-              key={tab.value}
-              type="button"
-              onClick={() => onChannelChange(tab.value)}
-              className={cn(
-                "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-xs font-medium transition-colors",
-                activeChannel === tab.value
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted/50 text-muted-foreground hover:bg-muted"
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
         <div className="flex items-center gap-2">
+          <Select value={activeChannel} onValueChange={(v) => onChannelChange(v as Channel | "all")}>
+            <SelectTrigger size="sm" className="flex-1 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {channelTabs.map((tab) => (
+                <SelectItem key={tab.value} value={tab.value}>{tab.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={sortBy} onValueChange={(v) => onSortByChange(v as SortField)}>
             <SelectTrigger size="sm" className="flex-1 text-xs">
               <SelectValue />
