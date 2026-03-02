@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users } from "lucide-react";
-import type { ClientFilterState, ClientRow, ConversationStatus } from "@/types";
+import type { ClientFilterState, ClientRow } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import {
   getAllConversationsWithRelations,
@@ -17,12 +17,6 @@ import { SearchInput } from "@/components/filters/search-input";
 import { ClientTable } from "@/components/clients/client-table";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Checkbox } from "@/components/ui/checkbox";
-
-const ACTIVE_STATUSES: ConversationStatus[] = [
-  "new",
-  "in_review",
-  "awaiting_client",
-];
 
 const initialFilters: ClientFilterState = {
   search: "",
@@ -76,9 +70,7 @@ export function ClientsPage() {
 
       const lastActivityAt = maxCommDate ?? maxConvDate ?? client.updatedAt;
 
-      const isActive = clientConversations.some((c) =>
-        ACTIVE_STATUSES.includes(c.status)
-      );
+      const isActive = clientConversations.length > 0;
 
       return {
         ...client,

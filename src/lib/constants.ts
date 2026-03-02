@@ -1,12 +1,4 @@
-import type { ConversationStatus, BookingStatus, InvoiceStatus, PaymentStatus, PaymentMethod, Role, Channel, ServiceType, SlaState, Priority, DeliveryStatus } from "@/types";
-
-export const CONVERSATION_STATUS_LABELS: Record<ConversationStatus, string> = {
-  new: "New",
-  in_review: "In Review",
-  awaiting_client: "Awaiting Client",
-  converted: "Converted",
-  closed: "Closed",
-};
+import type { BookingStatus, InvoiceStatus, PaymentStatus, PaymentMethod, Role, Channel, ServiceType, SlaState, Priority, DeliveryStatus } from "@/types";
 
 export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
   draft: "Draft",
@@ -92,14 +84,6 @@ export const DELIVERY_STATUS_LABELS: Record<DeliveryStatus, string> = {
 };
 
 // Badge color classes
-export const CONVERSATION_STATUS_COLORS: Record<ConversationStatus, string> = {
-  new: "bg-tone-info-light text-tone-info-foreground",
-  in_review: "bg-tone-purple-light text-tone-purple-foreground",
-  awaiting_client: "bg-tone-warning-light text-tone-warning-foreground",
-  converted: "bg-tone-success-light text-tone-success-foreground",
-  closed: "bg-tone-neutral-light text-tone-neutral-foreground",
-};
-
 export const BOOKING_STATUS_COLORS: Record<BookingStatus, string> = {
   draft: "bg-tone-neutral-light text-tone-neutral-foreground",
   awaiting_payment: "bg-tone-warning-light text-tone-warning-foreground",
@@ -136,14 +120,6 @@ export const SLA_STATE_COLORS: Record<SlaState, string> = {
   on_track: "text-tone-success",
   at_risk: "text-tone-warning",
   breached: "text-tone-danger bg-tone-danger-light",
-};
-
-export const CONVERSATION_STATUS_TRANSITIONS: Record<ConversationStatus, ConversationStatus[]> = {
-  new: ["in_review"],
-  in_review: ["awaiting_client", "converted"],
-  awaiting_client: ["in_review"],
-  converted: ["closed"],
-  closed: [],
 };
 
 export const BOOKING_STATUS_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {

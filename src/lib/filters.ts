@@ -17,11 +17,6 @@ export function applyConversationFilters(
       if (!matches) return false;
     }
 
-    // Status
-    if (filters.statuses.length > 0 && !filters.statuses.includes(r.status)) {
-      return false;
-    }
-
     // Channel
     if (filters.channels.length > 0 && !filters.channels.includes(r.channel)) {
       return false;

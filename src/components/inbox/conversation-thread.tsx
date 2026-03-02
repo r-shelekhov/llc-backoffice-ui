@@ -1,9 +1,8 @@
 import { useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ChevronDown, Plus, Clock, Eye, AlarmClock } from "lucide-react";
-import type { Attachment, Communication, ConversationStatus, ConversationWithRelations } from "@/types";
+import { ArrowLeft, Plus, Clock, Eye, AlarmClock } from "lucide-react";
+import type { Attachment, Communication, ConversationWithRelations } from "@/types";
 import { ChannelIcon } from "@/components/shared/channel-icon";
-import { StatusBadge } from "@/components/shared/status-badge";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { SlaBadge } from "@/components/shared/sla-badge";
 import { CommunicationTimeline } from "@/components/conversation-detail/communication-timeline";
@@ -15,7 +14,6 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { MessageComposer } from "./message-composer";
-import { CONVERSATION_STATUS_TRANSITIONS, CONVERSATION_STATUS_LABELS } from "@/lib/constants";
 import { formatDuration } from "@/lib/format";
 
 const SNOOZE_OPTIONS = [
@@ -55,7 +53,6 @@ interface ConversationThreadProps {
   conversation: ConversationWithRelations;
   localMessages: Communication[];
   onSend: (message: string, attachments?: Attachment[]) => void;
-  onStatusChange: (conversationId: string, newStatus: ConversationStatus) => void;
   onCreateBooking: (conversationId: string) => void;
   onSnooze?: (conversationId: string, until: string) => void;
   previousConversationId?: string | null;
@@ -65,7 +62,6 @@ export function ConversationThread({
   conversation,
   localMessages,
   onSend,
-  onStatusChange,
   onCreateBooking,
   onSnooze,
   previousConversationId,
@@ -73,8 +69,6 @@ export function ConversationThread({
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const allMessages = [...conversation.communications, ...localMessages];
-  const transitions = CONVERSATION_STATUS_TRANSITIONS[conversation.status];
-  const showCreateBooking = conversation.status !== "converted" && conversation.status !== "closed";
 
   // Compute waiting time
   const waitingSince = useMemo(() => {
@@ -134,45 +128,16 @@ export function ConversationThread({
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-            {showCreateBooking && (
-              <Button
-                size="sm"
-                onClick={() => onCreateBooking(conversation.id)}
-              >
-                <Plus className="size-4" />
-                Create Booking
-              </Button>
-            )}
+            <Button
+              size="sm"
+              onClick={() => onCreateBooking(conversation.id)}
+            >
+              <Plus className="size-4" />
+              Create Booking
+            </Button>
           </div>
         </div>
         <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
-          <div>
-              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Workflow</p>
-              <div className="mt-1">
-                {transitions.length > 0 ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button type="button" className="inline-flex cursor-pointer items-center gap-1">
-                        <StatusBadge type="conversation" status={conversation.status} />
-                        <ChevronDown className="size-3 text-muted-foreground" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                      {transitions.map((status) => (
-                        <DropdownMenuItem
-                          key={status}
-                          onClick={() => onStatusChange(conversation.id, status)}
-                        >
-                          {CONVERSATION_STATUS_LABELS[status]}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <StatusBadge type="conversation" status={conversation.status} />
-                )}
-              </div>
-          </div>
           <div>
               <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Priority</p>
               <div className="mt-1">

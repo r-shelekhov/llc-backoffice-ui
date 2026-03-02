@@ -98,12 +98,6 @@ export interface DashboardMetrics {
 
 // ── Helpers ──
 
-const ACTIVE_STATUSES: import("@/types").ConversationStatus[] = ["new", "in_review", "awaiting_client"];
-
-function isActive(status: import("@/types").ConversationStatus): boolean {
-  return ACTIVE_STATUSES.includes(status);
-}
-
 function ageLabel(createdAt: string, now: Date): string {
   const diffMs = now.getTime() - new Date(createdAt).getTime();
   const hours = Math.floor(diffMs / (1000 * 60 * 60));
@@ -145,10 +139,10 @@ export function computeDashboardMetrics(input: DashboardInput): DashboardMetrics
   const payments = filterPaymentsByPermission(user, prePayments, invoices, bookings);
 
   // ── KPI Strip ──
-  const activeConvs = conversations.filter((c) => isActive(c.status));
+  const activeConvs = conversations;
 
   const slaBreachedConvs = activeConvs.filter(
-    (c) => computeSlaState(c.status, c.slaDueAt) === "breached"
+    (c) => computeSlaState(c.slaDueAt) === "breached"
   );
 
   const ar = invoices
@@ -185,7 +179,6 @@ export function computeDashboardMetrics(input: DashboardInput): DashboardMetrics
   const newUnassignedOver24h: ActionQueueItem[] = conversations
     .filter(
       (c) =>
-        c.status === "new" &&
         c.assigneeId === null &&
         hoursAgo(c.createdAt, now) > 24
     )
@@ -200,7 +193,6 @@ export function computeDashboardMetrics(input: DashboardInput): DashboardMetrics
   const awaitingClientStale: ActionQueueItem[] = conversations
     .filter(
       (c) =>
-        c.status === "awaiting_client" &&
         hoursAgo(c.updatedAt, now) > 48
     )
     .map((c) => ({
@@ -286,7 +278,7 @@ export function computeDashboardMetrics(input: DashboardInput): DashboardMetrics
       const assignmentRisk = b.assigneeId === null;
       const linkedConv = convMap.get(b.conversationId);
       const slaRisk = linkedConv
-        ? computeSlaState(linkedConv.status, linkedConv.slaDueAt) === "breached"
+        ? computeSlaState(linkedConv.slaDueAt) === "breached"
         : false;
 
       return {

@@ -2,13 +2,6 @@ export type Role = "admin" | "vip_manager" | "manager";
 
 export type Priority = "critical" | "high" | "medium" | "low";
 
-export type ConversationStatus =
-  | "new"
-  | "in_review"
-  | "awaiting_client"
-  | "converted"
-  | "closed";
-
 export type BookingStatus =
   | "draft"
   | "awaiting_payment"
@@ -31,8 +24,6 @@ export type ServiceType = "car" | "jet" | "helicopter" | "yacht";
 export type SlaState = "on_track" | "at_risk" | "breached";
 
 export type DeliveryStatus = "sent" | "delivered" | "read";
-
-export type InboxStatusTab = "all" | "open" | "awaiting" | "converted" | "closed" | "snoozed";
 
 export interface User {
   id: string;
@@ -63,7 +54,6 @@ export interface Conversation {
   id: string;
   clientId: string;
   assigneeId: string | null;
-  status: ConversationStatus;
   priority: Priority;
   channel: Channel;
   serviceType: ServiceType;
@@ -200,7 +190,6 @@ export interface PaymentWithRelations extends Payment {
 
 export interface ConversationFilterState {
   search: string;
-  statuses: ConversationStatus[];
   channels: Channel[];
   assigneeIds: string[];
   dateFrom: Date | null;

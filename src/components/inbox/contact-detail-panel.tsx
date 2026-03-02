@@ -1,28 +1,20 @@
 import { useNavigate } from "react-router-dom";
-import { MapPin, Calendar, User as UserIcon, ChevronDown, CircleDot, Flag, Clock3 } from "lucide-react";
-import type { ConversationStatus, ConversationWithRelations, User } from "@/types";
+import { MapPin, Calendar, User as UserIcon, Flag, Clock3 } from "lucide-react";
+import type { ConversationWithRelations, User } from "@/types";
 import { VipIndicator } from "@/components/shared/vip-indicator";
 import { ChannelIcon } from "@/components/shared/channel-icon";
-import { StatusBadge } from "@/components/shared/status-badge";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { SlaBadge } from "@/components/shared/sla-badge";
 import { InternalNotesPanel } from "@/components/conversation-detail/internal-notes-panel";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 import { formatCurrency, formatDateTime, formatRelativeTime } from "@/lib/format";
-import { CHANNEL_LABELS, CONVERSATION_STATUS_TRANSITIONS, CONVERSATION_STATUS_LABELS } from "@/lib/constants";
+import { CHANNEL_LABELS } from "@/lib/constants";
 
 interface ContactDetailPanelProps {
   conversation: ConversationWithRelations;
   users: User[];
   allConversations: ConversationWithRelations[];
-  onStatusChange: (conversationId: string, newStatus: ConversationStatus) => void;
   onAssigneeChange: (conversationId: string, assigneeId: string | null) => void;
   currentUserId?: string;
   currentUserRole?: string;
@@ -35,7 +27,6 @@ export function ContactDetailPanel({
   conversation,
   users,
   allConversations,
-  onStatusChange,
   onAssigneeChange,
   currentUserId,
   currentUserRole,
@@ -45,7 +36,6 @@ export function ContactDetailPanel({
 }: ContactDetailPanelProps) {
   const navigate = useNavigate();
   const { client, assignee } = conversation;
-  const transitions = CONVERSATION_STATUS_TRANSITIONS[conversation.status];
   const activeUsers = users.filter((u) => u.isActive);
 
   // Previous conversations with this client (excluding current)
@@ -105,36 +95,6 @@ export function ContactDetailPanel({
             <div className="min-w-0">
               <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Channel</p>
               <p className="text-sm">{CHANNEL_LABELS[conversation.channel]}</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <CircleDot className="mt-0.5 size-4 text-muted-foreground" />
-            <div className="min-w-0">
-              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Workflow</p>
-              <div className="mt-1">
-                {transitions.length > 0 ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button type="button" className="inline-flex cursor-pointer items-center gap-1">
-                        <StatusBadge type="conversation" status={conversation.status} />
-                        <ChevronDown className="size-3 text-muted-foreground" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                      {transitions.map((status) => (
-                        <DropdownMenuItem
-                          key={status}
-                          onClick={() => onStatusChange(conversation.id, status)}
-                        >
-                          {CONVERSATION_STATUS_LABELS[status]}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <StatusBadge type="conversation" status={conversation.status} />
-                )}
-              </div>
             </div>
           </div>
           <div className="flex items-start gap-3">
@@ -226,12 +186,9 @@ export function ContactDetailPanel({
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-xs font-medium">{conv.title}</p>
-                  <div className="mt-0.5 flex items-center gap-2">
-                    <StatusBadge type="conversation" status={conv.status} />
-                    <span className="text-[11px] text-muted-foreground">
-                      {formatRelativeTime(conv.updatedAt)}
-                    </span>
-                  </div>
+                  <span className="mt-0.5 text-[11px] text-muted-foreground">
+                    {formatRelativeTime(conv.updatedAt)}
+                  </span>
                 </div>
               </button>
             ))}

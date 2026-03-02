@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Booking, ConversationWithRelations, ServiceType } from "@/types";
-import { bookings, conversations } from "@/lib/mock-data";
+import { bookings } from "@/lib/mock-data";
 import { SERVICE_TYPE_LABELS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,13 +56,6 @@ export function BookingCreateForm({
       updatedAt: new Date().toISOString(),
     };
     bookings.push(newBooking);
-
-    // Mark conversation as converted
-    const sourceConv = conversations.find((c) => c.id === conversation.id);
-    if (sourceConv) {
-      sourceConv.status = "converted";
-      sourceConv.updatedAt = new Date().toISOString();
-    }
 
     onSubmit(newBooking);
   }

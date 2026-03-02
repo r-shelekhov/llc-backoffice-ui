@@ -611,13 +611,12 @@ export function BookingDetailPage() {
         <DetailSection title="Conversation">
           <div className="rounded-lg border p-4 space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <StatusBadge type="conversation" status={booking.conversation.status} />
               <PriorityBadge priority={booking.conversation.priority} />
               <span className="flex items-center gap-1 text-sm text-muted-foreground">
                 <ChannelIcon channel={booking.conversation.channel} />
                 {CHANNEL_LABELS[booking.conversation.channel]}
               </span>
-              <SlaBadge state={computeSlaState(booking.conversation.status, booking.conversation.slaDueAt)} />
+              <SlaBadge state={computeSlaState(booking.conversation.slaDueAt)} />
             </div>
 
             {booking.conversation.description && (

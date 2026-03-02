@@ -33,7 +33,7 @@ export function getConversationWithRelations(conversationId: string): Conversati
   const convPayments = payments.filter((p) =>
     convInvoices.some((i) => i.id === p.invoiceId)
   );
-  const slaState = computeSlaState(conversation.status, conversation.slaDueAt);
+  const slaState = computeSlaState(conversation.slaDueAt);
 
   return {
     ...conversation,

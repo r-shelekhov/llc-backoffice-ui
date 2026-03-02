@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { getAllConversationsWithRelations, conversations as sourceConversations, communications, internalNotes, users as sourceUsers } from "@/lib/mock-data";
 import { filterConversationsByPermission, filterVipConversations } from "@/lib/permissions";
 import { isConversationUnread } from "@/lib/unread";
-import type { Attachment, Booking, Channel, Communication, ConversationStatus, ConversationWithRelations, InboxStatusTab, SortField, SortDirection, Priority } from "@/types";
+import type { Attachment, Booking, Channel, Communication, ConversationWithRelations, SortField, SortDirection, Priority } from "@/types";
 import { InboxLayout } from "@/components/inbox/inbox-layout";
 import { ConversationList } from "@/components/inbox/conversation-list";
 import { ConversationThread } from "@/components/inbox/conversation-thread";
@@ -117,7 +117,6 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
     });
   }, [setSearchParams]);
 
-  const [activeStatusTab, setActiveStatusTab] = useState<InboxStatusTab>("all");
   const [activeChannel, setActiveChannel] = useState<Channel | "all">("all");
   const [search, setSearch] = useState("");
   const [localMessages, setLocalMessages] = useState<
@@ -140,32 +139,11 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
   const filteredConversations = useMemo(() => {
     let result = permittedConversations;
 
-    // Filter by status tab
+    // Hide snoozed conversations from default view
     const isSnoozed = (c: ConversationWithRelations) =>
       c.snoozedUntil && new Date(c.snoozedUntil).getTime() > Date.now();
 
-    switch (activeStatusTab) {
-      case "open":
-        result = result.filter((r) => (r.status === "new" || r.status === "in_review") && !isSnoozed(r));
-        break;
-      case "awaiting":
-        result = result.filter((r) => r.status === "awaiting_client" && !isSnoozed(r));
-        break;
-      case "converted":
-        result = result.filter((r) => r.status === "converted");
-        break;
-      case "closed":
-        result = result.filter((r) => r.status === "closed");
-        break;
-      case "snoozed":
-        result = result.filter(isSnoozed);
-        break;
-      case "all":
-      default:
-        // Hide snoozed from "all" tab
-        result = result.filter((r) => !isSnoozed(r));
-        break;
-    }
+    result = result.filter((r) => !isSnoozed(r));
 
     // Filter by channel (concierge only visible in "all")
     if (activeChannel !== "all") {
@@ -178,7 +156,7 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
     }
 
     return [...result].sort((a, b) => compareConversations(a, b, sortBy, sortDirection));
-  }, [permittedConversations, activeStatusTab, activeChannel, search, sortBy, sortDirection]);
+  }, [permittedConversations, activeChannel, search, sortBy, sortDirection]);
 
   const selectedConversation = useMemo(
     () => (selectedId ? permittedConversations.find((r) => r.id === selectedId) ?? null : null),
@@ -197,27 +175,6 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
     }
   }, [selectedId]);
 
-  const isSnoozed = useCallback((c: ConversationWithRelations) =>
-    !!(c.snoozedUntil && new Date(c.snoozedUntil).getTime() > Date.now()), []);
-
-  const tabCounts = useMemo(() => {
-    const counts: Record<InboxStatusTab, number> = {
-      all: 0, open: 0, awaiting: 0, converted: 0, closed: 0, snoozed: 0,
-    };
-    for (const c of permittedConversations) {
-      if (isSnoozed(c)) {
-        counts.snoozed++;
-      } else {
-        counts.all++;
-        if (c.status === "new" || c.status === "in_review") counts.open++;
-        else if (c.status === "awaiting_client") counts.awaiting++;
-        else if (c.status === "converted") counts.converted++;
-        else if (c.status === "closed") counts.closed++;
-      }
-    }
-    return counts;
-  }, [permittedConversations, isSnoozed]);
-
   const unreadConversationIds = useMemo(
     () => new Set(
       permittedConversations
@@ -225,24 +182,6 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
         .map((conversation) => conversation.id)
     ),
     [permittedConversations, conversationLastReadAt]
-  );
-
-  const handleStatusChange = useCallback(
-    (conversationId: string, newStatus: ConversationStatus) => {
-      const conv = sourceConversations.find((c) => c.id === conversationId);
-      if (conv) {
-        conv.status = newStatus;
-        conv.updatedAt = new Date().toISOString();
-      }
-      // Also update the WithRelations copy in allConversations
-      const convWR = allConversations.find((c) => c.id === conversationId);
-      if (convWR) {
-        convWR.status = newStatus;
-        convWR.updatedAt = new Date().toISOString();
-      }
-      forceUpdate((n) => n + 1);
-    },
-    [allConversations]
   );
 
   const handleSnooze = useCallback(
@@ -407,7 +346,6 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
   const handleBookingCreated = useCallback(
     (booking: Booking) => {
       if (!createBookingConvId) return;
-      handleStatusChange(createBookingConvId, "converted");
       setCreateBookingConvId(null);
 
       const systemComm: Communication = {
@@ -437,7 +375,7 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
       }
       forceUpdate((n) => n + 1);
     },
-    [createBookingConvId, handleStatusChange, allConversations]
+    [createBookingConvId, allConversations]
   );
 
   return (
@@ -453,9 +391,6 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
           unreadConversationIds={unreadConversationIds}
           selectedId={selectedId}
           onSelect={handleSelect}
-          activeStatusTab={activeStatusTab}
-          onStatusTabChange={setActiveStatusTab}
-          tabCounts={tabCounts}
           activeChannel={activeChannel}
           onChannelChange={setActiveChannel}
           search={search}
@@ -465,7 +400,7 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
           onSortByChange={handleSortChange}
           onSortDirectionChange={handleDirectionToggle}
           {...(myConversationsOnly && {
-            title: "My Conversations",
+            title: "My Queue",
           })}
         />
       }
@@ -475,7 +410,6 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
             conversation={selectedConversation}
             localMessages={currentLocalMessages}
             onSend={handleSend}
-            onStatusChange={handleStatusChange}
             onCreateBooking={(id) => setCreateBookingConvId(id)}
             onSnooze={handleSnooze}
             previousConversationId={previousSelectedId && previousSelectedId !== selectedId ? previousSelectedId : null}
@@ -488,7 +422,6 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
             conversation={selectedConversation}
             users={allUsers}
             allConversations={permittedConversations}
-            onStatusChange={handleStatusChange}
             onAssigneeChange={handleAssigneeChange}
             currentUserId={currentUser.id}
             currentUserRole={currentUser.role}

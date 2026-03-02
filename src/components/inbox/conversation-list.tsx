@@ -1,5 +1,5 @@
 import { ArrowDownNarrowWide, ArrowUpNarrowWide, Search } from "lucide-react";
-import type { Channel, ConversationWithRelations, InboxStatusTab, SortField, SortDirection } from "@/types";
+import type { Channel, ConversationWithRelations, SortField, SortDirection } from "@/types";
 import { CHANNEL_LABELS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,15 +14,6 @@ const SORT_FIELD_LABELS: Record<SortField, string> = {
   sla_due: "SLA Due",
 };
 
-const STATUS_OPTIONS: { value: InboxStatusTab; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "open", label: "Open" },
-  { value: "awaiting", label: "Awaiting" },
-  { value: "converted", label: "Converted" },
-  { value: "closed", label: "Closed" },
-  { value: "snoozed", label: "Snoozed" },
-];
-
 const channelTabs: { value: Channel | "all"; label: string }[] = [
   { value: "all", label: "All" },
   { value: "whatsapp", label: CHANNEL_LABELS.whatsapp },
@@ -36,9 +27,6 @@ interface ConversationListProps {
   unreadConversationIds: Set<string>;
   selectedId: string | null;
   onSelect: (id: string) => void;
-  activeStatusTab: InboxStatusTab;
-  onStatusTabChange: (tab: InboxStatusTab) => void;
-  tabCounts: Record<InboxStatusTab, number>;
   activeChannel: Channel | "all";
   onChannelChange: (channel: Channel | "all") => void;
   search: string;
@@ -55,9 +43,6 @@ export function ConversationList({
   unreadConversationIds,
   selectedId,
   onSelect,
-  activeStatusTab,
-  onStatusTabChange,
-  tabCounts,
   activeChannel,
   onChannelChange,
   search,
@@ -100,22 +85,6 @@ export function ConversationList({
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <Select value={activeStatusTab} onValueChange={(v) => onStatusTabChange(v as InboxStatusTab)}>
-            <SelectTrigger size="sm" className="w-[140px] text-xs">
-              <SelectValue>
-                {STATUS_OPTIONS.find((o) => o.value === activeStatusTab)?.label}
-                {tabCounts[activeStatusTab] > 0 && ` (${tabCounts[activeStatusTab]})`}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {STATUS_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}{tabCounts[opt.value] > 0 ? ` (${tabCounts[opt.value]})` : ""}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="flex-1" />
           <Select value={sortBy} onValueChange={(v) => onSortByChange(v as SortField)}>
             <SelectTrigger size="sm" className="flex-1 text-xs">
               <SelectValue />
@@ -139,7 +108,7 @@ export function ConversationList({
       <div className="flex-1 overflow-y-auto">
         {conversations.length === 0 ? (
           <p className="p-4 text-center text-sm text-muted-foreground">
-            {title === "My Conversations" ? "No conversations assigned to you" : "No conversations found"}
+            {title === "My Queue" ? "No conversations assigned to you" : "No conversations found"}
           </p>
         ) : (
           conversations.map((conversation) => (

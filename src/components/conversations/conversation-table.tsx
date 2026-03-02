@@ -10,29 +10,19 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import { StatusBadge } from "@/components/shared/status-badge";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { SlaBadge } from "@/components/shared/sla-badge";
 import { VipIndicator } from "@/components/shared/vip-indicator";
 import { ServiceTypeIcon } from "@/components/shared/service-type-icon";
 import { ChannelIcon } from "@/components/shared/channel-icon";
 import { formatRelativeTime } from "@/lib/format";
-import { cn } from "@/lib/utils";
 
 interface ConversationTableProps {
   conversations: ConversationWithRelations[];
 }
 
-type SortColumn = "status" | "priority" | "createdAt" | "title" | "client";
+type SortColumn = "priority" | "createdAt" | "title" | "client";
 type SortDirection = "asc" | "desc";
-
-const STATUS_ORDER = [
-  "awaiting_client",
-  "new",
-  "in_review",
-  "converted",
-  "closed",
-] as const;
 
 const PRIORITY_ORDER = ["critical", "high", "medium", "low"] as const;
 
@@ -45,12 +35,6 @@ function compareSortValues(
   let result = 0;
 
   switch (column) {
-    case "status": {
-      const aIdx = STATUS_ORDER.indexOf(a.status as (typeof STATUS_ORDER)[number]);
-      const bIdx = STATUS_ORDER.indexOf(b.status as (typeof STATUS_ORDER)[number]);
-      result = aIdx - bIdx;
-      break;
-    }
     case "priority": {
       const aIdx = PRIORITY_ORDER.indexOf(a.priority as (typeof PRIORITY_ORDER)[number]);
       const bIdx = PRIORITY_ORDER.indexOf(b.priority as (typeof PRIORITY_ORDER)[number]);
@@ -103,16 +87,6 @@ export function ConversationTable({ conversations }: ConversationTableProps) {
             <button
               type="button"
               className="flex cursor-pointer items-center gap-1"
-              onClick={() => handleSort("status")}
-            >
-              Status
-              <ArrowUpDown className="size-3.5 text-muted-foreground" />
-            </button>
-          </TableHead>
-          <TableHead>
-            <button
-              type="button"
-              className="flex cursor-pointer items-center gap-1"
               onClick={() => handleSort("priority")}
             >
               Priority
@@ -160,16 +134,9 @@ export function ConversationTable({ conversations }: ConversationTableProps) {
         {sortedConversations.map((conversation) => (
           <TableRow
             key={conversation.id}
-            className={cn(
-              "cursor-pointer",
-              conversation.status === "awaiting_client" &&
-                "border-l-2 border-l-red-400"
-            )}
+            className="cursor-pointer"
             onClick={() => navigate(`/inbox?id=${conversation.id}`)}
           >
-            <TableCell>
-              <StatusBadge type="conversation" status={conversation.status} />
-            </TableCell>
             <TableCell>
               <PriorityBadge priority={conversation.priority} />
             </TableCell>

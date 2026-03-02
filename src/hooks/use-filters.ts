@@ -1,9 +1,8 @@
 import { useReducer, useMemo } from "react";
-import type { ConversationFilterState, ConversationStatus, Channel, SlaState } from "@/types";
+import type { ConversationFilterState, Channel, SlaState } from "@/types";
 
 type FilterAction =
   | { type: "SET_SEARCH"; payload: string }
-  | { type: "SET_STATUSES"; payload: ConversationStatus[] }
   | { type: "SET_CHANNELS"; payload: Channel[] }
   | { type: "SET_ASSIGNEES"; payload: string[] }
   | { type: "SET_DATE_RANGE"; payload: { from: Date | null; to: Date | null } }
@@ -13,7 +12,6 @@ type FilterAction =
 
 const initialState: ConversationFilterState = {
   search: "",
-  statuses: [],
   channels: [],
   assigneeIds: [],
   dateFrom: null,
@@ -26,8 +24,6 @@ function filterReducer(state: ConversationFilterState, action: FilterAction): Co
   switch (action.type) {
     case "SET_SEARCH":
       return { ...state, search: action.payload };
-    case "SET_STATUSES":
-      return { ...state, statuses: action.payload };
     case "SET_CHANNELS":
       return { ...state, channels: action.payload };
     case "SET_ASSIGNEES":
@@ -49,7 +45,6 @@ export function useFilters() {
   const activeCount = useMemo(() => {
     let count = 0;
     if (filters.search) count++;
-    if (filters.statuses.length > 0) count++;
     if (filters.channels.length > 0) count++;
     if (filters.assigneeIds.length > 0) count++;
     if (filters.dateFrom || filters.dateTo) count++;

@@ -5,7 +5,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-1",
     clientId: "cli-1",
-    status: "converted",
+
     priority: "critical",
     channel: "concierge",
     serviceType: "car",
@@ -22,7 +22,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-2",
     clientId: "cli-1",
-    status: "in_review",
+
     priority: "high",
     channel: "phone",
     serviceType: "jet",
@@ -39,7 +39,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-3",
     clientId: "cli-2",
-    status: "in_review",
+
     priority: "critical",
     channel: "whatsapp",
     serviceType: "helicopter",
@@ -56,7 +56,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-4",
     clientId: "cli-2",
-    status: "converted",
+
     priority: "high",
     channel: "email",
     serviceType: "car",
@@ -73,7 +73,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-5",
     clientId: "cli-3",
-    status: "awaiting_client",
+
     priority: "critical",
     channel: "concierge",
     serviceType: "yacht",
@@ -90,7 +90,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-6",
     clientId: "cli-3",
-    status: "new",
+
     priority: "high",
     channel: "phone",
     serviceType: "jet",
@@ -107,7 +107,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-7",
     clientId: "cli-4",
-    status: "in_review",
+
     priority: "high",
     channel: "email",
     serviceType: "car",
@@ -124,7 +124,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-8",
     clientId: "cli-4",
-    status: "converted",
+
     priority: "medium",
     channel: "whatsapp",
     serviceType: "helicopter",
@@ -142,7 +142,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-9",
     clientId: "cli-5",
-    status: "converted",
+
     priority: "medium",
     channel: "web",
     serviceType: "car",
@@ -159,7 +159,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-10",
     clientId: "cli-5",
-    status: "new",
+
     priority: "low",
     channel: "email",
     serviceType: "car",
@@ -176,7 +176,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-11",
     clientId: "cli-6",
-    status: "in_review",
+
     priority: "medium",
     channel: "phone",
     serviceType: "car",
@@ -193,7 +193,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-12",
     clientId: "cli-6",
-    status: "closed",
+
     priority: "low",
     channel: "email",
     serviceType: "jet",
@@ -210,7 +210,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-13",
     clientId: "cli-7",
-    status: "converted",
+
     priority: "medium",
     channel: "web",
     serviceType: "car",
@@ -227,7 +227,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-14",
     clientId: "cli-8",
-    status: "in_review",
+
     priority: "high",
     channel: "whatsapp",
     serviceType: "jet",
@@ -244,7 +244,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-15",
     clientId: "cli-8",
-    status: "awaiting_client",
+
     priority: "medium",
     channel: "email",
     serviceType: "car",
@@ -261,7 +261,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-16",
     clientId: "cli-9",
-    status: "converted",
+
     priority: "low",
     channel: "web",
     serviceType: "car",
@@ -278,7 +278,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-17",
     clientId: "cli-9",
-    status: "new",
+
     priority: "medium",
     channel: "phone",
     serviceType: "helicopter",
@@ -295,7 +295,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-18",
     clientId: "cli-10",
-    status: "in_review",
+
     priority: "high",
     channel: "concierge",
     serviceType: "car",
@@ -312,7 +312,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-19",
     clientId: "cli-10",
-    status: "converted",
+
     priority: "medium",
     channel: "email",
     serviceType: "car",
@@ -329,7 +329,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-20",
     clientId: "cli-11",
-    status: "in_review",
+
     priority: "low",
     channel: "web",
     serviceType: "car",
@@ -346,7 +346,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-21",
     clientId: "cli-12",
-    status: "in_review",
+
     priority: "medium",
     channel: "whatsapp",
     serviceType: "car",
@@ -363,7 +363,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-22",
     clientId: "cli-12",
-    status: "new",
+
     priority: "high",
     channel: "phone",
     serviceType: "jet",
@@ -380,7 +380,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-23",
     clientId: "cli-1",
-    status: "awaiting_client",
+
     priority: "critical",
     channel: "concierge",
     serviceType: "yacht",
@@ -397,7 +397,7 @@ export const conversations: Conversation[] = [
   {
     id: "conv-24",
     clientId: "cli-3",
-    status: "closed",
+
     priority: "medium",
     channel: "email",
     serviceType: "car",

@@ -1,10 +1,6 @@
 import type { SlaState } from "@/types";
 
-export function computeSlaState(status: string, slaDueAt: string): SlaState {
-  if (status === "converted" || status === "closed") {
-    return "on_track";
-  }
-
+export function computeSlaState(slaDueAt: string): SlaState {
   const now = new Date();
   const dueDate = new Date(slaDueAt);
   const twoHoursMs = 2 * 60 * 60 * 1000;
