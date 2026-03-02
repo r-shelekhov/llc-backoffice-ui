@@ -6,7 +6,6 @@ import { filterConversationsByPermission, filterVipConversations } from "@/lib/p
 import { isConversationUnread } from "@/lib/unread";
 import type { Attachment, Booking, Channel, Communication, ConversationStatus, ConversationWithRelations, InboxStatusTab, SortField, SortDirection, Priority } from "@/types";
 import { InboxLayout } from "@/components/inbox/inbox-layout";
-import { InboxEmptyState } from "@/components/inbox/inbox-empty-state";
 import { ConversationList } from "@/components/inbox/conversation-list";
 import { ConversationThread } from "@/components/inbox/conversation-thread";
 import { ContactDetailPanel } from "@/components/inbox/contact-detail-panel";
@@ -383,18 +382,14 @@ export function InboxPage() {
     ? localMessages.get(selectedId) ?? []
     : [];
 
-  const emptyStateStats = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10);
-    const todayCount = permittedConversations.filter(
-      (c) => c.updatedAt.slice(0, 10) === today
-    ).length;
-    return {
-      openCount: tabCounts.open,
-      awaitingCount: tabCounts.awaiting,
-      avgResponseTime: "1h 24m",
-      todayCount,
-    };
-  }, [permittedConversations, tabCounts]);
+  // Auto-select first conversation when none is selected or selected is no longer in filtered list
+  useEffect(() => {
+    if (filteredConversations.length === 0) return;
+    const currentInList = selectedId && filteredConversations.some((c) => c.id === selectedId);
+    if (!currentInList) {
+      handleSelect(filteredConversations[0].id);
+    }
+  }, [filteredConversations, selectedId, handleSelect]);
 
   const [createBookingConvId, setCreateBookingConvId] = useState<string | null>(null);
 
@@ -441,7 +436,6 @@ export function InboxPage() {
   return (
     <>
     <InboxLayout
-      emptyState={<InboxEmptyState stats={emptyStateStats} onStatusTabChange={setActiveStatusTab} />}
       left={
         <ConversationList
           conversations={filteredConversations}

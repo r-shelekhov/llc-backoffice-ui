@@ -5,10 +5,9 @@ interface InboxLayoutProps {
   left: ReactNode;
   middle: ReactNode | null;
   right: ReactNode | null;
-  emptyState?: ReactNode;
 }
 
-export function InboxLayout({ left, middle, right, emptyState }: InboxLayoutProps) {
+export function InboxLayout({ left, middle, right }: InboxLayoutProps) {
   return (
     <div className="flex h-full">
       <div className="w-80 shrink-0 border-r">{left}</div>
@@ -19,8 +18,6 @@ export function InboxLayout({ left, middle, right, emptyState }: InboxLayoutProp
             {right}
           </div>
         </>
-      ) : emptyState ? (
-        <div className="flex-1">{emptyState}</div>
       ) : (
         <div className="flex flex-1 items-center justify-center text-muted-foreground">
           <div className="flex flex-col items-center gap-2">
