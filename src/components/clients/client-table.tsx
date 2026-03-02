@@ -1,6 +1,14 @@
 import { useState, useMemo } from "react";
-import { ArrowUpDown } from "lucide-react";
-import type { ClientRow } from "@/types";
+import { ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import type { ClientRow, Role } from "@/types";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableHeader,
@@ -15,6 +23,9 @@ import { formatCurrency, formatRelativeTime, formatDate } from "@/lib/format";
 interface ClientTableProps {
   clients: ClientRow[];
   onSelect: (client: ClientRow) => void;
+  onEdit?: (client: ClientRow) => void;
+  onDelete?: (client: ClientRow) => void;
+  currentUserRole?: Role;
 }
 
 type SortColumn = "name" | "totalSpend" | "lastActivityAt" | "createdAt";
@@ -49,7 +60,13 @@ function compareSortValues(
   return direction === "desc" ? -result : result;
 }
 
-export function ClientTable({ clients, onSelect }: ClientTableProps) {
+export function ClientTable({
+  clients,
+  onSelect,
+  onEdit,
+  onDelete,
+  currentUserRole,
+}: ClientTableProps) {
   const [sortColumn, setSortColumn] = useState<SortColumn>("lastActivityAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
@@ -114,6 +131,7 @@ export function ClientTable({ clients, onSelect }: ClientTableProps) {
               <ArrowUpDown className="size-3.5 text-muted-foreground" />
             </button>
           </TableHead>
+          {onEdit && <TableHead className="w-12" />}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -154,6 +172,40 @@ export function ClientTable({ clients, onSelect }: ClientTableProps) {
             <TableCell className="text-sm text-muted-foreground">
               {formatDate(client.createdAt)}
             </TableCell>
+            {onEdit && (
+              <TableCell>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(client); }}>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    {currentUserRole === "admin" && onDelete && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={(e) => { e.stopPropagation(); onDelete(client); }}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4 text-destructive" />
+                          Delete
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            )}
           </TableRow>
         ))}
       </TableBody>
