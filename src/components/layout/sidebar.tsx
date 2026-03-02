@@ -1,11 +1,11 @@
 import { NavLink } from "react-router-dom";
 import {
   Inbox,
-  MessageSquareText,
+  UserCheck,
   CalendarCheck,
   Receipt,
   Users,
-  UserRound,
+  Users2,
   ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -83,13 +83,13 @@ export function Sidebar() {
           badge={unreadCount}
         />
         <NavItem
-          to="/my-conversations"
-          icon={MessageSquareText}
-          label="My Conversations"
+          to="/my-queue"
+          icon={UserCheck}
+          label="My Queue"
           badge={myUnreadCount}
         />
         <NavItem to="/bookings" icon={CalendarCheck} label="Bookings" />
-        <NavItem to="/clients" icon={UserRound} label="Clients" />
+        <NavItem to="/clients" icon={Users2} label="Clients" />
         <NavItem to="/billing" icon={Receipt} label="Billing" />
 
         {currentUser.role === "admin" && (
