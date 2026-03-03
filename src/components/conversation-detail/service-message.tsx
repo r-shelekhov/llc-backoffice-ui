@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, LinkIcon } from "lucide-react";
+import { Calendar, LinkIcon } from "lucide-react";
 import { formatRelativeTime, formatCurrency } from "@/lib/format";
 import { BOOKING_STATUS_LABELS, PAYMENT_METHOD_LABELS } from "@/lib/constants";
 import type { Communication } from "@/types";
@@ -87,7 +87,7 @@ export function ServiceMessage({
                 }}
                 className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
               >
-                Open booking <ArrowRight className="size-3" />
+                <Calendar className="size-3" /> Open booking
               </Link>
             )}
             {showSharePaymentLink && (
