@@ -25,6 +25,13 @@ export type SlaState = "on_track" | "at_risk" | "breached";
 
 export type DeliveryStatus = "sent" | "delivered" | "read";
 
+export type CommunicationEventType =
+  | "booking_created"
+  | "booking_status_changed"
+  | "invoice_created"
+  | "invoice_sent"
+  | "payment_confirmed";
+
 export interface User {
   id: string;
   name: string;
@@ -93,13 +100,23 @@ export interface Communication {
   attachments?: Attachment[];
   tags?: string[];
   event?: {
-    type: "booking_created";
-    bookingId: string;
-    title: string;
-    category: ServiceType;
-    executionAt: string;
-    location: string;
-    price: number;
+    type: CommunicationEventType;
+    // Common booking fields
+    bookingId?: string;
+    title?: string;
+    category?: ServiceType;
+    executionAt?: string;
+    location?: string;
+    price?: number;
+    // booking_status_changed
+    fromStatus?: BookingStatus;
+    toStatus?: BookingStatus;
+    // invoice_created, invoice_sent, payment_confirmed
+    invoiceId?: string;
+    invoiceTotal?: number;
+    // payment_confirmed
+    paymentAmount?: number;
+    paymentMethod?: PaymentMethod;
   };
   createdAt: string;
 }

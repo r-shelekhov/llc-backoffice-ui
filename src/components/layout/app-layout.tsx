@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 export function AppLayout() {
   const { pathname } = useLocation();
-  const isFullBleed = pathname === "/inbox" || pathname === "/my-conversations";
+  const isFullBleed = pathname === "/inbox" || pathname === "/my-queue";
   const isDetailPage = /^\/(bookings|billing)\/[^/]+$/.test(pathname);
 
   return (

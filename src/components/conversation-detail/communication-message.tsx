@@ -1,8 +1,8 @@
-import { Link } from "react-router-dom";
-import { ArrowRight, Paperclip, Check, CheckCheck } from "lucide-react";
-import { formatRelativeTime, formatFileSize, formatCurrency, formatDateTime } from "@/lib/format";
-import { SERVICE_TYPE_LABELS, DELIVERY_STATUS_LABELS } from "@/lib/constants";
+import { Paperclip, Check, CheckCheck } from "lucide-react";
+import { formatRelativeTime, formatFileSize } from "@/lib/format";
+import { DELIVERY_STATUS_LABELS } from "@/lib/constants";
 import type { Communication } from "@/types";
+import { ServiceMessage } from "./service-message";
 
 function getTagStyle(tag: string): string {
   switch (tag.toLowerCase()) {
@@ -25,31 +25,8 @@ export function CommunicationMessage({
   communication,
 }: CommunicationMessageProps) {
   if (communication.sender === "system") {
-    if (communication.event?.type === "booking_created") {
-      const { bookingId, title, category, executionAt, location, price } =
-        communication.event;
-      return (
-        <div className="flex items-center gap-3 py-2">
-          <div className="flex-1 border-t border-muted" />
-          <div className="rounded-lg border bg-muted/30 px-4 py-3 text-sm max-w-sm">
-            <p className="font-medium mb-2">Booking created</p>
-            <div className="space-y-1 text-muted-foreground">
-              <p>{title}</p>
-              <p>{SERVICE_TYPE_LABELS[category]} · {executionAt ? formatDateTime(executionAt) : "—"}</p>
-              <p>{location}</p>
-              <p className="font-medium text-foreground">{formatCurrency(price)}</p>
-            </div>
-            <Link
-              to={`/bookings/${bookingId}`}
-              state={{ from: "conversation", conversationId: communication.conversationId }}
-              className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-            >
-              Open booking <ArrowRight className="size-3" />
-            </Link>
-          </div>
-          <div className="flex-1 border-t border-muted" />
-        </div>
-      );
+    if (communication.event) {
+      return <ServiceMessage communication={communication} />;
     }
 
     return (
