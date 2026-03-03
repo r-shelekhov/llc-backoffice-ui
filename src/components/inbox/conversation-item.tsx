@@ -8,7 +8,7 @@ import type { ConversationWithRelations, SlaState } from '@/types'
 const ACTION_BADGE_CONFIG: Record<ActionReason, { className: string; label: string | ((slaState: SlaState) => string) }> = {
 	unread: { className: "bg-tone-info-light text-tone-info-foreground", label: "Unread" },
 	sla_risk: { className: "bg-tone-danger-light text-tone-danger-foreground", label: (s) => s === "breached" ? "SLA Breached" : "SLA Risk" },
-	unassigned: { className: "bg-tone-neutral-light text-tone-neutral-foreground", label: "Unassigned" },
+	unassigned: { className: "bg-tone-neutral-light text-tone-neutral-foreground ring-1 ring-inset ring-tone-neutral/25", label: "Unassigned" },
 	draft_booking: { className: "bg-tone-warning-light text-tone-warning-foreground", label: "Draft Booking" },
 	awaiting_payment: { className: "bg-tone-purple-light text-tone-purple-foreground", label: "Awaiting Payment" },
 	needs_scheduling: { className: "bg-tone-info-light text-tone-info-foreground", label: "Needs Scheduling" },
@@ -47,8 +47,7 @@ export function ConversationItem({
 			onClick={onClick}
 			className={cn(
 				'flex w-full gap-3 border-l-2 border-l-transparent px-4 py-3 text-left transition-colors hover:bg-accent/30',
-				isSelected && 'border-l-primary bg-accent/50',
-				isUnread && !isSelected && 'border-l-primary/60 bg-primary/[0.03]',
+				isSelected && 'border-l-primary bg-accent',
 			)}
 		>
 			<div className="relative shrink-0">
@@ -65,7 +64,7 @@ export function ConversationItem({
 			</div>
 			<div className="min-w-0 flex-1">
 				<div className="flex items-center justify-between gap-2">
-					<span className="truncate text-sm font-medium">
+					<span className={cn("truncate text-sm", isUnread ? "font-semibold text-foreground" : "font-medium text-foreground/80")}>
 						{conversation.client.name}
 					</span>
 					<span className="shrink-0 text-xs text-muted-foreground">

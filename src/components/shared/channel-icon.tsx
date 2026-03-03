@@ -1,4 +1,4 @@
-import { Phone, Mail, MessageCircle, Globe, Crown } from "lucide-react";
+import { Phone, Mail, MessageCircle, Globe, ConciergeBell } from "lucide-react";
 import type { Channel } from "@/types";
 import { CHANNEL_LABELS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,7 @@ const iconMap = {
   email: Mail,
   whatsapp: MessageCircle,
   web: Globe,
-  concierge: Crown,
+  concierge: ConciergeBell,
 } as const;
 
 export function ChannelIcon({ channel, className }: ChannelIconProps) {
