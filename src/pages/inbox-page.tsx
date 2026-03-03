@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
-import { getAllConversationsWithRelations, conversations as sourceConversations, communications, internalNotes, users as sourceUsers, bookings } from "@/lib/mock-data";
+import { getAllConversationsWithRelations, conversations as sourceConversations, communications, internalNotes, users as sourceUsers, bookings, clients } from "@/lib/mock-data";
 import { filterConversationsByPermission, filterVipConversations } from "@/lib/permissions";
 import { isConversationUnread, getUnreadCount } from "@/lib/unread";
 import { getConversationActionReasons, type ActionReason } from "@/lib/filters";
@@ -150,7 +150,7 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
   const permittedConversations = useMemo(() => {
     const base = filterVipConversations(currentUser, filterConversationsByPermission(currentUser, allConversations));
     if (myConversationsOnly) {
-      return base.filter((c) => c.assigneeId === currentUser.id);
+      return base.filter((c) => c.managerId === currentUser.id);
     }
     return base;
   }, [currentUser, allConversations, myConversationsOnly, updateCounter]);
@@ -212,28 +212,36 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
     [unreadCountMap]
   );
 
-  const handleAssigneeChange = useCallback(
-    (conversationId: string, assigneeId: string | null) => {
+  const handleManagerChange = useCallback(
+    (conversationId: string, managerId: string | null) => {
+      // VIP assignment guard: reject plain managers for VIP clients
+      if (managerId) {
+        const conv = sourceConversations.find((c) => c.id === conversationId);
+        const client = conv ? clients.find((c) => c.id === conv.clientId) : null;
+        const user = sourceUsers.find((u) => u.id === managerId);
+        if (client?.isVip && user?.role === "manager") return;
+      }
+
       const conv = sourceConversations.find((c) => c.id === conversationId);
       if (conv) {
-        conv.assigneeId = assigneeId;
+        conv.managerId = managerId;
         conv.updatedAt = new Date().toISOString();
       }
       const convWR = allConversations.find((c) => c.id === conversationId);
       if (convWR) {
-        convWR.assigneeId = assigneeId;
-        convWR.assignee = assigneeId ? sourceUsers.find((u) => u.id === assigneeId) ?? null : null;
+        convWR.managerId = managerId;
+        convWR.manager = managerId ? sourceUsers.find((u) => u.id === managerId) ?? null : null;
         convWR.updatedAt = new Date().toISOString();
       }
 
-      // Propagate assignee to all bookings linked to this conversation
+      // Propagate manager to all bookings linked to this conversation
       for (const booking of bookings) {
         if (booking.conversationId !== conversationId) continue;
-        booking.assigneeId = assigneeId;
+        booking.managerId = managerId;
         booking.updatedAt = new Date().toISOString();
 
-        // Auto-schedule: paid + assignee + execution date → scheduled
-        if (booking.status === "paid" && assigneeId !== null && booking.executionAt !== "") {
+        // Auto-schedule: paid + manager + execution date → scheduled
+        if (booking.status === "paid" && managerId !== null && booking.executionAt !== "") {
           const fromStatus = booking.status;
           booking.status = "scheduled";
 
@@ -480,7 +488,7 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
           <ContactDetailPanel
             conversation={selectedConversation}
             users={allUsers}
-            onAssigneeChange={handleAssigneeChange}
+            onManagerChange={handleManagerChange}
             currentUserId={currentUser.id}
             currentUserRole={currentUser.role}
             onAddNote={handleAddNote}

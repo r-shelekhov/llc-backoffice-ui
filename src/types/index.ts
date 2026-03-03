@@ -60,7 +60,7 @@ export interface Client {
 export interface Conversation {
   id: string;
   clientId: string;
-  assigneeId: string | null;
+  managerId: string | null;
   priority: Priority;
   channel: Channel;
   serviceType: ServiceType;
@@ -78,7 +78,7 @@ export interface Booking {
   id: string;
   conversationId: string;
   clientId: string;
-  assigneeId: string | null;
+  managerId: string | null;
   status: BookingStatus;
   title: string;
   category: ServiceType;
@@ -176,7 +176,7 @@ export interface Attachment {
 
 export interface ConversationWithRelations extends Conversation {
   client: Client;
-  assignee: User | null;
+  manager: User | null;
   communications: Communication[];
   internalNotes: InternalNote[];
   bookings: Booking[];
@@ -187,7 +187,7 @@ export interface ConversationWithRelations extends Conversation {
 
 export interface BookingWithRelations extends Booking {
   client: Client;
-  assignee: User | null;
+  manager: User | null;
   conversation: Conversation;
   invoices: Invoice[];
   payments: Payment[];
@@ -208,7 +208,7 @@ export interface PaymentWithRelations extends Payment {
 export interface ConversationFilterState {
   search: string;
   channels: Channel[];
-  assigneeIds: string[];
+  managerIds: string[];
   dateFrom: Date | null;
   dateTo: Date | null;
   vipOnly: boolean;

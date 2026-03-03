@@ -4,7 +4,7 @@ import type { ConversationFilterState, Channel, SlaState } from "@/types";
 type FilterAction =
   | { type: "SET_SEARCH"; payload: string }
   | { type: "SET_CHANNELS"; payload: Channel[] }
-  | { type: "SET_ASSIGNEES"; payload: string[] }
+  | { type: "SET_MANAGERS"; payload: string[] }
   | { type: "SET_DATE_RANGE"; payload: { from: Date | null; to: Date | null } }
   | { type: "SET_VIP_ONLY"; payload: boolean }
   | { type: "SET_SLA_STATES"; payload: SlaState[] }
@@ -13,7 +13,7 @@ type FilterAction =
 const initialState: ConversationFilterState = {
   search: "",
   channels: [],
-  assigneeIds: [],
+  managerIds: [],
   dateFrom: null,
   dateTo: null,
   vipOnly: false,
@@ -26,8 +26,8 @@ function filterReducer(state: ConversationFilterState, action: FilterAction): Co
       return { ...state, search: action.payload };
     case "SET_CHANNELS":
       return { ...state, channels: action.payload };
-    case "SET_ASSIGNEES":
-      return { ...state, assigneeIds: action.payload };
+    case "SET_MANAGERS":
+      return { ...state, managerIds: action.payload };
     case "SET_DATE_RANGE":
       return { ...state, dateFrom: action.payload.from, dateTo: action.payload.to };
     case "SET_VIP_ONLY":
@@ -46,7 +46,7 @@ export function useFilters() {
     let count = 0;
     if (filters.search) count++;
     if (filters.channels.length > 0) count++;
-    if (filters.assigneeIds.length > 0) count++;
+    if (filters.managerIds.length > 0) count++;
     if (filters.dateFrom || filters.dateTo) count++;
     if (filters.vipOnly) count++;
     if (filters.slaStates.length > 0) count++;

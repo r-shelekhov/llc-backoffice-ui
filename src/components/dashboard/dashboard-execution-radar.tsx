@@ -40,7 +40,7 @@ export function DashboardExecutionRadar({ data }: DashboardExecutionRadarProps) 
                   )}
                   {item.assignmentRisk && (
                     <Badge variant="outline" className="bg-tone-warning-light text-tone-warning-foreground text-[10px] px-1.5">
-                      Assignee
+                      Manager
                     </Badge>
                   )}
                   {item.slaRisk && (

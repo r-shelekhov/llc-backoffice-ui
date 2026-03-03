@@ -120,7 +120,7 @@ function confirmPayment(
       toStatus: "paid",
     });
 
-    if (bookingRef.assigneeId !== null && bookingRef.executionAt !== "") {
+    if (bookingRef.managerId !== null && bookingRef.executionAt !== "") {
       bookingRef.status = "scheduled";
       pushSystemMessage(bookingRef.conversationId, "Booking status changed from paid to scheduled", {
         type: "booking_status_changed",
@@ -172,7 +172,7 @@ export function BookingDetailPage() {
   const transitions = BOOKING_STATUS_TRANSITIONS[booking.status];
   const isAutoScheduled =
     booking.status === "paid" &&
-    booking.assigneeId !== null &&
+    booking.managerId !== null &&
     booking.executionAt !== "";
 
   const billingState = deriveBillingState();
@@ -191,7 +191,7 @@ export function BookingDetailPage() {
   function checkAutoSchedule(bookingRef: typeof bookings[number]) {
     if (
       bookingRef.status === "paid" &&
-      bookingRef.assigneeId !== null &&
+      bookingRef.managerId !== null &&
       bookingRef.executionAt !== ""
     ) {
       bookingRef.status = "scheduled";
@@ -294,16 +294,16 @@ export function BookingDetailPage() {
             }
             infoStrip={
               <>
-                {isEditable && !booking.assigneeId && (
+                {isEditable && !booking.managerId && (
                   <div className="flex items-center gap-2 rounded-md bg-tone-warning-light px-3 py-1.5 text-sm text-tone-warning-foreground">
                     <AlertCircle className="size-4" />
-                    <span>No assignee — assign someone to proceed with execution</span>
+                    <span>No manager — assign someone to proceed with execution</span>
                   </div>
                 )}
                 {isAutoScheduled && (
                   <div className="flex items-center gap-2 rounded-md bg-tone-info-light px-3 py-1.5 text-sm text-tone-info-foreground">
                     <Zap className="size-4" />
-                    <span>Will auto-transition to Scheduled (assignee &amp; execution date set)</span>
+                    <span>Will auto-transition to Scheduled (manager &amp; execution date set)</span>
                   </div>
                 )}
               </>
@@ -332,10 +332,10 @@ export function BookingDetailPage() {
             <DetailRailCard title="Execution Readiness">
               <dl className="space-y-2">
                 <DetailKv
-                  label="Assignee"
+                  label="Manager"
                   value={
-                    booking.assignee ? (
-                      <span className="text-tone-success-foreground">{booking.assignee.name}</span>
+                    booking.manager ? (
+                      <span className="text-tone-success-foreground">{booking.manager.name}</span>
                     ) : (
                       <span className="text-tone-warning">Unassigned</span>
                     )
@@ -448,8 +448,8 @@ export function BookingDetailPage() {
                     value={formatDateTime(booking.executionAt)}
                   />
                   <DetailKv
-                    label="Assignee"
-                    value={booking.assignee?.name ?? "Unassigned"}
+                    label="Manager"
+                    value={booking.manager?.name ?? "Unassigned"}
                   />
                 </>
               )}
@@ -489,8 +489,8 @@ export function BookingDetailPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Assignee</label>
-                  <p className="mt-1 text-sm">{booking.assignee?.name ?? "Unassigned"}</p>
+                  <label className="text-xs text-muted-foreground">Manager</label>
+                  <p className="mt-1 text-sm">{booking.manager?.name ?? "Unassigned"}</p>
                 </div>
               </div>
             </div>

@@ -24,7 +24,7 @@ export function getConversationWithRelations(conversationId: string): Conversati
   if (!conversation) return null;
 
   const client = clients.find((c) => c.id === conversation.clientId) ?? null;
-  const assignee = conversation.assigneeId ? (users.find((u) => u.id === conversation.assigneeId) ?? null) : null;
+  const manager = conversation.managerId ? (users.find((u) => u.id === conversation.managerId) ?? null) : null;
   const convCommunications = communications.filter((c) => c.conversationId === conversationId);
   const convNotes = internalNotes.filter((n) => n.conversationId === conversationId);
   const convBookings = bookings.filter((b) => b.conversationId === conversationId);
@@ -38,7 +38,7 @@ export function getConversationWithRelations(conversationId: string): Conversati
   return {
     ...conversation,
     client: client!,
-    assignee,
+    manager,
     communications: convCommunications,
     internalNotes: convNotes,
     bookings: convBookings,
@@ -53,7 +53,7 @@ export function getBookingWithRelations(bookingId: string): BookingWithRelations
   if (!booking) return null;
 
   const client = clients.find((c) => c.id === booking.clientId) ?? null;
-  const assignee = booking.assigneeId ? (users.find((u) => u.id === booking.assigneeId) ?? null) : null;
+  const manager = booking.managerId ? (users.find((u) => u.id === booking.managerId) ?? null) : null;
   const conversation = conversations.find((c) => c.id === booking.conversationId) ?? null;
   const bookingInvoices = invoices.filter((i) => i.bookingId === bookingId);
   const bookingPayments = payments.filter((p) =>
@@ -63,7 +63,7 @@ export function getBookingWithRelations(bookingId: string): BookingWithRelations
   return {
     ...booking,
     client: client!,
-    assignee,
+    manager,
     conversation: conversation!,
     invoices: bookingInvoices,
     payments: bookingPayments,

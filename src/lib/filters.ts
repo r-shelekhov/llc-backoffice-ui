@@ -22,7 +22,7 @@ export function getConversationActionReasons(
   }
 
   // Unassigned
-  if (conversation.assigneeId === null) {
+  if (conversation.managerId === null) {
     reasons.push("unassigned");
   }
 
@@ -71,9 +71,9 @@ export function applyConversationFilters(
       return false;
     }
 
-    // Assignee
-    if (filters.assigneeIds.length > 0) {
-      if (!r.assigneeId || !filters.assigneeIds.includes(r.assigneeId)) {
+    // Manager
+    if (filters.managerIds.length > 0) {
+      if (!r.managerId || !filters.managerIds.includes(r.managerId)) {
         return false;
       }
     }

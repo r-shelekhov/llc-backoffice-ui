@@ -122,10 +122,10 @@ export function BookingsPage() {
     bookingRef.status = newStatus;
     bookingRef.updatedAt = new Date().toISOString();
 
-    // Auto-schedule: paid → scheduled when assignee + execution date set
+    // Auto-schedule: paid → scheduled when manager + execution date set
     if (
       bookingRef.status === "paid" &&
-      bookingRef.assigneeId !== null &&
+      bookingRef.managerId !== null &&
       bookingRef.executionAt !== ""
     ) {
       bookingRef.status = "scheduled";
@@ -162,7 +162,7 @@ export function BookingsPage() {
     if (bookingRef) {
       bookingRef.status = "paid";
       bookingRef.updatedAt = now;
-      if (bookingRef.assigneeId !== null && bookingRef.executionAt !== "") {
+      if (bookingRef.managerId !== null && bookingRef.executionAt !== "") {
         bookingRef.status = "scheduled";
       }
     }

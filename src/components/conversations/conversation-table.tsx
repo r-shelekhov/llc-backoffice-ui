@@ -117,7 +117,7 @@ export function ConversationTable({ conversations }: ConversationTableProps) {
           </TableHead>
           <TableHead>Service</TableHead>
           <TableHead>Channel</TableHead>
-          <TableHead>Assignee</TableHead>
+          <TableHead>Manager</TableHead>
           <TableHead>
             <button
               type="button"
@@ -164,14 +164,14 @@ export function ConversationTable({ conversations }: ConversationTableProps) {
               <ChannelIcon channel={conversation.channel} />
             </TableCell>
             <TableCell>
-              {conversation.assignee ? (
+              {conversation.manager ? (
                 <div className="flex items-center gap-2">
                   <img
-                    src={conversation.assignee.avatarUrl}
-                    alt={conversation.assignee.name}
+                    src={conversation.manager.avatarUrl}
+                    alt={conversation.manager.name}
                     className="w-6 h-6 rounded-full"
                   />
-                  <span className="text-sm">{conversation.assignee.name}</span>
+                  <span className="text-sm">{conversation.manager.name}</span>
                 </div>
               ) : (
                 <span className="text-sm text-muted-foreground">

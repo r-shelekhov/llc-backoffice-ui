@@ -10,11 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency, formatDateTime } from "@/lib/format";
 import { CHANNEL_LABELS } from "@/lib/constants";
+import { getAssignableManagers } from "@/lib/permissions";
 
 interface ContactDetailPanelProps {
   conversation: ConversationWithRelations;
   users: User[];
-  onAssigneeChange: (conversationId: string, assigneeId: string | null) => void;
+  onManagerChange: (conversationId: string, managerId: string | null) => void;
   currentUserId?: string;
   currentUserRole?: string;
   onAddNote?: (content: string) => void;
@@ -25,7 +26,7 @@ interface ContactDetailPanelProps {
 export function ContactDetailPanel({
   conversation,
   users,
-  onAssigneeChange,
+  onManagerChange,
   currentUserId,
   currentUserRole,
   onAddNote,
@@ -33,8 +34,8 @@ export function ContactDetailPanel({
   onDeleteNote,
 }: ContactDetailPanelProps) {
   const navigate = useNavigate();
-  const { client, assignee } = conversation;
-  const activeUsers = users.filter((u) => u.isActive);
+  const { client, manager } = conversation;
+  const assignableUsers = getAssignableManagers(client, users);
 
   return (
     <div className="space-y-0">
@@ -131,14 +132,14 @@ export function ContactDetailPanel({
         </div>
       </div>
 
-      {/* Assignee section */}
+      {/* Manager section */}
       <div className="border-b p-4">
         <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Assignee
+          Manager
         </h4>
         <Select
-          value={assignee?.id ?? "unassigned"}
-          onValueChange={(v) => onAssigneeChange(conversation.id, v === "unassigned" ? null : v)}
+          value={manager?.id ?? "unassigned"}
+          onValueChange={(v) => onManagerChange(conversation.id, v === "unassigned" ? null : v)}
         >
           <SelectTrigger size="sm" className="w-full">
             <SelectValue />
@@ -150,7 +151,7 @@ export function ContactDetailPanel({
                 <span>Unassigned</span>
               </div>
             </SelectItem>
-            {activeUsers.map((user) => (
+            {assignableUsers.map((user) => (
               <SelectItem key={user.id} value={user.id}>
                 <div className="flex items-center gap-2">
                   <img src={user.avatarUrl} alt={user.name} className="size-5 rounded-full object-cover" />

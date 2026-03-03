@@ -4,13 +4,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown } from "lucide-react";
 
-interface AssigneeFilterProps {
+interface ManagerFilterProps {
   values: string[];
   onChange: (values: string[]) => void;
   users: { id: string; name: string }[];
 }
 
-export function AssigneeFilter({ values, onChange, users }: AssigneeFilterProps) {
+export function ManagerFilter({ values, onChange, users }: ManagerFilterProps) {
   function handleToggle(userId: string, checked: boolean) {
     if (checked) {
       onChange([...values, userId]);
@@ -23,7 +23,7 @@ export function AssigneeFilter({ values, onChange, users }: AssigneeFilterProps)
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1.5">
-          Assignee
+          Manager
           {values.length > 0 && (
             <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-xs">
               {values.length}

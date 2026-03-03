@@ -42,11 +42,11 @@ const TERMINAL_STATUSES: BookingStatus[] = ["completed", "cancelled"];
 function getBookingWarnings(booking: BookingWithRelations): Warning[] {
   const warnings: Warning[] = [];
 
-  // No assignee (non-terminal bookings only)
-  if (!booking.assigneeId && !TERMINAL_STATUSES.includes(booking.status)) {
+  // No manager (non-terminal bookings only)
+  if (!booking.managerId && !TERMINAL_STATUSES.includes(booking.status)) {
     warnings.push({
       icon: AlertCircle,
-      message: "No assignee",
+      message: "No manager",
       className: "text-orange-500",
     });
   }
@@ -88,7 +88,7 @@ export function BookingTable({ bookings, onSelect, onStatusChange, onConfirmPaym
             <TableHead>Client</TableHead>
             <TableHead>Category</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Assignee</TableHead>
+            <TableHead>Manager</TableHead>
             <TableHead>Price</TableHead>
             <TableHead>Execution Date</TableHead>
             <TableHead className="w-[140px]">Actions</TableHead>
@@ -128,8 +128,8 @@ export function BookingTable({ bookings, onSelect, onStatusChange, onConfirmPaym
                   <StatusBadge type="booking" status={booking.status} />
                 </TableCell>
                 <TableCell>
-                  {booking.assignee ? (
-                    <span className="text-sm">{booking.assignee.name}</span>
+                  {booking.manager ? (
+                    <span className="text-sm">{booking.manager.name}</span>
                   ) : (
                     <span className="text-sm text-muted-foreground">Unassigned</span>
                   )}
