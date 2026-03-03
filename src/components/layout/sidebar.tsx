@@ -8,6 +8,7 @@ import {
   Users2,
   ChevronDown,
 } from "lucide-react";
+import llcLogo from "@/assets/llc-logo.svg";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { ROLE_LABELS } from "@/lib/constants";
@@ -72,8 +73,9 @@ export function Sidebar() {
 
   return (
     <aside className="flex h-full w-60 flex-col border-r bg-white">
-      <div className="flex h-14 items-center px-6">
-        <span className="text-lg font-bold">LLC Car</span>
+      <div className="flex h-14 items-center gap-2 px-6">
+        <img src={llcLogo} alt="LLC" className="h-7" />
+        <span className="text-lg font-bold" style={{ fontFamily: "'Taviraj', serif", color: '#332f2b' }}>LLC</span>
       </div>
       <nav className="flex flex-1 flex-col gap-1 p-3">
         <NavItem
