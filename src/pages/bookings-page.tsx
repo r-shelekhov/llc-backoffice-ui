@@ -1,35 +1,42 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import { AlertCircle, Calendar, PoundSterling, Clock } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { AlertCircle, ArrowLeft, Calendar, PoundSterling, Clock, Check, ChevronDown } from "lucide-react";
 import type { BookingFilterState, BookingStatus, PaymentMethod } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
-import { getAllBookingsWithRelations, bookings, invoices, payments } from "@/lib/mock-data";
+import { getAllBookingsWithRelations, bookings, invoices, payments, clients } from "@/lib/mock-data";
 import { filterBookingsByPermission, filterVipBookings } from "@/lib/permissions";
 import { applyBookingFilters } from "@/lib/filters";
 import { BOOKING_STATUS_TRANSITIONS } from "@/lib/constants";
 import { formatCurrency } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { SearchInput } from "@/components/filters/search-input";
 import { DateRangePicker } from "@/components/shared/date-range-picker";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { BookingTable } from "@/components/bookings/booking-table";
 import { BookingStatusTabs } from "@/components/bookings/booking-status-tabs";
 import { ConfirmPaymentDialog } from "@/components/bookings/confirm-payment-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 
-const initialFilters: BookingFilterState = {
-  search: "",
-  statuses: [],
-  dateFrom: null,
-  dateTo: null,
-};
-
 const TERMINAL_STATUSES: BookingStatus[] = ["completed", "cancelled"];
 
 export function BookingsPage() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<BookingFilterState>(initialFilters);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const initialClientId = searchParams.get("clientId");
+  const [filters, setFilters] = useState<BookingFilterState>({
+    search: "",
+    statuses: [],
+    clientId: initialClientId,
+    dateFrom: null,
+    dateTo: null,
+  });
+  const [clientOpen, setClientOpen] = useState(false);
   const [, forceUpdate] = useState(0);
   const [paymentDialogBooking, setPaymentDialogBooking] = useState<{
     bookingId: string;
@@ -220,13 +227,36 @@ export function BookingsPage() {
     });
   }
 
+  const clientOptions = clients.map((c) => ({ value: c.id, label: c.name }));
+
+  function handleClientSelect(id: string | null) {
+    setFilters((prev) => ({ ...prev, clientId: id }));
+    setSearchParams((prev) => {
+      if (id) {
+        prev.set("clientId", id);
+      } else {
+        prev.delete("clientId");
+      }
+      return prev;
+    });
+  }
+
   const activeFilterCount =
     (filters.search ? 1 : 0) +
+    (filters.clientId ? 1 : 0) +
     (filters.dateFrom ? 1 : 0) +
     (filters.dateTo ? 1 : 0);
 
   return (
     <div className="space-y-6">
+      {filters.clientId && (
+        <Button variant="ghost" size="sm" className="-ml-2 h-7 text-xs" asChild>
+          <Link to={`/clients/${filters.clientId}`}>
+            <ArrowLeft className="size-3.5" />
+            Back to {clientOptions.find((c) => c.value === filters.clientId)?.label ?? "Client"}
+          </Link>
+        </Button>
+      )}
       <h1 className="text-2xl font-semibold">Bookings</h1>
 
       <div className="grid grid-cols-4 gap-4">
@@ -262,7 +292,10 @@ export function BookingsPage() {
       />
 
       <FilterBar
-        onReset={() => setFilters(initialFilters)}
+        onReset={() => {
+          setFilters({ search: "", statuses: [], clientId: null, dateFrom: null, dateTo: null });
+          setSearchParams((prev) => { prev.delete("clientId"); return prev; });
+        }}
         activeCount={activeFilterCount}
       >
         <SearchInput
@@ -270,6 +303,53 @@ export function BookingsPage() {
           onChange={(search) => setFilters((prev) => ({ ...prev, search }))}
           placeholder="Search bookings..."
         />
+        <Popover open={clientOpen} onOpenChange={setClientOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(
+                "justify-between font-normal",
+                filters.clientId && "border-primary/50 bg-primary/5"
+              )}
+            >
+              {filters.clientId
+                ? clientOptions.find((c) => c.value === filters.clientId)?.label ?? "Client"
+                : "Client"}
+              <ChevronDown className="size-3.5 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[200px] p-0" align="start">
+            <Command>
+              <CommandInput placeholder="Search clients..." />
+              <CommandList>
+                <CommandEmpty>No clients found.</CommandEmpty>
+                <CommandGroup>
+                  {clientOptions.map((option) => (
+                    <CommandItem
+                      key={option.value}
+                      value={option.label}
+                      onSelect={() => {
+                        handleClientSelect(
+                          filters.clientId === option.value ? null : option.value
+                        );
+                        setClientOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "size-4",
+                          filters.clientId === option.value ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {option.label}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
         <DateRangePicker
           from={filters.dateFrom ?? undefined}
           to={filters.dateTo ?? undefined}

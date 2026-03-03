@@ -179,6 +179,7 @@ export interface ConversationWithRelations extends Conversation {
   assignee: User | null;
   communications: Communication[];
   internalNotes: InternalNote[];
+  bookings: Booking[];
   invoices: Invoice[];
   payments: Payment[];
   slaState: SlaState;
@@ -217,6 +218,7 @@ export interface ConversationFilterState {
 export interface BookingFilterState {
   search: string;
   statuses: BookingStatus[];
+  clientId: string | null;
   dateFrom: Date | null;
   dateTo: Date | null;
 }

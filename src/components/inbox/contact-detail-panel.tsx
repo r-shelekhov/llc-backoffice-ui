@@ -8,13 +8,12 @@ import { SlaBadge } from "@/components/shared/sla-badge";
 import { InternalNotesPanel } from "@/components/conversation-detail/internal-notes-panel";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { formatCurrency, formatDateTime, formatRelativeTime } from "@/lib/format";
+import { formatCurrency, formatDateTime } from "@/lib/format";
 import { CHANNEL_LABELS } from "@/lib/constants";
 
 interface ContactDetailPanelProps {
   conversation: ConversationWithRelations;
   users: User[];
-  allConversations: ConversationWithRelations[];
   onAssigneeChange: (conversationId: string, assigneeId: string | null) => void;
   currentUserId?: string;
   currentUserRole?: string;
@@ -26,7 +25,6 @@ interface ContactDetailPanelProps {
 export function ContactDetailPanel({
   conversation,
   users,
-  allConversations,
   onAssigneeChange,
   currentUserId,
   currentUserRole,
@@ -37,12 +35,6 @@ export function ContactDetailPanel({
   const navigate = useNavigate();
   const { client, assignee } = conversation;
   const activeUsers = users.filter((u) => u.isActive);
-
-  // Previous conversations with this client (excluding current)
-  const previousConversations = allConversations
-    .filter((c) => c.clientId === client.id && c.id !== conversation.id)
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-    .slice(0, 5);
 
   return (
     <div className="space-y-0">
@@ -169,32 +161,6 @@ export function ContactDetailPanel({
           </SelectContent>
         </Select>
       </div>
-
-      {/* Previous conversations */}
-      {previousConversations.length > 0 && (
-        <div className="border-b p-4">
-          <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Previous Conversations
-          </h4>
-          <div className="space-y-2">
-            {previousConversations.map((conv) => (
-              <button
-                key={conv.id}
-                type="button"
-                onClick={() => navigate(`/inbox?id=${conv.id}`)}
-                className="flex w-full items-start gap-2 rounded-md p-2 text-left transition-colors hover:bg-accent/30"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-medium">{conv.title}</p>
-                  <span className="mt-0.5 text-[11px] text-muted-foreground">
-                    {formatRelativeTime(conv.updatedAt)}
-                  </span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Internal notes */}
       <div className="p-4">

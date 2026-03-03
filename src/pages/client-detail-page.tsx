@@ -1,22 +1,22 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { clients, conversations, getAllConversationsWithRelations, internalNotes } from "@/lib/mock-data";
-import { canViewClient, filterConversationsByPermission } from "@/lib/permissions";
+import { clients, bookings, conversations, internalNotes, getAllConversationsWithRelations } from "@/lib/mock-data";
+import { canViewClient } from "@/lib/permissions";
 import { Button } from "@/components/ui/button";
+import { VipIndicator } from "@/components/shared/vip-indicator";
 import { PermissionDenied } from "@/components/shared/permission-denied";
 import { ErrorState } from "@/components/shared/error-state";
-import { ClientProfileHeader } from "@/components/clients/client-profile-header";
-import { ClientStatsCards } from "@/components/clients/client-stats-cards";
-import { ClientConversationHistory } from "@/components/clients/client-conversation-history";
-import { InternalNotesPanel } from "@/components/conversation-detail/internal-notes-panel";
+import { ClientSidebar } from "@/components/clients/client-sidebar";
 import { ClientFormDialog } from "@/components/clients/client-form-dialog";
 import { DeleteClientDialog } from "@/components/clients/delete-client-dialog";
+import { ClientChatPanel } from "@/components/clients/client-chat-panel";
+import type { Attachment, Channel, Communication, ConversationWithRelations } from "@/types";
 
 export function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { currentUser, allUsers } = useAuth();
+  const { currentUser, allUsers, conversationLastReadAt, markConversationRead } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [, forceUpdate] = useState(0);
@@ -37,16 +37,84 @@ export function ClientDetailPage() {
     return <ErrorState message="Client not found" />;
   }
 
-  const allConversations = getAllConversationsWithRelations();
-  const clientAllConversations = allConversations.filter((c) => c.clientId === client.id);
-  const clientConversations = filterConversationsByPermission(currentUser, clientAllConversations);
-
+  const clientBookings = bookings.filter((b) => b.clientId === client.id);
   const clientNotes = internalNotes.filter((n) => n.clientId === client.id);
+
+  const clientConversationsByChannel = useMemo(() => {
+    const all = getAllConversationsWithRelations();
+    const clientConvs = all.filter((c) => c.client.id === client.id);
+    const byChannel = new Map<Channel, ConversationWithRelations>();
+    for (const conv of clientConvs) {
+      const existing = byChannel.get(conv.channel);
+      if (!existing || conv.updatedAt > existing.updatedAt) {
+        byChannel.set(conv.channel, conv);
+      }
+    }
+    return byChannel;
+  }, [client.id]);
+
+  const [localMessages, setLocalMessages] = useState<Map<string, Communication[]>>(new Map());
+
+  const lastReadAtOnOpenRef = useRef<Record<string, string | null> | null>(null);
+  if (lastReadAtOnOpenRef.current === null && clientConversationsByChannel.size > 0) {
+    const snap: Record<string, string | null> = {};
+    for (const [, conv] of clientConversationsByChannel) {
+      snap[conv.id] = conversationLastReadAt[conv.id] ?? null;
+    }
+    lastReadAtOnOpenRef.current = snap;
+  }
+
+  const handleChatSend = useCallback(
+    (conversationId: string, message: string, attachments?: Attachment[]) => {
+      const conv = [...clientConversationsByChannel.values()].find((c) => c.id === conversationId);
+      const newComm: Communication = {
+        id: `local-${Date.now()}`,
+        conversationId,
+        sender: "agent",
+        senderName: currentUser.name,
+        channel: conv?.channel ?? "web",
+        message,
+        deliveryStatus: "sent",
+        attachments,
+        createdAt: new Date().toISOString(),
+      };
+      setLocalMessages((prev) => {
+        const next = new Map(prev);
+        const existing = next.get(conversationId) ?? [];
+        next.set(conversationId, [...existing, newComm]);
+        return next;
+      });
+    },
+    [clientConversationsByChannel, currentUser.name]
+  );
+
+  const handleChatSharePaymentLink = useCallback(
+    (conversationId: string, invoiceId: string) => {
+      const conv = [...clientConversationsByChannel.values()].find((c) => c.id === conversationId);
+      const newComm: Communication = {
+        id: `local-${Date.now()}`,
+        conversationId,
+        sender: "agent",
+        senderName: currentUser.name,
+        channel: conv?.channel ?? "web",
+        message: `Here is your payment link: https://pay.example.com/inv/${invoiceId}`,
+        deliveryStatus: "sent",
+        createdAt: new Date().toISOString(),
+      };
+      setLocalMessages((prev) => {
+        const next = new Map(prev);
+        const existing = next.get(conversationId) ?? [];
+        next.set(conversationId, [...existing, newComm]);
+        return next;
+      });
+    },
+    [clientConversationsByChannel, currentUser.name]
+  );
 
   const handleAddNote = (content: string) => {
     const note = {
       id: `note-client-${Date.now()}`,
-      conversationId: clientConversations[0]?.id ?? "",
+      conversationId: "",
       clientId: client.id,
       authorId: currentUser.id,
       content,
@@ -98,33 +166,69 @@ export function ClientDetailPage() {
     navigate("/clients");
   };
 
+  const backUrl = fromConversation ? `/inbox?id=${fromConversation}` : "/clients";
+  const backLabel = fromConversation ? "Back to Conversation" : "Back to Clients";
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" className="-ml-2 h-7 text-xs" asChild>
-          <Link to={fromConversation ? `/inbox?id=${fromConversation}` : "/clients"}>
-            <ArrowLeft className="size-3.5" />
-            {fromConversation ? "Back to Conversation" : "Back to Clients"}
-          </Link>
-        </Button>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setFormOpen(true)}>
-            <Pencil className="mr-1.5 size-3.5" />
-            Edit
+    <div className="flex h-full">
+      {/* Center: main content area */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex items-center border-b px-4 py-2">
+          <Button variant="ghost" size="sm" className="-ml-2 h-7 text-xs" asChild>
+            <Link to={backUrl}>
+              <ArrowLeft className="size-3.5" />
+              {backLabel}
+            </Link>
           </Button>
-          {currentUser.role === "admin" && (
-            <Button variant="destructive" size="sm" onClick={() => setDeletingOpen(true)}>
-              <Trash2 className="mr-1.5 size-3.5" />
-              Delete
-            </Button>
-          )}
         </div>
+
+        {/* Client profile header */}
+        <div className="flex items-center gap-3 border-b px-4 py-2">
+          <img
+            src={client.avatarUrl}
+            alt={client.name}
+            className="size-8 shrink-0 rounded-full object-cover"
+          />
+          <div className="flex min-w-0 items-center gap-1.5">
+            <span className="text-sm font-semibold">{client.name}</span>
+            {client.isVip && <VipIndicator />}
+            {client.company && (
+              <>
+                <span className="text-muted-foreground">·</span>
+                <span className="text-sm text-muted-foreground">{client.company}</span>
+              </>
+            )}
+          </div>
+          <div className="ml-auto flex shrink-0 gap-2">
+            <Button variant="outline" size="sm" onClick={() => setFormOpen(true)}>
+              <Pencil className="mr-1.5 size-3.5" />
+              Edit
+            </Button>
+            {currentUser.role === "admin" && (
+              <Button variant="destructive" size="sm" onClick={() => setDeletingOpen(true)}>
+                <Trash2 className="mr-1.5 size-3.5" />
+                Delete
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <ClientChatPanel
+          conversationsByChannel={clientConversationsByChannel}
+          localMessages={localMessages}
+          conversationLastReadAt={conversationLastReadAt}
+          lastReadAtOnOpen={lastReadAtOnOpenRef.current ?? {}}
+          onSend={handleChatSend}
+          onSharePaymentLink={handleChatSharePaymentLink}
+          onMarkRead={markConversationRead}
+        />
       </div>
-      <ClientProfileHeader client={client} />
-      <ClientStatsCards client={client} conversationCount={clientConversations.length} />
-      <ClientConversationHistory conversations={clientConversations} />
-      <div className="rounded-lg border p-4">
-        <InternalNotesPanel
+
+      {/* Right: sidebar */}
+      <div className="w-80 shrink-0 overflow-y-auto border-l">
+        <ClientSidebar
+          client={client}
+          bookings={clientBookings}
           notes={clientNotes}
           users={allUsers}
           currentUserId={currentUser.id}

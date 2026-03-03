@@ -1,8 +1,10 @@
 import { ArrowDownNarrowWide, ArrowUpNarrowWide, Search } from "lucide-react";
 import type { Channel, ConversationWithRelations, SortField, SortDirection } from "@/types";
+import type { ActionReason } from "@/lib/filters";
 import { CHANNEL_LABELS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConversationItem } from "./conversation-item";
 
 const SORT_FIELD_LABELS: Record<SortField, string> = {
@@ -25,6 +27,7 @@ const channelTabs: { value: Channel | "all"; label: string }[] = [
 interface ConversationListProps {
   conversations: ConversationWithRelations[];
   unreadConversationIds: Set<string>;
+  unreadCountMap: Map<string, number>;
   selectedId: string | null;
   onSelect: (id: string) => void;
   activeChannel: Channel | "all";
@@ -35,12 +38,18 @@ interface ConversationListProps {
   sortDirection: SortDirection;
   onSortByChange: (field: SortField) => void;
   onSortDirectionChange: () => void;
+  viewMode: "action" | "all";
+  onViewModeChange: (mode: "action" | "all") => void;
+  actionableCount: number;
+  totalCount: number;
+  actionReasonsMap: Map<string, ActionReason[]>;
   title?: string;
 }
 
 export function ConversationList({
   conversations,
   unreadConversationIds,
+  unreadCountMap,
   selectedId,
   onSelect,
   activeChannel,
@@ -51,6 +60,11 @@ export function ConversationList({
   sortDirection,
   onSortByChange,
   onSortDirectionChange,
+  viewMode,
+  onViewModeChange,
+  actionableCount,
+  totalCount,
+  actionReasonsMap,
   title = "Inbox",
 }: ConversationListProps) {
   return (
@@ -67,6 +81,12 @@ export function ConversationList({
             className="h-9 w-full rounded-md border bg-background pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-ring"
           />
         </div>
+        <Tabs value={viewMode} onValueChange={(v) => onViewModeChange(v as "action" | "all")}>
+          <TabsList className="w-full">
+            <TabsTrigger value="action" className="text-xs">Needs Action ({actionableCount})</TabsTrigger>
+            <TabsTrigger value="all" className="text-xs">All ({totalCount})</TabsTrigger>
+          </TabsList>
+        </Tabs>
         <div className="flex items-center gap-2">
           <Select value={activeChannel} onValueChange={(v) => onChannelChange(v as Channel | "all")}>
             <SelectTrigger size="sm" className="flex-1 text-xs">
@@ -109,8 +129,10 @@ export function ConversationList({
               key={conversation.id}
               conversation={conversation}
               isUnread={unreadConversationIds.has(conversation.id)}
+              unreadCount={unreadCountMap.get(conversation.id) ?? 0}
               isSelected={conversation.id === selectedId}
               onClick={() => onSelect(conversation.id)}
+              actionReasons={viewMode === "action" ? actionReasonsMap.get(conversation.id) : undefined}
             />
           ))
         )}

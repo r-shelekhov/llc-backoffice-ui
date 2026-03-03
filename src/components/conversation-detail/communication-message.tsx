@@ -19,14 +19,16 @@ function getTagStyle(tag: string): string {
 
 interface CommunicationMessageProps {
   communication: Communication;
+  onSharePaymentLink?: () => void;
 }
 
 export function CommunicationMessage({
   communication,
+  onSharePaymentLink,
 }: CommunicationMessageProps) {
   if (communication.sender === "system") {
     if (communication.event) {
-      return <ServiceMessage communication={communication} />;
+      return <ServiceMessage communication={communication} onSharePaymentLink={onSharePaymentLink} />;
     }
 
     return (

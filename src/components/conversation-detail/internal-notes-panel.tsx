@@ -98,7 +98,7 @@ export function InternalNotesPanel({ notes, users, currentUserId, currentUserRol
           No internal notes.
         </p>
       ) : (
-        <div className="max-h-80 space-y-2 overflow-y-auto">
+        <div className="space-y-2">
           {sortedNotes.map((note) => {
             const author = resolveAuthor(note.authorId);
             const isEditing = editingId === note.id;

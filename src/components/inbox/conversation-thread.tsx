@@ -1,14 +1,14 @@
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Plus, Clock, Eye } from "lucide-react";
 import type { Attachment, Communication, ConversationWithRelations } from "@/types";
-import { ChannelIcon } from "@/components/shared/channel-icon";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { SlaBadge } from "@/components/shared/sla-badge";
 import { CommunicationTimeline } from "@/components/conversation-detail/communication-timeline";
 import { Button } from "@/components/ui/button";
 import { MessageComposer } from "./message-composer";
 import { formatDuration } from "@/lib/format";
+import { CHANNEL_LABELS } from "@/lib/constants";
 
 // Deterministic mock collision: use conversation ID hash
 function hasCollision(conversationId: string): { active: boolean; agentName: string } {
@@ -23,7 +23,9 @@ interface ConversationThreadProps {
   localMessages: Communication[];
   onSend: (message: string, attachments?: Attachment[]) => void;
   onCreateBooking: (conversationId: string) => void;
+  onSharePaymentLink: (invoiceId: string) => void;
   previousConversationId?: string | null;
+  lastReadAtOnOpen?: string | null;
 }
 
 export function ConversationThread({
@@ -31,9 +33,13 @@ export function ConversationThread({
   localMessages,
   onSend,
   onCreateBooking,
+  onSharePaymentLink,
   previousConversationId,
+  lastReadAtOnOpen,
 }: ConversationThreadProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const newMessagesDividerRef = useRef<HTMLDivElement>(null);
+  const prevMessageCountRef = useRef<number>(0);
 
   const allMessages = [...conversation.communications, ...localMessages];
 
@@ -51,11 +57,47 @@ export function ConversationThread({
 
   const collision = useMemo(() => hasCollision(conversation.id), [conversation.id]);
 
+  const getSharePaymentLinkHandler = useCallback(
+    (comm: Communication) => {
+      const event = comm.event;
+      if (!event) return undefined;
+      if (event.type !== "booking_created" && event.type !== "invoice_created" && event.type !== "invoice_sent") return undefined;
+
+      let invoice: typeof conversation.invoices[number] | undefined;
+      if (event.invoiceId) {
+        invoice = conversation.invoices.find((inv) => inv.id === event.invoiceId);
+      } else if (event.bookingId) {
+        invoice = conversation.invoices.find((inv) => inv.bookingId === event.bookingId);
+      }
+
+      if (!invoice || invoice.status === "paid") return undefined;
+      const invoiceId = invoice.id;
+      return () => onSharePaymentLink(invoiceId);
+    },
+    [conversation.invoices, onSharePaymentLink]
+  );
+
+  // On conversation open: scroll to divider or bottom
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    prevMessageCountRef.current = allMessages.length;
+    requestAnimationFrame(() => {
+      if (newMessagesDividerRef.current) {
+        newMessagesDividerRef.current.scrollIntoView({ block: "start" });
+      } else if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    });
+  }, [conversation.id]);
+
+  // On new message: scroll to bottom
+  useEffect(() => {
+    if (allMessages.length > prevMessageCountRef.current) {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
     }
-  }, [conversation.id, allMessages.length]);
+    prevMessageCountRef.current = allMessages.length;
+  }, [allMessages.length]);
 
   return (
     <div className="flex h-full flex-col">
@@ -72,8 +114,7 @@ export function ConversationThread({
         )}
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
-            <h3 className="truncate text-sm font-semibold">{conversation.title}</h3>
-            <ChannelIcon channel={conversation.channel} className="size-3.5 shrink-0 text-muted-foreground" />
+            <h3 className="truncate text-sm font-semibold">{conversation.client.name} · {CHANNEL_LABELS[conversation.channel]}</h3>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <Button
@@ -113,7 +154,7 @@ export function ConversationThread({
         </div>
       )}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4">
-        <CommunicationTimeline communications={allMessages} />
+        <CommunicationTimeline communications={allMessages} getSharePaymentLinkHandler={getSharePaymentLinkHandler} lastReadAtOnOpen={lastReadAtOnOpen} newMessagesDividerRef={newMessagesDividerRef} />
       </div>
       <MessageComposer onSend={onSend} />
     </div>

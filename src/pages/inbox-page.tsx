@@ -3,7 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { getAllConversationsWithRelations, conversations as sourceConversations, communications, internalNotes, users as sourceUsers } from "@/lib/mock-data";
 import { filterConversationsByPermission, filterVipConversations } from "@/lib/permissions";
-import { isConversationUnread } from "@/lib/unread";
+import { isConversationUnread, getUnreadCount } from "@/lib/unread";
+import { getConversationActionReasons, type ActionReason } from "@/lib/filters";
 import type { Attachment, Booking, Channel, Communication, ConversationWithRelations, SortField, SortDirection, Priority } from "@/types";
 import { InboxLayout } from "@/components/inbox/inbox-layout";
 import { ConversationList } from "@/components/inbox/conversation-list";
@@ -98,6 +99,23 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
     : "last_activity") satisfies SortField;
   const sortDirection = (searchParams.get("order") === "asc" ? "asc" : "desc") satisfies SortDirection;
 
+  const viewMode = (searchParams.get("view") === "all" ? "all" : "action") as "action" | "all";
+
+  const handleViewModeChange = useCallback(
+    (mode: "action" | "all") => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (mode === "all") {
+          next.set("view", "all");
+        } else {
+          next.delete("view");
+        }
+        return next;
+      });
+    },
+    [setSearchParams]
+  );
+
   const handleSortChange = useCallback(
     (field: SortField) => {
       setSearchParams((prev) => {
@@ -125,6 +143,9 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
   const [previousSelectedId, setPreviousSelectedId] = useState<string | null>(null);
   const prevIdRef = useRef<string | null>(null);
   const [, forceUpdate] = useState(0);
+  const conversationLastReadAtRef = useRef(conversationLastReadAt);
+  conversationLastReadAtRef.current = conversationLastReadAt;
+  const [lastReadAtOnOpen, setLastReadAtOnOpen] = useState<string | null>(null);
 
   const allConversations = useMemo(() => getAllConversationsWithRelations(), []);
 
@@ -136,8 +157,22 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
     return base;
   }, [currentUser, allConversations, myConversationsOnly]);
 
+  const actionReasonsMap = useMemo(() => {
+    const map = new Map<string, ActionReason[]>();
+    for (const conv of permittedConversations) {
+      const reasons = getConversationActionReasons(conv, conversationLastReadAt[conv.id]);
+      if (reasons.length > 0) map.set(conv.id, reasons);
+    }
+    return map;
+  }, [permittedConversations, conversationLastReadAt]);
+
   const filteredConversations = useMemo(() => {
     let result = permittedConversations;
+
+    // Filter by action mode (before channel/search)
+    if (viewMode === "action") {
+      result = result.filter((r) => actionReasonsMap.has(r.id));
+    }
 
     // Filter by channel (concierge only visible in "all")
     if (activeChannel !== "all") {
@@ -150,7 +185,7 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
     }
 
     return [...result].sort((a, b) => compareConversations(a, b, sortBy, sortDirection));
-  }, [permittedConversations, activeChannel, search, sortBy, sortDirection]);
+  }, [permittedConversations, viewMode, actionReasonsMap, activeChannel, search, sortBy, sortDirection]);
 
   const selectedConversation = useMemo(
     () => (selectedId ? permittedConversations.find((r) => r.id === selectedId) ?? null : null),
@@ -159,8 +194,10 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
 
   useEffect(() => {
     if (!selectedConversation) return;
-    markConversationRead(selectedConversation.id);
-  }, [selectedConversation, markConversationRead]);
+    const id = selectedConversation.id;
+    setLastReadAtOnOpen(conversationLastReadAtRef.current[id] ?? null);
+    markConversationRead(id);
+  }, [selectedConversation?.id, markConversationRead]);
 
   useEffect(() => {
     if (selectedId && selectedId !== prevIdRef.current) {
@@ -169,13 +206,19 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
     }
   }, [selectedId]);
 
+  const unreadCountMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const conversation of permittedConversations) {
+      if (!isConversationUnread(conversation, conversationLastReadAt)) continue;
+      const count = getUnreadCount(conversation, conversationLastReadAt);
+      if (count > 0) map.set(conversation.id, count);
+    }
+    return map;
+  }, [permittedConversations, conversationLastReadAt]);
+
   const unreadConversationIds = useMemo(
-    () => new Set(
-      permittedConversations
-        .filter((conversation) => isConversationUnread(conversation, conversationLastReadAt))
-        .map((conversation) => conversation.id)
-    ),
-    [permittedConversations, conversationLastReadAt]
+    () => new Set(unreadCountMap.keys()),
+    [unreadCountMap]
   );
 
   const handleAssigneeChange = useCallback(
@@ -283,6 +326,29 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
     [selectedId, currentUser.name, selectedConversation?.channel]
   );
 
+  const handleSharePaymentLink = useCallback(
+    (invoiceId: string) => {
+      if (!selectedId) return;
+      const newComm: Communication = {
+        id: `local-${Date.now()}`,
+        conversationId: selectedId,
+        sender: "agent",
+        senderName: currentUser.name,
+        channel: selectedConversation?.channel ?? "web",
+        message: `Here is your payment link: https://pay.example.com/inv/${invoiceId}`,
+        deliveryStatus: "sent",
+        createdAt: new Date().toISOString(),
+      };
+      setLocalMessages((prev) => {
+        const next = new Map(prev);
+        const existing = next.get(selectedId) ?? [];
+        next.set(selectedId, [...existing, newComm]);
+        return next;
+      });
+    },
+    [selectedId, currentUser.name, selectedConversation?.channel]
+  );
+
   const currentLocalMessages = selectedId
     ? localMessages.get(selectedId) ?? []
     : [];
@@ -348,6 +414,7 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
         <ConversationList
           conversations={filteredConversations}
           unreadConversationIds={unreadConversationIds}
+          unreadCountMap={unreadCountMap}
           selectedId={selectedId}
           onSelect={handleSelect}
           activeChannel={activeChannel}
@@ -358,6 +425,11 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
           sortDirection={sortDirection}
           onSortByChange={handleSortChange}
           onSortDirectionChange={handleDirectionToggle}
+          viewMode={viewMode}
+          onViewModeChange={handleViewModeChange}
+          actionableCount={actionReasonsMap.size}
+          totalCount={permittedConversations.length}
+          actionReasonsMap={actionReasonsMap}
           {...(myConversationsOnly && {
             title: "My Queue",
           })}
@@ -370,7 +442,9 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
             localMessages={currentLocalMessages}
             onSend={handleSend}
             onCreateBooking={(id) => setCreateBookingConvId(id)}
+            onSharePaymentLink={handleSharePaymentLink}
             previousConversationId={previousSelectedId && previousSelectedId !== selectedId ? previousSelectedId : null}
+            lastReadAtOnOpen={lastReadAtOnOpen}
           />
         ) : null
       }
@@ -379,7 +453,6 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
           <ContactDetailPanel
             conversation={selectedConversation}
             users={allUsers}
-            allConversations={permittedConversations}
             onAssigneeChange={handleAssigneeChange}
             currentUserId={currentUser.id}
             currentUserRole={currentUser.role}

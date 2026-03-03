@@ -28,6 +28,7 @@ export function ServiceMessage({
       line1 = "Booking created";
       line2 = [event.title, event.bookingId].filter(Boolean).join(" · ");
       showOpenBooking = true;
+      showSharePaymentLink = !!onSharePaymentLink;
       break;
     case "booking_status_changed":
       icon = "📋";
@@ -41,13 +42,13 @@ export function ServiceMessage({
       icon = "🧾";
       line1 = `Invoice created${event.invoiceTotal != null ? ` · ${formatCurrency(event.invoiceTotal)}` : ""}`;
       line2 = event.invoiceId ?? null;
-      showSharePaymentLink = true;
+      showSharePaymentLink = !!onSharePaymentLink;
       break;
     case "invoice_sent":
       icon = "📨";
       line1 = `Invoice sent${event.invoiceTotal != null ? ` · ${formatCurrency(event.invoiceTotal)}` : ""}`;
       line2 = event.invoiceId ?? null;
-      showSharePaymentLink = true;
+      showSharePaymentLink = !!onSharePaymentLink;
       break;
     case "payment_confirmed":
       icon = "✅";

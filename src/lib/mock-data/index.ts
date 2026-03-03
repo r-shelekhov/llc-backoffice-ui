@@ -41,6 +41,7 @@ export function getConversationWithRelations(conversationId: string): Conversati
     assignee,
     communications: convCommunications,
     internalNotes: convNotes,
+    bookings: convBookings,
     invoices: convInvoices,
     payments: convPayments,
     slaState,

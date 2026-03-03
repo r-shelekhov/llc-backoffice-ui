@@ -30,3 +30,19 @@ export function isConversationUnread(
   return latestClientMs > lastReadMs;
 }
 
+export function getUnreadCount(
+  conversation: ConversationWithRelations,
+  conversationLastReadAt: ReadMap
+): number {
+  const lastReadAt = conversationLastReadAt[conversation.id];
+  const lastReadMs = lastReadAt ? new Date(lastReadAt).getTime() : null;
+
+  return conversation.communications.filter((comm) => {
+    if (comm.sender === "agent" || comm.sender === "system") return false;
+    const createdMs = new Date(comm.createdAt).getTime();
+    if (!Number.isFinite(createdMs)) return false;
+    if (lastReadMs === null || !Number.isFinite(lastReadMs)) return true;
+    return createdMs > lastReadMs;
+  }).length;
+}
+

@@ -1,5 +1,44 @@
 import type { ConversationFilterState, BookingFilterState, InvoiceFilterState, PaymentFilterState, ClientFilterState, ConversationWithRelations, BookingWithRelations, InvoiceWithRelations, PaymentWithRelations, ClientRow } from "@/types";
 
+export type ActionReason = "unread" | "sla_risk" | "unassigned" | "draft_booking" | "awaiting_payment";
+
+export function getConversationActionReasons(
+  conversation: ConversationWithRelations,
+  lastReadAt?: string
+): ActionReason[] {
+  const reasons: ActionReason[] = [];
+
+  // Unread: has client messages after lastReadAt
+  const latestClientMsg = conversation.communications
+    .filter(c => c.sender === "client")
+    .reduce<string | null>((max, c) => (!max || c.createdAt > max ? c.createdAt : max), null);
+  if (latestClientMsg && (!lastReadAt || latestClientMsg > lastReadAt)) {
+    reasons.push("unread");
+  }
+
+  // SLA Risk
+  if (conversation.slaState === "at_risk" || conversation.slaState === "breached") {
+    reasons.push("sla_risk");
+  }
+
+  // Unassigned
+  if (conversation.assigneeId === null) {
+    reasons.push("unassigned");
+  }
+
+  // Draft Booking
+  if (conversation.bookings.some(b => b.status === "draft")) {
+    reasons.push("draft_booking");
+  }
+
+  // Awaiting Payment
+  if (conversation.bookings.some(b => b.status === "awaiting_payment")) {
+    reasons.push("awaiting_payment");
+  }
+
+  return reasons;
+}
+
 export function applyConversationFilters(
   conversations: ConversationWithRelations[],
   filters: ConversationFilterState
@@ -65,6 +104,8 @@ export function applyBookingFilters(
         b.location.toLowerCase().includes(q);
       if (!matches) return false;
     }
+
+    if (filters.clientId && b.clientId !== filters.clientId) return false;
 
     if (filters.statuses.length > 0 && !filters.statuses.includes(b.status)) {
       return false;
