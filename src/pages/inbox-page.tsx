@@ -353,14 +353,18 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
     ? localMessages.get(selectedId) ?? []
     : [];
 
-  // Auto-select first conversation when none is selected or selected is no longer in filtered list
+  // Auto-select first conversation when none is selected or selected conversation no longer exists
   useEffect(() => {
     if (filteredConversations.length === 0) return;
-    const currentInList = selectedId && filteredConversations.some((c) => c.id === selectedId);
-    if (!currentInList) {
-      handleSelect(filteredConversations[0].id);
+    const existsInPermitted = selectedId && permittedConversations.some((c) => c.id === selectedId);
+    if (!existsInPermitted) {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("id", filteredConversations[0].id);
+        return next;
+      });
     }
-  }, [filteredConversations, selectedId, handleSelect]);
+  }, [filteredConversations, selectedId, permittedConversations, setSearchParams]);
 
   const [createBookingConvId, setCreateBookingConvId] = useState<string | null>(null);
 
