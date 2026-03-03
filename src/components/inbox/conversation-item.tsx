@@ -5,8 +5,7 @@ import { cn } from '@/lib/utils'
 import type { ActionReason } from '@/lib/filters'
 import type { ConversationWithRelations, SlaState } from '@/types'
 
-const ACTION_BADGE_CONFIG: Record<ActionReason, { className: string; label: string | ((slaState: SlaState) => string) }> = {
-	unread: { className: "bg-tone-info-light text-tone-info-foreground", label: "Unread" },
+const ACTION_BADGE_CONFIG: Partial<Record<ActionReason, { className: string; label: string | ((slaState: SlaState) => string) }>> = {
 	sla_risk: { className: "bg-tone-danger-light text-tone-danger-foreground", label: (s) => s === "breached" ? "SLA Breached" : "SLA Risk" },
 	unassigned: { className: "bg-tone-neutral-light text-tone-neutral-foreground ring-1 ring-inset ring-tone-neutral/25", label: "Unassigned" },
 	draft_booking: { className: "bg-tone-warning-light text-tone-warning-foreground", label: "Draft Booking" },
@@ -71,22 +70,26 @@ export function ConversationItem({
 						{lastComm ? formatRelativeTime(lastComm.createdAt) : ''}
 					</span>
 				</div>
-				{actionReasons && actionReasons.length > 0 && (
-					<div className="mt-0.5 flex items-center gap-1">
-						{actionReasons.slice(0, 2).map((reason) => {
-							const config = ACTION_BADGE_CONFIG[reason]
-							const label = typeof config.label === "function" ? config.label(conversation.slaState) : config.label
-							return (
-								<span key={reason} className={cn("rounded-full px-1.5 py-px text-[10px] font-medium leading-tight", config.className)}>
-									{label}
-								</span>
-							)
-						})}
-						{actionReasons.length > 2 && (
-							<span className="text-[10px] text-muted-foreground">+{actionReasons.length - 2}</span>
-						)}
-					</div>
-				)}
+				{actionReasons && actionReasons.length > 0 && (() => {
+					const badgeReasons = actionReasons.filter((r) => r in ACTION_BADGE_CONFIG)
+					if (badgeReasons.length === 0) return null
+					return (
+						<div className="mt-0.5 flex items-center gap-1">
+							{badgeReasons.slice(0, 2).map((reason) => {
+								const config = ACTION_BADGE_CONFIG[reason]!
+								const label = typeof config.label === "function" ? config.label(conversation.slaState) : config.label
+								return (
+									<span key={reason} className={cn("rounded-full px-1.5 py-px text-[10px] font-medium leading-tight", config.className)}>
+										{label}
+									</span>
+								)
+							})}
+							{badgeReasons.length > 2 && (
+								<span className="text-[10px] text-muted-foreground">+{badgeReasons.length - 2}</span>
+							)}
+						</div>
+					)
+				})()}
 				<div className="flex items-center justify-between gap-2">
 					<p className={cn(
 						"truncate text-xs text-muted-foreground/70",
