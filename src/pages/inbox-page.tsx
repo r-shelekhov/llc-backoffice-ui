@@ -140,8 +140,6 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
   const [localMessages, setLocalMessages] = useState<
     Map<string, Communication[]>
   >(new Map());
-  const [previousSelectedId, setPreviousSelectedId] = useState<string | null>(null);
-  const prevIdRef = useRef<string | null>(null);
   const [, forceUpdate] = useState(0);
   const conversationLastReadAtRef = useRef(conversationLastReadAt);
   conversationLastReadAtRef.current = conversationLastReadAt;
@@ -198,13 +196,6 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
     setLastReadAtOnOpen(conversationLastReadAtRef.current[id] ?? null);
     markConversationRead(id);
   }, [selectedConversation?.id, markConversationRead]);
-
-  useEffect(() => {
-    if (selectedId && selectedId !== prevIdRef.current) {
-      setPreviousSelectedId(prevIdRef.current);
-      prevIdRef.current = selectedId;
-    }
-  }, [selectedId]);
 
   const unreadCountMap = useMemo(() => {
     const map = new Map<string, number>();
@@ -447,7 +438,6 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
             onSend={handleSend}
             onCreateBooking={(id) => setCreateBookingConvId(id)}
             onSharePaymentLink={handleSharePaymentLink}
-            previousConversationId={previousSelectedId && previousSelectedId !== selectedId ? previousSelectedId : null}
             lastReadAtOnOpen={lastReadAtOnOpen}
           />
         ) : null

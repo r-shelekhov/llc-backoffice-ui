@@ -1,6 +1,5 @@
 import { useEffect, useRef, useMemo, useCallback } from "react";
-import { Link } from "react-router-dom";
-import { ArrowLeft, Plus, Clock, Eye } from "lucide-react";
+import { Plus, Clock, Eye } from "lucide-react";
 import type { Attachment, Communication, ConversationWithRelations } from "@/types";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { SlaBadge } from "@/components/shared/sla-badge";
@@ -24,7 +23,6 @@ interface ConversationThreadProps {
   onSend: (message: string, attachments?: Attachment[]) => void;
   onCreateBooking: (conversationId: string) => void;
   onSharePaymentLink: (invoiceId: string) => void;
-  previousConversationId?: string | null;
   lastReadAtOnOpen?: string | null;
 }
 
@@ -34,7 +32,6 @@ export function ConversationThread({
   onSend,
   onCreateBooking,
   onSharePaymentLink,
-  previousConversationId,
   lastReadAtOnOpen,
 }: ConversationThreadProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -102,16 +99,6 @@ export function ConversationThread({
   return (
     <div className="flex h-full flex-col">
       <div className="shrink-0 border-b px-4 py-3">
-        {previousConversationId && (
-          <div className="mb-2">
-            <Button variant="ghost" size="sm" className="-ml-2 h-7 text-xs" asChild>
-              <Link to={`/inbox?id=${previousConversationId}`}>
-                <ArrowLeft className="size-3.5" />
-                Back to previous conversation
-              </Link>
-            </Button>
-          </div>
-        )}
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
             <h3 className="truncate text-sm font-semibold">{conversation.client.name} · {CHANNEL_LABELS[conversation.channel]}</h3>
