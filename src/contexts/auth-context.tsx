@@ -14,7 +14,23 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUserState] = useState<User>(users[0]);
-  const [conversationLastReadAt, setConversationLastReadAt] = useState<Record<string, string>>({});
+  const [conversationLastReadAt, setConversationLastReadAt] = useState<Record<string, string>>({
+    // Pre-seed read timestamps for "no action required" conversations
+    // so they don't trigger the "unread" action reason.
+    "conv-1": "2026-01-14T11:00:00Z",
+    "conv-4": "2026-01-10T15:00:00Z",
+    "conv-8": "2026-01-20T12:00:00Z",
+    "conv-9": "2026-01-16T10:00:00Z",
+    "conv-12": "2026-02-10T10:00:00Z",
+    "conv-13": "2026-01-20T11:00:00Z",
+    "conv-15": "2026-02-22T04:00:00Z",
+    "conv-19": "2026-02-03T10:00:00Z",
+    "conv-21": "2026-02-18T08:00:00Z",
+    "conv-25": "2026-02-20T16:00:00Z",
+    "conv-26": "2026-02-25T11:00:00Z",
+    "conv-27": "2026-02-16T19:00:00Z",
+    "conv-28": "2026-02-24T16:00:00Z",
+  });
 
   const setCurrentUser = useCallback((user: User) => {
     setCurrentUserState(user);
