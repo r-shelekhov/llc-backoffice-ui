@@ -132,7 +132,7 @@ export function ConversationList({
               unreadCount={unreadCountMap.get(conversation.id) ?? 0}
               isSelected={conversation.id === selectedId}
               onClick={() => onSelect(conversation.id)}
-              actionReasons={viewMode === "action" ? actionReasonsMap.get(conversation.id) : undefined}
+              actionReasons={actionReasonsMap.get(conversation.id)}
             />
           ))
         )}

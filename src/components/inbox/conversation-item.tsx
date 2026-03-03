@@ -11,6 +11,8 @@ const ACTION_BADGE_CONFIG: Record<ActionReason, { className: string; label: stri
 	unassigned: { className: "bg-tone-neutral-light text-tone-neutral-foreground", label: "Unassigned" },
 	draft_booking: { className: "bg-tone-warning-light text-tone-warning-foreground", label: "Draft Booking" },
 	awaiting_payment: { className: "bg-tone-purple-light text-tone-purple-foreground", label: "Awaiting Payment" },
+	needs_scheduling: { className: "bg-tone-info-light text-tone-info-foreground", label: "Needs Scheduling" },
+	overdue_invoice: { className: "bg-tone-danger-light text-tone-danger-foreground", label: "Overdue Invoice" },
 }
 
 interface ConversationItemProps {

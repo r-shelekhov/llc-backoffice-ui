@@ -1,6 +1,6 @@
 import type { ConversationFilterState, BookingFilterState, InvoiceFilterState, PaymentFilterState, ClientFilterState, ConversationWithRelations, BookingWithRelations, InvoiceWithRelations, PaymentWithRelations, ClientRow } from "@/types";
 
-export type ActionReason = "unread" | "sla_risk" | "unassigned" | "draft_booking" | "awaiting_payment";
+export type ActionReason = "unread" | "sla_risk" | "unassigned" | "draft_booking" | "awaiting_payment" | "needs_scheduling" | "overdue_invoice";
 
 export function getConversationActionReasons(
   conversation: ConversationWithRelations,
@@ -34,6 +34,16 @@ export function getConversationActionReasons(
   // Awaiting Payment
   if (conversation.bookings.some(b => b.status === "awaiting_payment")) {
     reasons.push("awaiting_payment");
+  }
+
+  // Needs Scheduling: paid but not yet scheduled
+  if (conversation.bookings.some(b => b.status === "paid")) {
+    reasons.push("needs_scheduling");
+  }
+
+  // Overdue Invoice
+  if (conversation.invoices.some(i => i.status === "overdue")) {
+    reasons.push("overdue_invoice");
   }
 
   return reasons;

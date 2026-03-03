@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import { AlertCircle, Zap } from "lucide-react";
-import type { BookingStatus, PaymentMethod } from "@/types";
+import type { BookingStatus, PaymentMethod, Communication } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
-import { getBookingWithRelations, payments, invoices, bookings, users } from "@/lib/mock-data";
+import { getBookingWithRelations, payments, invoices, bookings, communications, conversations } from "@/lib/mock-data";
 import { canViewBooking } from "@/lib/permissions";
 import { computeSlaState } from "@/lib/sla";
 import { BOOKING_STATUS_TRANSITIONS, BOOKING_STATUS_ACTION_LABELS, PAYMENT_METHOD_LABELS, SERVICE_TYPE_LABELS, CHANNEL_LABELS } from "@/lib/constants";
@@ -17,13 +17,6 @@ import { formatCurrency, formatDateTime, formatDate, formatRelativeTime } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -58,6 +51,25 @@ const BILLING_STATE_CONFIG: Record<BillingState, { label: string; className: str
   overdue: { label: "Overdue", className: "bg-tone-danger-light text-tone-danger-foreground" },
 };
 
+function pushSystemMessage(
+  conversationId: string,
+  message: string,
+  event: Communication["event"],
+) {
+  const conversation = conversations.find((c) => c.id === conversationId);
+  if (!conversation) return;
+  communications.push({
+    id: `sys-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    conversationId,
+    sender: "system",
+    senderName: "System",
+    channel: conversation.channel,
+    message,
+    event,
+    createdAt: new Date().toISOString(),
+  });
+}
+
 function confirmPayment(
   bookingId: string,
   invoiceId: string,
@@ -87,10 +99,35 @@ function confirmPayment(
 
   const bookingRef = bookings.find((b) => b.id === bookingId);
   if (bookingRef) {
+    const fromStatus = bookingRef.status;
+
+    pushSystemMessage(bookingRef.conversationId, `Payment of ${amount} confirmed via ${method}`, {
+      type: "payment_confirmed",
+      bookingId,
+      invoiceId,
+      invoiceTotal: amount,
+      paymentAmount: amount,
+      paymentMethod: method,
+    });
+
     bookingRef.status = "paid";
     bookingRef.updatedAt = now;
+
+    pushSystemMessage(bookingRef.conversationId, `Booking status changed from ${fromStatus} to paid`, {
+      type: "booking_status_changed",
+      bookingId,
+      fromStatus,
+      toStatus: "paid",
+    });
+
     if (bookingRef.assigneeId !== null && bookingRef.executionAt !== "") {
       bookingRef.status = "scheduled";
+      pushSystemMessage(bookingRef.conversationId, "Booking status changed from paid to scheduled", {
+        type: "booking_status_changed",
+        bookingId,
+        fromStatus: "paid",
+        toStatus: "scheduled",
+      });
     }
   }
 }
@@ -186,9 +223,27 @@ export function BookingDetailPage() {
     const allowed = BOOKING_STATUS_TRANSITIONS[bookingRef.status];
     if (!allowed.includes(newStatus)) return;
 
+    const fromStatus = bookingRef.status;
     bookingRef.status = newStatus;
     bookingRef.updatedAt = new Date().toISOString();
+
+    pushSystemMessage(bookingRef.conversationId, `Booking status changed from ${fromStatus} to ${newStatus}`, {
+      type: "booking_status_changed",
+      bookingId: bookingRef.id,
+      fromStatus,
+      toStatus: newStatus,
+    });
+
+    const statusBeforeAutoSchedule = bookingRef.status;
     checkAutoSchedule(bookingRef);
+    if (bookingRef.status !== statusBeforeAutoSchedule) {
+      pushSystemMessage(bookingRef.conversationId, `Booking status changed from ${statusBeforeAutoSchedule} to ${bookingRef.status}`, {
+        type: "booking_status_changed",
+        bookingId: bookingRef.id,
+        fromStatus: statusBeforeAutoSchedule,
+        toStatus: bookingRef.status,
+      });
+    }
 
     forceUpdate((n) => n + 1);
   }
@@ -281,31 +336,6 @@ export function BookingDetailPage() {
                   value={
                     booking.assignee ? (
                       <span className="text-tone-success-foreground">{booking.assignee.name}</span>
-                    ) : isEditable ? (
-                      <Select
-                        value="unassigned"
-                        onValueChange={(val) => {
-                          const bookingRef = bookings.find((b) => b.id === id);
-                          if (bookingRef && val !== "unassigned") {
-                            bookingRef.assigneeId = val;
-                            bookingRef.updatedAt = new Date().toISOString();
-                            checkAutoSchedule(bookingRef);
-                            forceUpdate((n) => n + 1);
-                          }
-                        }}
-                      >
-                        <SelectTrigger className="h-7 text-xs w-[140px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="unassigned">Unassigned</SelectItem>
-                          {users.map((u) => (
-                            <SelectItem key={u.id} value={u.id}>
-                              {u.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
                     ) : (
                       <span className="text-tone-warning">Unassigned</span>
                     )
@@ -443,7 +473,16 @@ export function BookingDetailPage() {
                       if (bookingRef) {
                         bookingRef.executionAt = e.target.value ? new Date(e.target.value).toISOString() : "";
                         bookingRef.updatedAt = new Date().toISOString();
+                        const statusBefore = bookingRef.status;
                         checkAutoSchedule(bookingRef);
+                        if (bookingRef.status !== statusBefore) {
+                          pushSystemMessage(bookingRef.conversationId, `Booking status changed from ${statusBefore} to ${bookingRef.status}`, {
+                            type: "booking_status_changed",
+                            bookingId: bookingRef.id,
+                            fromStatus: statusBefore,
+                            toStatus: bookingRef.status,
+                          });
+                        }
                         forceUpdate((n) => n + 1);
                       }
                     }}
@@ -451,30 +490,7 @@ export function BookingDetailPage() {
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground">Assignee</label>
-                  <Select
-                    value={booking.assigneeId ?? "unassigned"}
-                    onValueChange={(val) => {
-                      const bookingRef = bookings.find((b) => b.id === id);
-                      if (bookingRef) {
-                        bookingRef.assigneeId = val === "unassigned" ? null : val;
-                        bookingRef.updatedAt = new Date().toISOString();
-                        checkAutoSchedule(bookingRef);
-                        forceUpdate((n) => n + 1);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="unassigned">Unassigned</SelectItem>
-                      {users.map((u) => (
-                        <SelectItem key={u.id} value={u.id}>
-                          {u.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <p className="mt-1 text-sm">{booking.assignee?.name ?? "Unassigned"}</p>
                 </div>
               </div>
             </div>
@@ -554,8 +570,9 @@ export function BookingDetailPage() {
                   const taxRate = 10;
                   const taxAmount = Math.round(subtotal * taxRate) / 100;
                   const total = subtotal + taxAmount;
+                  const invoiceId = `inv-${Date.now()}`;
                   invoices.push({
-                    id: `inv-${Date.now()}`,
+                    id: invoiceId,
                     bookingId: booking.id,
                     clientId: booking.clientId,
                     status: "draft",
@@ -567,6 +584,12 @@ export function BookingDetailPage() {
                     dueDate: new Date(Date.now() + 30 * 86400000).toISOString(),
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
+                  });
+                  pushSystemMessage(booking.conversationId, `Invoice ${invoiceId} created for ${formatCurrency(total)}`, {
+                    type: "invoice_created",
+                    bookingId: booking.id,
+                    invoiceId,
+                    invoiceTotal: total,
                   });
                   forceUpdate((n) => n + 1);
                 }}
@@ -584,10 +607,27 @@ export function BookingDetailPage() {
                   if (draftInvoice) {
                     draftInvoice.status = "sent";
                     draftInvoice.updatedAt = new Date().toISOString();
+
+                    pushSystemMessage(booking.conversationId, `Invoice ${draftInvoice.id} sent`, {
+                      type: "invoice_sent",
+                      bookingId: booking.id,
+                      invoiceId: draftInvoice.id,
+                      invoiceTotal: draftInvoice.total,
+                    });
+
                     const bookingRef = bookings.find((b) => b.id === id);
-                    if (bookingRef && bookingRef.status === "draft") {
-                      bookingRef.status = "awaiting_payment";
-                      bookingRef.updatedAt = new Date().toISOString();
+                    if (bookingRef) {
+                      const fromStatus = bookingRef.status;
+                      if (fromStatus === "draft") {
+                        bookingRef.status = "awaiting_payment";
+                        bookingRef.updatedAt = new Date().toISOString();
+                        pushSystemMessage(booking.conversationId, `Booking status changed from ${fromStatus} to awaiting_payment`, {
+                          type: "booking_status_changed",
+                          bookingId: booking.id,
+                          fromStatus,
+                          toStatus: "awaiting_payment",
+                        });
+                      }
                     }
                     forceUpdate((n) => n + 1);
                   }

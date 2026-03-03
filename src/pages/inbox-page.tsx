@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
-import { getAllConversationsWithRelations, conversations as sourceConversations, communications, internalNotes, users as sourceUsers } from "@/lib/mock-data";
+import { getAllConversationsWithRelations, conversations as sourceConversations, communications, internalNotes, users as sourceUsers, bookings } from "@/lib/mock-data";
 import { filterConversationsByPermission, filterVipConversations } from "@/lib/permissions";
 import { isConversationUnread, getUnreadCount } from "@/lib/unread";
 import { getConversationActionReasons, type ActionReason } from "@/lib/filters";
@@ -140,12 +140,12 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
   const [localMessages, setLocalMessages] = useState<
     Map<string, Communication[]>
   >(new Map());
-  const [, forceUpdate] = useState(0);
+  const [updateCounter, forceUpdate] = useState(0);
   const conversationLastReadAtRef = useRef(conversationLastReadAt);
   conversationLastReadAtRef.current = conversationLastReadAt;
   const [lastReadAtOnOpen, setLastReadAtOnOpen] = useState<string | null>(null);
 
-  const allConversations = useMemo(() => getAllConversationsWithRelations(), []);
+  const allConversations = useMemo(() => getAllConversationsWithRelations(), [updateCounter]);
 
   const permittedConversations = useMemo(() => {
     const base = filterVipConversations(currentUser, filterConversationsByPermission(currentUser, allConversations));
@@ -153,7 +153,7 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
       return base.filter((c) => c.assigneeId === currentUser.id);
     }
     return base;
-  }, [currentUser, allConversations, myConversationsOnly]);
+  }, [currentUser, allConversations, myConversationsOnly, updateCounter]);
 
   const actionReasonsMap = useMemo(() => {
     const map = new Map<string, ActionReason[]>();
@@ -162,14 +162,14 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
       if (reasons.length > 0) map.set(conv.id, reasons);
     }
     return map;
-  }, [permittedConversations, conversationLastReadAt]);
+  }, [permittedConversations, conversationLastReadAt, updateCounter]);
 
   const filteredConversations = useMemo(() => {
     let result = permittedConversations;
 
     // Filter by action mode (before channel/search)
     if (viewMode === "action") {
-      result = result.filter((r) => actionReasonsMap.has(r.id));
+      result = result.filter((r) => actionReasonsMap.has(r.id) || r.id === selectedId);
     }
 
     // Filter by channel (concierge only visible in "all")
@@ -225,6 +225,39 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
         convWR.assignee = assigneeId ? sourceUsers.find((u) => u.id === assigneeId) ?? null : null;
         convWR.updatedAt = new Date().toISOString();
       }
+
+      // Propagate assignee to all bookings linked to this conversation
+      for (const booking of bookings) {
+        if (booking.conversationId !== conversationId) continue;
+        booking.assigneeId = assigneeId;
+        booking.updatedAt = new Date().toISOString();
+
+        // Auto-schedule: paid + assignee + execution date → scheduled
+        if (booking.status === "paid" && assigneeId !== null && booking.executionAt !== "") {
+          const fromStatus = booking.status;
+          booking.status = "scheduled";
+
+          const conversation = sourceConversations.find((c) => c.id === conversationId);
+          if (conversation) {
+            communications.push({
+              id: `sys-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+              conversationId,
+              sender: "system",
+              senderName: "System",
+              channel: conversation.channel,
+              message: `Booking status changed from ${fromStatus} to scheduled`,
+              event: {
+                type: "booking_status_changed",
+                bookingId: booking.id,
+                fromStatus,
+                toStatus: "scheduled",
+              },
+              createdAt: new Date().toISOString(),
+            });
+          }
+        }
+      }
+
       forceUpdate((n) => n + 1);
     },
     [allConversations]
