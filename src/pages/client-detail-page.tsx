@@ -2,7 +2,8 @@ import { useState, useMemo, useCallback, useRef } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { clients, bookings, invoices, payments, conversations, internalNotes, getAllConversationsWithRelations } from "@/lib/mock-data";
+import { clients, bookings, invoices, payments, conversations, communications, internalNotes, getAllConversationsWithRelations } from "@/lib/mock-data";
+import { formatCurrency } from "@/lib/format";
 import { getClientIdsWithPaidBookings, resolveLifecycleStatus } from "@/lib/client-lifecycle";
 import { canViewClient } from "@/lib/permissions";
 import { Button } from "@/components/ui/button";
@@ -104,12 +105,66 @@ export function ClientDetailPage() {
   const handleChatSharePaymentLink = useCallback(
     (conversationId: string, invoiceId: string) => {
       const conv = [...clientConversationsByChannel.values()].find((c) => c.id === conversationId);
+      const channel = conv?.channel ?? "web";
+
+      // If invoice is draft, send it first
+      const invoice = invoices.find((i) => i.id === invoiceId);
+      if (invoice && invoice.status === "draft") {
+        invoice.status = "sent";
+        invoice.updatedAt = new Date().toISOString();
+
+        const invoiceSentComm: Communication = {
+          id: `sys-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          conversationId,
+          sender: "system",
+          senderName: "System",
+          channel,
+          message: `Invoice sent to client.`,
+          event: {
+            type: "invoice_sent",
+            bookingId: invoice.bookingId,
+            invoiceId: invoice.id,
+            invoiceTotal: invoice.total,
+          },
+          createdAt: new Date().toISOString(),
+        };
+        communications.push(invoiceSentComm);
+        if (conv) conv.communications.push(invoiceSentComm);
+
+        // Change booking status from draft to awaiting_payment
+        const bookingRef = bookings.find((b) => b.id === invoice.bookingId);
+        if (bookingRef && bookingRef.status === "draft") {
+          const fromStatus = bookingRef.status;
+          bookingRef.status = "awaiting_payment";
+          bookingRef.updatedAt = new Date().toISOString();
+
+          const statusComm: Communication = {
+            id: `sys-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            conversationId,
+            sender: "system",
+            senderName: "System",
+            channel,
+            message: `Booking status changed from ${fromStatus} to awaiting_payment`,
+            event: {
+              type: "booking_status_changed",
+              bookingId: bookingRef.id,
+              fromStatus,
+              toStatus: "awaiting_payment",
+            },
+            createdAt: new Date().toISOString(),
+          };
+          communications.push(statusComm);
+          if (conv) conv.communications.push(statusComm);
+        }
+      }
+
+      // Send payment link agent message
       const newComm: Communication = {
         id: `local-${Date.now()}`,
         conversationId,
         sender: "agent",
         senderName: currentUser.name,
-        channel: conv?.channel ?? "web",
+        channel,
         message: `Here is your payment link: https://pay.example.com/inv/${invoiceId}`,
         deliveryStatus: "sent",
         createdAt: new Date().toISOString(),
@@ -120,8 +175,65 @@ export function ClientDetailPage() {
         next.set(conversationId, [...existing, newComm]);
         return next;
       });
+
+      forceUpdate((n) => n + 1);
     },
     [clientConversationsByChannel, currentUser.name]
+  );
+
+  const handleChatCreateInvoice = useCallback(
+    (conversationId: string, bookingId: string) => {
+      const booking = bookings.find((b) => b.id === bookingId);
+      if (!booking) return;
+
+      const existingInvoice = invoices.find((i) => i.bookingId === bookingId);
+      if (existingInvoice) return;
+
+      const subtotal = booking.price;
+      const taxRate = 10;
+      const taxAmount = Math.round(subtotal * taxRate) / 100;
+      const total = subtotal + taxAmount;
+      const newInvoiceId = `inv-${Date.now()}`;
+
+      const conv = [...clientConversationsByChannel.values()].find((c) => c.id === conversationId);
+      const channel = conv?.channel ?? "web";
+
+      invoices.push({
+        id: newInvoiceId,
+        bookingId: booking.id,
+        clientId: booking.clientId,
+        status: "draft",
+        lineItems: [{ description: booking.title, quantity: 1, unitPrice: subtotal }],
+        subtotal,
+        taxRate,
+        taxAmount,
+        total,
+        dueDate: new Date(Date.now() + 30 * 86400000).toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
+      const systemComm: Communication = {
+        id: `sys-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        conversationId,
+        sender: "system",
+        senderName: "System",
+        channel,
+        message: `Invoice created for ${formatCurrency(total)}.`,
+        event: {
+          type: "invoice_created",
+          bookingId: booking.id,
+          invoiceId: newInvoiceId,
+          invoiceTotal: total,
+        },
+        createdAt: new Date().toISOString(),
+      };
+      communications.push(systemComm);
+      if (conv) conv.communications.push(systemComm);
+
+      forceUpdate((n) => n + 1);
+    },
+    [clientConversationsByChannel]
   );
 
   const handleAddNote = (content: string) => {
@@ -245,6 +357,7 @@ export function ClientDetailPage() {
           lastReadAtOnOpen={lastReadAtOnOpenRef.current ?? {}}
           onSend={handleChatSend}
           onSharePaymentLink={handleChatSharePaymentLink}
+          onCreateInvoice={handleChatCreateInvoice}
           onMarkRead={markConversationRead}
         />
       </div>

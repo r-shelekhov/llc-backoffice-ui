@@ -15,11 +15,13 @@ import type { Communication } from "@/types";
 interface ServiceMessageProps {
   communication: Communication;
   onSharePaymentLink?: () => void;
+  onCreateInvoice?: () => void;
 }
 
 export function ServiceMessage({
   communication,
   onSharePaymentLink,
+  onCreateInvoice,
 }: ServiceMessageProps) {
   const event = communication.event;
   if (!event) return null;
@@ -30,6 +32,7 @@ export function ServiceMessage({
   let refId: string | null = null;
   let showOpenBooking = false;
   let showSharePaymentLink = false;
+  let showCreateInvoice = false;
 
   switch (event.type) {
     case "booking_created":
@@ -38,7 +41,7 @@ export function ServiceMessage({
       line2 = event.title ?? null;
       refId = event.bookingId ?? null;
       showOpenBooking = true;
-      showSharePaymentLink = !!onSharePaymentLink;
+      showCreateInvoice = true;
       break;
     case "booking_status_changed":
       icon = <ClipboardList className="size-4 text-muted-foreground" />;
@@ -59,7 +62,6 @@ export function ServiceMessage({
       icon = <Send className="size-4 text-muted-foreground" />;
       line1 = `Invoice sent${event.invoiceTotal != null ? ` · ${formatCurrency(event.invoiceTotal)}` : ""}`;
       refId = event.invoiceId ?? null;
-      showSharePaymentLink = !!onSharePaymentLink;
       break;
     case "payment_confirmed":
       icon = <CircleCheck className="size-4 text-muted-foreground" />;
@@ -68,6 +70,7 @@ export function ServiceMessage({
         ? PAYMENT_METHOD_LABELS[event.paymentMethod]
         : null;
       refId = event.invoiceId ?? null;
+      showOpenBooking = true;
       break;
     default:
       return null;
@@ -85,7 +88,7 @@ export function ServiceMessage({
         {refId && (
           <p className="mt-1 font-mono text-xs text-muted-foreground">{refId}</p>
         )}
-        {(showOpenBooking || showSharePaymentLink) && (
+        {(showOpenBooking || showSharePaymentLink || showCreateInvoice) && (
           <div className="mt-1 flex items-center justify-center gap-3">
             {showOpenBooking && event.bookingId && (
               <Link
@@ -98,6 +101,16 @@ export function ServiceMessage({
               >
                 <Calendar className="size-3" /> Open booking
               </Link>
+            )}
+            {showCreateInvoice && (
+              <button
+                type="button"
+                onClick={onCreateInvoice ? () => onCreateInvoice() : undefined}
+                disabled={!onCreateInvoice}
+                className={`inline-flex items-center gap-1 text-xs font-medium ${onCreateInvoice ? "text-primary hover:underline" : "text-muted-foreground/50 cursor-not-allowed"}`}
+              >
+                <FileText className="size-3" /> Create Invoice
+              </button>
             )}
             {showSharePaymentLink && (
               <button

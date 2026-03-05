@@ -16,6 +16,7 @@ interface ClientChatPanelProps {
   lastReadAtOnOpen: Record<string, string | null>;
   onSend: (conversationId: string, message: string, attachments?: Attachment[]) => void;
   onSharePaymentLink: (conversationId: string, invoiceId: string) => void;
+  onCreateInvoice: (conversationId: string, bookingId: string) => void;
   onMarkRead: (conversationId: string) => void;
 }
 
@@ -26,6 +27,7 @@ export function ClientChatPanel({
   lastReadAtOnOpen,
   onSend,
   onSharePaymentLink,
+  onCreateInvoice,
   onMarkRead,
 }: ClientChatPanelProps) {
   const availableChannels = useMemo(
@@ -56,11 +58,7 @@ export function ClientChatPanel({
       if (!activeConversation) return undefined;
       const event = comm.event;
       if (!event) return undefined;
-      if (
-        event.type !== "booking_created" &&
-        event.type !== "invoice_created" &&
-        event.type !== "invoice_sent"
-      )
+      if (event.type !== "invoice_created" && event.type !== "invoice_sent")
         return undefined;
 
       let invoice: (typeof activeConversation.invoices)[number] | undefined;
@@ -76,6 +74,20 @@ export function ClientChatPanel({
       return () => onSharePaymentLink(convId, invoiceId);
     },
     [activeConversation, onSharePaymentLink]
+  );
+
+  const getCreateInvoiceHandler = useCallback(
+    (comm: Communication) => {
+      if (!activeConversation) return undefined;
+      const event = comm.event;
+      if (!event || event.type !== "booking_created" || !event.bookingId) return undefined;
+      const hasInvoice = activeConversation.invoices.some((inv) => inv.bookingId === event.bookingId);
+      if (hasInvoice) return undefined;
+      const convId = activeConversation.id;
+      const bookingId = event.bookingId;
+      return () => onCreateInvoice(convId, bookingId);
+    },
+    [activeConversation, onCreateInvoice]
   );
 
   // On conversation change: scroll to divider or bottom + mark read
@@ -153,6 +165,7 @@ export function ClientChatPanel({
           <CommunicationTimeline
             communications={allMessages}
             getSharePaymentLinkHandler={getSharePaymentLinkHandler}
+            getCreateInvoiceHandler={getCreateInvoiceHandler}
             lastReadAtOnOpen={lastReadAtOnOpen[activeConversation.id]}
             newMessagesDividerRef={newMessagesDividerRef}
           />

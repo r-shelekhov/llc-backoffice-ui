@@ -6,6 +6,7 @@ import type { Communication } from "@/types";
 interface CommunicationTimelineProps {
   communications: Communication[];
   getSharePaymentLinkHandler?: (comm: Communication) => (() => void) | undefined;
+  getCreateInvoiceHandler?: (comm: Communication) => (() => void) | undefined;
   lastReadAtOnOpen?: string | null;
   newMessagesDividerRef?: React.RefObject<HTMLDivElement | null>;
 }
@@ -13,6 +14,7 @@ interface CommunicationTimelineProps {
 export function CommunicationTimeline({
   communications,
   getSharePaymentLinkHandler,
+  getCreateInvoiceHandler,
   lastReadAtOnOpen,
   newMessagesDividerRef,
 }: CommunicationTimelineProps) {
@@ -94,7 +96,7 @@ export function CommunicationTimeline({
                   <div className="flex-1 border-t border-primary/50" />
                 </div>
               )}
-              <CommunicationMessage communication={comm} onSharePaymentLink={getSharePaymentLinkHandler?.(comm)} />
+              <CommunicationMessage communication={comm} onSharePaymentLink={getSharePaymentLinkHandler?.(comm)} onCreateInvoice={getCreateInvoiceHandler?.(comm)} />
             </div>
           ))}
         </div>

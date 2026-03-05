@@ -21,11 +21,13 @@ function getTagStyle(tag: string): string {
 interface CommunicationMessageProps {
   communication: Communication;
   onSharePaymentLink?: () => void;
+  onCreateInvoice?: () => void;
 }
 
 export function CommunicationMessage({
   communication,
   onSharePaymentLink,
+  onCreateInvoice,
 }: CommunicationMessageProps) {
   if (communication.sender === "system") {
     if (communication.event?.type === "conversation_resolved") {
@@ -38,7 +40,7 @@ export function CommunicationMessage({
     }
 
     if (communication.event) {
-      return <ServiceMessage communication={communication} onSharePaymentLink={onSharePaymentLink} />;
+      return <ServiceMessage communication={communication} onSharePaymentLink={onSharePaymentLink} onCreateInvoice={onCreateInvoice} />;
     }
 
     return (

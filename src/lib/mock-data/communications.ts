@@ -91,6 +91,7 @@ export const communications: Communication[] = [
     channel: "concierge",
     event: {
       type: "payment_confirmed",
+      bookingId: "bk-1",
       paymentAmount: 2959,
       paymentMethod: "card",
       invoiceId: "inv-1",
@@ -362,6 +363,7 @@ export const communications: Communication[] = [
     channel: "email",
     event: {
       type: "payment_confirmed",
+      bookingId: "bk-2",
       paymentAmount: 26180,
       paymentMethod: "bank_transfer",
       invoiceId: "inv-4",
@@ -894,6 +896,7 @@ export const communications: Communication[] = [
     channel: "whatsapp",
     event: {
       type: "payment_confirmed",
+      bookingId: "bk-3",
       paymentAmount: 9240,
       paymentMethod: "card",
       invoiceId: "inv-3",
