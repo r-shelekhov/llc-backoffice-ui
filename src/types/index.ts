@@ -249,12 +249,14 @@ export interface ClientRow extends Client {
   visibleConversationCount: number;
   lastActivityAt: string;
   isActive: boolean;
+  hasBookings: boolean;
 }
 
 export interface ClientFilterState {
   search: string;
   vipOnly: boolean;
   activeOnly: boolean;
+  hasBookingsOnly: boolean;
 }
 
 export type SortField = "last_activity" | "date_started" | "priority" | "waiting_since" | "sla_due";

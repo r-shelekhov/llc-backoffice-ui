@@ -1,19 +1,22 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Users } from "lucide-react";
+import { Plus, Users, UserCheck, Crown, PoundSterling } from "lucide-react";
 import type { Client, ClientFilterState, ClientRow } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import {
   getAllConversationsWithRelations,
   clients,
+  bookings,
 } from "@/lib/mock-data";
 import {
   filterConversationsByPermission,
   filterVipConversations,
 } from "@/lib/permissions";
 import { applyClientFilters } from "@/lib/filters";
+import { formatCurrency } from "@/lib/format";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { SearchInput } from "@/components/filters/search-input";
+import { KpiCard } from "@/components/dashboard/kpi-card";
 import { ClientTable } from "@/components/clients/client-table";
 import { ClientFormDialog } from "@/components/clients/client-form-dialog";
 import { DeleteClientDialog } from "@/components/clients/delete-client-dialog";
@@ -25,6 +28,7 @@ const initialFilters: ClientFilterState = {
   search: "",
   vipOnly: false,
   activeOnly: false,
+  hasBookingsOnly: false,
 };
 
 export function ClientsPage() {
@@ -52,6 +56,8 @@ export function ClientsPage() {
     const visibleClients = isAdminOrVip
       ? clients
       : clients.filter((c) => visibleClientIds.has(c.id));
+
+    const clientIdsWithBookings = new Set(bookings.map((b) => b.clientId));
 
     return visibleClients.map((client): ClientRow => {
       const clientConversations = permitted.filter(
@@ -85,17 +91,27 @@ export function ClientsPage() {
         visibleConversationCount: clientConversations.length,
         lastActivityAt,
         isActive,
+        hasBookings: clientIdsWithBookings.has(client.id),
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser, updateCounter]);
+
+  const kpiStats = useMemo(() => {
+    const totalLeads = clientRows.length;
+    const clientsWithBookings = clientRows.filter((c) => c.hasBookings).length;
+    const vipCount = clientRows.filter((c) => c.isVip).length;
+    const lifetimeRevenue = clientRows.reduce((sum, c) => sum + c.totalSpend, 0);
+    return { totalLeads, clientsWithBookings, vipCount, lifetimeRevenue };
+  }, [clientRows]);
 
   const filteredClients = applyClientFilters(clientRows, filters);
 
   const activeFilterCount =
     (filters.search ? 1 : 0) +
     (filters.vipOnly ? 1 : 0) +
-    (filters.activeOnly ? 1 : 0);
+    (filters.activeOnly ? 1 : 0) +
+    (filters.hasBookingsOnly ? 1 : 0);
 
   function handleAdd() {
     setEditingClient(undefined);
@@ -168,6 +184,32 @@ export function ClientsPage() {
         </Button>
       </div>
 
+      <div className="grid grid-cols-4 gap-4">
+        <KpiCard
+          label="Total Leads"
+          value={kpiStats.totalLeads}
+          icon={Users}
+          onClick={() => setFilters(initialFilters)}
+        />
+        <KpiCard
+          label="Clients"
+          value={kpiStats.clientsWithBookings}
+          icon={UserCheck}
+          onClick={() => setFilters({ ...initialFilters, hasBookingsOnly: true })}
+        />
+        <KpiCard
+          label="VIP Clients"
+          value={kpiStats.vipCount}
+          icon={Crown}
+          onClick={() => setFilters({ ...initialFilters, vipOnly: true })}
+        />
+        <KpiCard
+          label="Lifetime Revenue"
+          value={formatCurrency(kpiStats.lifetimeRevenue)}
+          icon={PoundSterling}
+        />
+      </div>
+
       <FilterBar
         onReset={() => setFilters(initialFilters)}
         activeCount={activeFilterCount}
@@ -194,6 +236,15 @@ export function ClientsPage() {
             }
           />
           Active only
+        </label>
+        <label className="flex items-center gap-2 text-sm">
+          <Checkbox
+            checked={filters.hasBookingsOnly}
+            onCheckedChange={(checked) =>
+              setFilters((prev) => ({ ...prev, hasBookingsOnly: checked === true }))
+            }
+          />
+          With bookings
         </label>
       </FilterBar>
 
