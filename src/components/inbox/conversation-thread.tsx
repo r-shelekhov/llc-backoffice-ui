@@ -1,5 +1,5 @@
 import { useEffect, useRef, useMemo, useCallback } from "react";
-import { Plus, Clock, Eye } from "lucide-react";
+import { Plus, Clock, Eye, CheckCircle2 } from "lucide-react";
 import type { Attachment, Communication, ConversationWithRelations } from "@/types";
 import { CommunicationTimeline } from "@/components/conversation-detail/communication-timeline";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ interface ConversationThreadProps {
   onSend: (message: string, attachments?: Attachment[]) => void;
   onCreateBooking: (conversationId: string) => void;
   onSharePaymentLink: (invoiceId: string) => void;
+  onResolve?: () => void;
   lastReadAtOnOpen?: string | null;
 }
 
@@ -29,6 +30,7 @@ export function ConversationThread({
   onSend,
   onCreateBooking,
   onSharePaymentLink,
+  onResolve,
   lastReadAtOnOpen,
 }: ConversationThreadProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -50,6 +52,8 @@ export function ConversationThread({
   }, [allMessages]);
 
   const collision = useMemo(() => hasCollision(conversation.id), [conversation.id]);
+
+  const isResolved = !!conversation.resolvedAt;
 
   const getSharePaymentLinkHandler = useCallback(
     (comm: Communication) => {
@@ -101,6 +105,22 @@ export function ConversationThread({
             <h3 className="truncate text-sm font-semibold">Conversation with {conversation.client.name}</h3>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            {isResolved ? (
+              <span className="flex items-center gap-1.5 rounded-full bg-tone-success-light px-3 py-1 text-xs font-medium text-tone-success-foreground">
+                <CheckCircle2 className="size-3.5" />
+                Resolved
+              </span>
+            ) : conversation.lifecycleStatus === "client" && onResolve ? (
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-tone-success/30 text-tone-success-foreground hover:bg-tone-success-light"
+                onClick={onResolve}
+              >
+                <CheckCircle2 className="size-4" />
+                Resolve
+              </Button>
+            ) : null}
             <Button
               size="sm"
               onClick={() => onCreateBooking(conversation.id)}

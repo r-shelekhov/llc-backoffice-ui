@@ -116,6 +116,11 @@ export function ConversationItem({
 							>
 								{conversation.lifecycleStatus === 'client' ? 'Client' : 'Lead'}
 							</span>
+							{conversation.resolvedAt && (
+								<span className="rounded-full bg-tone-success-light px-1.5 py-px text-[10px] font-medium leading-tight text-tone-success-foreground">
+									Resolved
+								</span>
+							)}
 							{badgeReasons.slice(0, 2).map((reason) => {
 								const config = ACTION_BADGE_CONFIG[reason]!
 								const label =

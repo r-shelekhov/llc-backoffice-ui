@@ -8,6 +8,17 @@ export function getConversationActionReasons(
 ): ActionReason[] {
   const reasons: ActionReason[] = [];
 
+  // Resolved conversations: only surface "unread" if client sent a new message
+  if (conversation.resolvedAt) {
+    const latestClientMsg = conversation.communications
+      .filter(c => c.sender === "client")
+      .reduce<string | null>((max, c) => (!max || c.createdAt > max ? c.createdAt : max), null);
+    if (latestClientMsg && (!lastReadAt || latestClientMsg > lastReadAt)) {
+      reasons.push("unread");
+    }
+    return reasons;
+  }
+
   // Unread: has client messages after lastReadAt
   const latestClientMsg = conversation.communications
     .filter(c => c.sender === "client")

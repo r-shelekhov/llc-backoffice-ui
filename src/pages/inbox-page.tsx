@@ -404,6 +404,44 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
     ? allConversations.find((c) => c.id === createBookingConvId) ?? null
     : null;
 
+  const handleResolve = useCallback(() => {
+    if (!selectedConversation) return;
+    const convId = selectedConversation.id;
+    const now = new Date().toISOString();
+
+    // Update source conversation
+    const srcConv = sourceConversations.find((c) => c.id === convId);
+    if (srcConv) {
+      srcConv.resolvedAt = now;
+      srcConv.resolvedBy = currentUser.id;
+      srcConv.updatedAt = now;
+    }
+
+    // Push system communication
+    const systemComm: Communication = {
+      id: `sys-resolve-${Date.now()}`,
+      conversationId: convId,
+      sender: "system",
+      senderName: currentUser.name,
+      channel: selectedConversation.channel,
+      message: "Conversation resolved",
+      event: { type: "conversation_resolved" },
+      createdAt: now,
+    };
+    communications.push(systemComm);
+
+    // Update in-memory snapshot
+    const convWR = allConversations.find((c) => c.id === convId);
+    if (convWR) {
+      convWR.resolvedAt = now;
+      convWR.resolvedBy = currentUser.id;
+      convWR.updatedAt = now;
+      convWR.communications.push(systemComm);
+    }
+
+    forceUpdate((n) => n + 1);
+  }, [selectedConversation, currentUser, allConversations]);
+
   const handleBookingCreated = useCallback(
     (booking: Booking) => {
       if (!createBookingConvId) return;
@@ -479,6 +517,7 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
             onSend={handleSend}
             onCreateBooking={(id) => setCreateBookingConvId(id)}
             onSharePaymentLink={handleSharePaymentLink}
+            onResolve={handleResolve}
             lastReadAtOnOpen={lastReadAtOnOpen}
           />
         ) : null

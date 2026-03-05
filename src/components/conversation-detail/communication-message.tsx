@@ -3,6 +3,7 @@ import { formatRelativeTime, formatFileSize } from "@/lib/format";
 import { DELIVERY_STATUS_LABELS } from "@/lib/constants";
 import type { Communication } from "@/types";
 import { ServiceMessage } from "./service-message";
+import { ResolutionSeparator } from "./resolution-separator";
 
 function getTagStyle(tag: string): string {
   switch (tag.toLowerCase()) {
@@ -27,6 +28,15 @@ export function CommunicationMessage({
   onSharePaymentLink,
 }: CommunicationMessageProps) {
   if (communication.sender === "system") {
+    if (communication.event?.type === "conversation_resolved") {
+      return (
+        <ResolutionSeparator
+          resolvedBy={communication.senderName}
+          resolvedAt={communication.createdAt}
+        />
+      );
+    }
+
     if (communication.event) {
       return <ServiceMessage communication={communication} onSharePaymentLink={onSharePaymentLink} />;
     }

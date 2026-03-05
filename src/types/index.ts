@@ -30,7 +30,8 @@ export type CommunicationEventType =
   | "booking_status_changed"
   | "invoice_created"
   | "invoice_sent"
-  | "payment_confirmed";
+  | "payment_confirmed"
+  | "conversation_resolved";
 
 export interface User {
   id: string;
@@ -71,6 +72,8 @@ export interface Conversation {
   dropoffLocation: string;
   pickupDate: string;
   slaDueAt: string;
+  resolvedAt?: string;
+  resolvedBy?: string;
   createdAt: string;
   updatedAt: string;
 }

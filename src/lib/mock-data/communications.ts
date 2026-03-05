@@ -1025,6 +1025,16 @@ export const communications: Communication[] = [
     },
     createdAt: "2026-02-20T15:30:00Z",
   },
+  {
+    id: "com-92",
+    conversationId: "conv-25",
+    sender: "system",
+    senderName: "Marcus Chen",
+    channel: "web",
+    message: "Conversation resolved",
+    event: { type: "conversation_resolved" },
+    createdAt: "2026-02-20T16:00:00Z",
+  },
   // Conversation conv-26 communications (Whitfield Audi e-tron - scheduled, read)
   {
     id: "com-83",
@@ -1089,6 +1099,16 @@ export const communications: Communication[] = [
       toStatus: "completed",
     },
     createdAt: "2026-02-16T18:00:00Z",
+  },
+  {
+    id: "com-93",
+    conversationId: "conv-27",
+    sender: "system",
+    senderName: "Marcus Chen",
+    channel: "phone",
+    message: "Conversation resolved",
+    event: { type: "conversation_resolved" },
+    createdAt: "2026-02-16T19:00:00Z",
   },
   // Conversation conv-28 communications (Blake Gatwick to Surrey - scheduled, read)
   {
