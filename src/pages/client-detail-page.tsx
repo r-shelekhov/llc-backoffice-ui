@@ -1,10 +1,16 @@
 import { useState, useMemo, useCallback, useRef } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { clients, bookings, conversations, internalNotes, getAllConversationsWithRelations } from "@/lib/mock-data";
 import { canViewClient } from "@/lib/permissions";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { VipIndicator } from "@/components/shared/vip-indicator";
 import { PermissionDenied } from "@/components/shared/permission-denied";
 import { ErrorState } from "@/components/shared/error-state";
@@ -205,10 +211,22 @@ export function ClientDetailPage() {
               Edit
             </Button>
             {currentUser.role === "admin" && (
-              <Button variant="destructive" size="sm" onClick={() => setDeletingOpen(true)}>
-                <Trash2 className="mr-1.5 size-3.5" />
-                Delete
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="size-8">
+                    <MoreHorizontal className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onClick={() => setDeletingOpen(true)}
+                  >
+                    <Trash2 className="mr-2 size-4 text-destructive" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>
