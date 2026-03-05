@@ -2,9 +2,7 @@ import { differenceInDays } from "date-fns";
 import { AlertCircle, Clock, FileText } from "lucide-react";
 import type { BookingStatus, BookingWithRelations } from "@/types";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { ServiceTypeIcon } from "@/components/shared/service-type-icon";
 import { formatCurrency, formatDate } from "@/lib/format";
-import { SERVICE_TYPE_LABELS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -118,12 +116,7 @@ export function BookingTable({ bookings, onSelect, onStatusChange, onConfirmPaym
                   </div>
                 </TableCell>
                 <TableCell>{booking.client.name}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <ServiceTypeIcon serviceType={booking.category} />
-                    <span>{SERVICE_TYPE_LABELS[booking.category]}</span>
-                  </div>
-                </TableCell>
+                <TableCell>{booking.category}</TableCell>
                 <TableCell>
                   <StatusBadge type="booking" status={booking.status} />
                 </TableCell>

@@ -81,7 +81,8 @@ export interface Booking {
   managerId: string | null;
   status: BookingStatus;
   title: string;
-  category: ServiceType;
+  category: string;
+  duration: string;
   executionAt: string;
   location: string;
   price: number;
@@ -104,7 +105,7 @@ export interface Communication {
     // Common booking fields
     bookingId?: string;
     title?: string;
-    category?: ServiceType;
+    category?: string;
     executionAt?: string;
     location?: string;
     price?: number;

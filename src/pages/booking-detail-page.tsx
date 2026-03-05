@@ -6,12 +6,11 @@ import { useAuth } from "@/hooks/use-auth";
 import { getBookingWithRelations, payments, invoices, bookings, communications, conversations } from "@/lib/mock-data";
 import { canViewBooking } from "@/lib/permissions";
 import { computeSlaState } from "@/lib/sla";
-import { BOOKING_STATUS_TRANSITIONS, BOOKING_STATUS_ACTION_LABELS, PAYMENT_METHOD_LABELS, SERVICE_TYPE_LABELS, CHANNEL_LABELS } from "@/lib/constants";
+import { BOOKING_STATUS_TRANSITIONS, BOOKING_STATUS_ACTION_LABELS, PAYMENT_METHOD_LABELS, CHANNEL_LABELS } from "@/lib/constants";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { ChannelIcon } from "@/components/shared/channel-icon";
 import { SlaBadge } from "@/components/shared/sla-badge";
-import { ServiceTypeIcon } from "@/components/shared/service-type-icon";
 import { VipIndicator } from "@/components/shared/vip-indicator";
 import { formatCurrency, formatDateTime, formatDate, formatRelativeTime } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -428,15 +427,7 @@ export function BookingDetailPage() {
         <DetailSection title="Overview">
           <div className="rounded-lg border p-4">
             <dl className="grid grid-cols-2 gap-4">
-              <DetailKv
-                label="Category"
-                value={
-                  <span className="flex items-center gap-1.5">
-                    <ServiceTypeIcon serviceType={booking.category} />
-                    {SERVICE_TYPE_LABELS[booking.category]}
-                  </span>
-                }
-              />
+              <DetailKv label="Category" value={booking.category} />
               <DetailKv label="Price" value={formatCurrency(booking.price)} />
               <div className="col-span-2">
                 <DetailKv label="Location" value={booking.location} />
@@ -487,6 +478,10 @@ export function BookingDetailPage() {
                       }
                     }}
                   />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Duration</label>
+                  <p className="mt-1 text-sm">{booking.duration || "Not set"}</p>
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground">Manager</label>

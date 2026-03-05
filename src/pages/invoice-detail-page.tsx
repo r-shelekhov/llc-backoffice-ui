@@ -4,9 +4,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { getInvoiceWithRelations, invoices, bookings } from "@/lib/mock-data";
 import { canViewInvoice } from "@/lib/permissions";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { ServiceTypeIcon } from "@/components/shared/service-type-icon";
 import { VipIndicator } from "@/components/shared/vip-indicator";
-import { SERVICE_TYPE_LABELS, PAYMENT_METHOD_LABELS } from "@/lib/constants";
+import { PAYMENT_METHOD_LABELS } from "@/lib/constants";
 import { formatCurrency, formatDateTime, formatDate, formatRelativeTime } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -170,9 +169,8 @@ export function InvoiceDetailPage() {
           <div className="rounded-lg border p-4 space-y-3">
             <div className="flex items-center gap-2">
               <StatusBadge type="booking" status={invoice.booking.status} />
-              <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                <ServiceTypeIcon serviceType={invoice.booking.category} />
-                {SERVICE_TYPE_LABELS[invoice.booking.category]}
+              <span className="text-sm text-muted-foreground">
+                {invoice.booking.category}
               </span>
             </div>
 

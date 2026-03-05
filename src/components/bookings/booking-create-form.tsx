@@ -1,16 +1,8 @@
 import { useState } from "react";
-import type { Booking, ConversationWithRelations, ServiceType } from "@/types";
+import type { Booking, ConversationWithRelations } from "@/types";
 import { bookings } from "@/lib/mock-data";
-import { SERVICE_TYPE_LABELS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface BookingCreateFormProps {
   conversation: ConversationWithRelations;
@@ -24,9 +16,8 @@ export function BookingCreateForm({
   onCancel,
 }: BookingCreateFormProps) {
   const [title, setTitle] = useState(conversation.title ?? "");
-  const [category, setCategory] = useState<ServiceType>(
-    conversation.serviceType ?? "car"
-  );
+  const [category, setCategory] = useState("");
+  const [duration, setDuration] = useState("");
   const [executionAt, setExecutionAt] = useState(
     conversation.pickupDate
       ? conversation.pickupDate.slice(0, 16)
@@ -49,6 +40,7 @@ export function BookingCreateForm({
       status: "draft",
       title,
       category,
+      duration,
       executionAt: executionAt ? new Date(executionAt).toISOString() : "",
       location,
       price: Number(price) || 0,
@@ -83,21 +75,20 @@ export function BookingCreateForm({
 
         <div className="space-y-1.5">
           <span className="text-sm font-medium">Category</span>
-          <Select
+          <Input
             value={category}
-            onValueChange={(val) => setCategory(val as ServiceType)}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(SERVICE_TYPE_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            onChange={(e) => setCategory(e.target.value)}
+            placeholder="e.g. Car, Private Jet, Helicopter"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <span className="text-sm font-medium">Duration</span>
+          <Input
+            value={duration}
+            onChange={(e) => setDuration(e.target.value)}
+            placeholder="e.g. 3 hours, 45 minutes"
+          />
         </div>
 
         <div className="space-y-1.5">
