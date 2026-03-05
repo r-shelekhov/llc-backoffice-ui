@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   Inbox,
   UserCheck,
@@ -7,6 +7,8 @@ import {
   Users,
   Users2,
   ChevronDown,
+  User,
+  LogOut,
 } from "lucide-react";
 import llcLogo from "@/assets/llc-logo.svg";
 import { cn } from "@/lib/utils";
@@ -20,6 +22,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -55,6 +59,7 @@ function NavItem({ to, icon: Icon, label, badge }: NavItemProps) {
 }
 
 export function Sidebar() {
+  const navigate = useNavigate();
   const { currentUser, setCurrentUser, allUsers, conversationLastReadAt } = useAuth();
 
   const permittedConversations = filterVipConversations(
@@ -115,18 +120,51 @@ export function Sidebar() {
               <ChevronDown className="ml-auto size-4 shrink-0" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="start" className="w-56">
-            {allUsers.map((user) => (
-              <DropdownMenuItem
-                key={user.id}
-                onSelect={() => setCurrentUser(user)}
-              >
-                <span>{user.name}</span>
-                <span className="ml-2 text-xs text-muted-foreground">
-                  {ROLE_LABELS[user.role]}
-                </span>
-              </DropdownMenuItem>
-            ))}
+          <DropdownMenuContent side="top" align="start" className="w-64">
+            <DropdownMenuLabel className="flex items-center gap-3 py-3">
+              <img
+                src={currentUser.avatarUrl}
+                alt={currentUser.name}
+                className="h-10 w-10 rounded-full"
+              />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">{currentUser.name}</span>
+                <span className="text-xs font-normal text-muted-foreground">{currentUser.email}</span>
+                <span className="text-xs font-normal text-muted-foreground">{ROLE_LABELS[currentUser.role]}</span>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => navigate("/profile")}>
+              <User className="mr-2 size-4" />
+              My Profile
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
+              Switch account
+            </DropdownMenuLabel>
+            {allUsers
+              .filter((user) => user.id !== currentUser.id)
+              .map((user) => (
+                <DropdownMenuItem
+                  key={user.id}
+                  onSelect={() => setCurrentUser(user)}
+                >
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name}
+                    className="mr-2 h-6 w-6 rounded-full"
+                  />
+                  <span>{user.name}</span>
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    {ROLE_LABELS[user.role]}
+                  </span>
+                </DropdownMenuItem>
+              ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => {}}>
+              <LogOut className="mr-2 size-4" />
+              Log out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

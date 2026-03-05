@@ -11,6 +11,7 @@ import { ClientDetailPage } from "@/pages/client-detail-page";
 import { BillingPage } from "@/pages/billing-page";
 import { InvoiceDetailPage } from "@/pages/invoice-detail-page";
 import { AdminUsersPage } from "@/pages/admin-users-page";
+import { ProfilePage } from "@/pages/profile-page";
 import { NotFoundPage } from "@/pages/not-found-page";
 
 function ConversationRedirect() {
@@ -44,6 +45,7 @@ export function App() {
             <Route path="invoices" element={<Navigate to="/billing" replace />} />
             <Route path="invoices/:id" element={<InvoiceRedirect />} />
             <Route path="payments" element={<Navigate to="/billing" replace />} />
+            <Route path="profile" element={<ProfilePage />} />
             <Route path="admin/users" element={<AdminUsersPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
