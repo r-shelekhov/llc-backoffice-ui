@@ -483,10 +483,6 @@ export function BookingDetailPage() {
                   <label className="text-xs text-muted-foreground">Duration</label>
                   <p className="mt-1 text-sm">{booking.duration || "Not set"}</p>
                 </div>
-                <div>
-                  <label className="text-xs text-muted-foreground">Manager</label>
-                  <p className="mt-1 text-sm">{booking.manager?.name ?? "Unassigned"}</p>
-                </div>
               </div>
             </div>
           </DetailSection>
