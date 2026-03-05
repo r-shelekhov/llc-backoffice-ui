@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
   Calendar,
+  Globe,
   LinkIcon,
   ClipboardList,
   FileText,
@@ -35,6 +36,11 @@ export function ServiceMessage({
   let showCreateInvoice = false;
 
   switch (event.type) {
+    case "web_form_submitted":
+      icon = <Globe className="size-4 text-muted-foreground" />;
+      line1 = "Received from website";
+      line2 = event.title ?? null;
+      break;
     case "booking_created":
       icon = <ClipboardList className="size-4 text-muted-foreground" />;
       line1 = "Booking created";

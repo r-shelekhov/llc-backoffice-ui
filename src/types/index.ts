@@ -26,6 +26,7 @@ export type SlaState = "on_track" | "at_risk" | "breached";
 export type DeliveryStatus = "sent" | "delivered" | "read";
 
 export type CommunicationEventType =
+  | "web_form_submitted"
   | "booking_created"
   | "booking_status_changed"
   | "invoice_created"

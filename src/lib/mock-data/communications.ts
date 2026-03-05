@@ -545,6 +545,19 @@ export const communications: Communication[] = [
   },
   // Conversation conv-9 communications (Harrington Heathrow transfer - converted)
   {
+    id: "com-94",
+    conversationId: "conv-9",
+    sender: "system",
+    senderName: "System",
+    message: "New request received from website.",
+    channel: "web",
+    event: {
+      type: "web_form_submitted",
+      title: "S-Class, Heathrow T5 to The Savoy",
+    },
+    createdAt: "2026-01-16T08:55:00Z",
+  },
+  {
     id: "com-19",
     conversationId: "conv-9",
     sender: "client",
@@ -949,8 +962,12 @@ export const communications: Communication[] = [
     conversationId: "conv-16",
     sender: "system",
     senderName: "System",
-    message: "Booking confirmed via web portal. E-Class, Gatwick to The Grand Brighton. Pickup: 10 PM Jan 28.",
+    message: "New request received from website.",
     channel: "web",
+    event: {
+      type: "web_form_submitted",
+      title: "E-Class, Gatwick to The Grand Brighton",
+    },
     createdAt: "2026-01-25T12:00:00Z",
   },
   {
