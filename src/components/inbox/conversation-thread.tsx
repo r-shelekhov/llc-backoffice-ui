@@ -1,13 +1,10 @@
 import { useEffect, useRef, useMemo, useCallback } from "react";
 import { Plus, Clock, Eye } from "lucide-react";
 import type { Attachment, Communication, ConversationWithRelations } from "@/types";
-import { PriorityBadge } from "@/components/shared/priority-badge";
-import { SlaBadge } from "@/components/shared/sla-badge";
 import { CommunicationTimeline } from "@/components/conversation-detail/communication-timeline";
 import { Button } from "@/components/ui/button";
 import { MessageComposer } from "./message-composer";
 import { formatDuration } from "@/lib/format";
-import { CHANNEL_LABELS } from "@/lib/constants";
 
 // Deterministic mock collision: use conversation ID hash
 function hasCollision(conversationId: string): { active: boolean; agentName: string } {
@@ -101,7 +98,7 @@ export function ConversationThread({
       <div className="shrink-0 border-b px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
-            <h3 className="truncate text-sm font-semibold">{conversation.client.name} · {CHANNEL_LABELS[conversation.channel]}</h3>
+            <h3 className="truncate text-sm font-semibold">Conversation with {conversation.client.name}</h3>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <Button
@@ -111,20 +108,6 @@ export function ConversationThread({
               <Plus className="size-4" />
               Create Booking
             </Button>
-          </div>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
-          <div>
-              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Priority</p>
-              <div className="mt-1">
-                <PriorityBadge priority={conversation.priority} />
-              </div>
-          </div>
-          <div>
-              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">SLA</p>
-              <div className="mt-1">
-                <SlaBadge state={conversation.slaState} />
-              </div>
           </div>
         </div>
       </div>
