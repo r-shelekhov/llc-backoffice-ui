@@ -55,6 +55,7 @@ export interface Client {
   updatedAt: string;
   totalConversations: number;
   totalSpend: number;
+  lifecycleStatus?: LifecycleStatus;
 }
 
 export interface Conversation {
@@ -184,6 +185,7 @@ export interface ConversationWithRelations extends Conversation {
   invoices: Invoice[];
   payments: Payment[];
   slaState: SlaState;
+  lifecycleStatus: LifecycleStatus;
 }
 
 export interface BookingWithRelations extends Booking {
@@ -249,16 +251,17 @@ export interface ClientRow extends Client {
   visibleConversationCount: number;
   lastActivityAt: string;
   isActive: boolean;
-  hasBookings: boolean;
+  lifecycleStatus: LifecycleStatus;
 }
 
 export interface ClientFilterState {
   search: string;
   vipOnly: boolean;
   activeOnly: boolean;
-  hasBookingsOnly: boolean;
 }
 
 export type SortField = "last_activity" | "date_started" | "priority" | "waiting_since" | "sla_due";
 
 export type SortDirection = "asc" | "desc";
+
+export type LifecycleStatus = "lead" | "client";

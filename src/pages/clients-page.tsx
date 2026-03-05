@@ -1,13 +1,16 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Users, UserCheck, Crown, PoundSterling } from "lucide-react";
+import { Plus, Users, Crown, PoundSterling } from "lucide-react";
 import type { Client, ClientFilterState, ClientRow } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import {
   getAllConversationsWithRelations,
   clients,
   bookings,
+  invoices,
+  payments,
 } from "@/lib/mock-data";
+import { getClientIdsWithPaidBookings, resolveLifecycleStatus } from "@/lib/client-lifecycle";
 import {
   filterConversationsByPermission,
   filterVipConversations,
@@ -23,12 +26,12 @@ import { DeleteClientDialog } from "@/components/clients/delete-client-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import type { LifecycleStatus } from "@/types";
 
 const initialFilters: ClientFilterState = {
   search: "",
   vipOnly: false,
   activeOnly: false,
-  hasBookingsOnly: false,
 };
 
 export function ClientsPage() {
@@ -57,7 +60,7 @@ export function ClientsPage() {
       ? clients
       : clients.filter((c) => visibleClientIds.has(c.id));
 
-    const clientIdsWithBookings = new Set(bookings.map((b) => b.clientId));
+    const paidClientIds = getClientIdsWithPaidBookings(bookings, invoices, payments);
 
     return visibleClients.map((client): ClientRow => {
       const clientConversations = permitted.filter(
@@ -91,27 +94,30 @@ export function ClientsPage() {
         visibleConversationCount: clientConversations.length,
         lastActivityAt,
         isActive,
-        hasBookings: clientIdsWithBookings.has(client.id),
+        lifecycleStatus: resolveLifecycleStatus(client, paidClientIds),
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser, updateCounter]);
 
-  const kpiStats = useMemo(() => {
-    const totalLeads = clientRows.length;
-    const clientsWithBookings = clientRows.filter((c) => c.hasBookings).length;
-    const vipCount = clientRows.filter((c) => c.isVip).length;
-    const lifetimeRevenue = clientRows.reduce((sum, c) => sum + c.totalSpend, 0);
-    return { totalLeads, clientsWithBookings, vipCount, lifetimeRevenue };
-  }, [clientRows]);
+  const clientOnlyRows = useMemo(
+    () => clientRows.filter((c) => c.lifecycleStatus === "client"),
+    [clientRows]
+  );
 
-  const filteredClients = applyClientFilters(clientRows, filters);
+  const kpiStats = useMemo(() => {
+    const totalClients = clientOnlyRows.length;
+    const vipCount = clientOnlyRows.filter((c) => c.isVip).length;
+    const lifetimeRevenue = clientOnlyRows.reduce((sum, c) => sum + c.totalSpend, 0);
+    return { totalClients, vipCount, lifetimeRevenue };
+  }, [clientOnlyRows]);
+
+  const filteredClients = applyClientFilters(clientOnlyRows, filters);
 
   const activeFilterCount =
     (filters.search ? 1 : 0) +
     (filters.vipOnly ? 1 : 0) +
-    (filters.activeOnly ? 1 : 0) +
-    (filters.hasBookingsOnly ? 1 : 0);
+    (filters.activeOnly ? 1 : 0);
 
   function handleAdd() {
     setEditingClient(undefined);
@@ -152,6 +158,7 @@ export function ClientsPage() {
         avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${initials}`,
         totalConversations: 0,
         totalSpend: 0,
+        lifecycleStatus: "client" as LifecycleStatus,
         createdAt: now,
         updatedAt: now,
       });
@@ -184,18 +191,12 @@ export function ClientsPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <KpiCard
-          label="Total Leads"
-          value={kpiStats.totalLeads}
+          label="Total Clients"
+          value={kpiStats.totalClients}
           icon={Users}
           onClick={() => setFilters(initialFilters)}
-        />
-        <KpiCard
-          label="Clients"
-          value={kpiStats.clientsWithBookings}
-          icon={UserCheck}
-          onClick={() => setFilters({ ...initialFilters, hasBookingsOnly: true })}
         />
         <KpiCard
           label="VIP Clients"
@@ -236,15 +237,6 @@ export function ClientsPage() {
             }
           />
           Active only
-        </label>
-        <label className="flex items-center gap-2 text-sm">
-          <Checkbox
-            checked={filters.hasBookingsOnly}
-            onCheckedChange={(checked) =>
-              setFilters((prev) => ({ ...prev, hasBookingsOnly: checked === true }))
-            }
-          />
-          With bookings
         </label>
       </FilterBar>
 

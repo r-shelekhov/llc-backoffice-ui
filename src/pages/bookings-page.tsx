@@ -4,6 +4,7 @@ import { AlertCircle, ArrowLeft, Calendar, PoundSterling, Clock, Check, ChevronD
 import type { BookingFilterState, BookingStatus, PaymentMethod } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
 import { getAllBookingsWithRelations, bookings, invoices, payments, clients } from "@/lib/mock-data";
+import { promoteClientToClient } from "@/lib/client-lifecycle";
 import { filterBookingsByPermission, filterVipBookings } from "@/lib/permissions";
 import { applyBookingFilters } from "@/lib/filters";
 import { BOOKING_STATUS_TRANSITIONS } from "@/lib/constants";
@@ -166,6 +167,9 @@ export function BookingsPage() {
         bookingRef.status = "scheduled";
       }
     }
+
+    const paidClient = clients.find((c) => c.id === bookings.find((b) => b.id === bookingId)?.clientId);
+    if (paidClient) promoteClientToClient(paidClient);
 
     setPaymentDialogBooking(null);
     forceUpdate((n) => n + 1);

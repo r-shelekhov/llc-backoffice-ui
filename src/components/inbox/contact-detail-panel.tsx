@@ -67,14 +67,16 @@ export function ContactDetailPanel({
             </span>
           </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="mt-3 w-full"
-          onClick={() => navigate(`/clients/${client.id}`, { state: { from: "conversation", conversationId: conversation.id } })}
-        >
-          View Profile
-        </Button>
+        {conversation.lifecycleStatus === "client" && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3 w-full"
+            onClick={() => navigate(`/clients/${client.id}`, { state: { from: "conversation", conversationId: conversation.id } })}
+          >
+            View Profile
+          </Button>
+        )}
       </div>
 
       {/* Conversation section */}

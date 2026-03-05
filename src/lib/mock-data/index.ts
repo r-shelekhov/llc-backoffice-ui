@@ -1,5 +1,6 @@
 import type { ConversationWithRelations, BookingWithRelations, InvoiceWithRelations, PaymentWithRelations } from "@/types";
 import { computeSlaState } from "@/lib/sla";
+import { getClientIdsWithPaidBookings, resolveLifecycleStatus } from "@/lib/client-lifecycle";
 
 export { users } from "./users";
 export { clients } from "./clients";
@@ -34,6 +35,8 @@ export function getConversationWithRelations(conversationId: string): Conversati
     convInvoices.some((i) => i.id === p.invoiceId)
   );
   const slaState = computeSlaState(conversation.slaDueAt);
+  const paidClientIds = getClientIdsWithPaidBookings(bookings, invoices, payments);
+  const lifecycleStatus = resolveLifecycleStatus(client!, paidClientIds);
 
   return {
     ...conversation,
@@ -45,6 +48,7 @@ export function getConversationWithRelations(conversationId: string): Conversati
     invoices: convInvoices,
     payments: convPayments,
     slaState,
+    lifecycleStatus,
   };
 }
 

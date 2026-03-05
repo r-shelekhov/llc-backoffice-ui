@@ -3,7 +3,8 @@ import { Link, useParams, useLocation } from "react-router-dom";
 import { AlertCircle, Zap } from "lucide-react";
 import type { BookingStatus, PaymentMethod, Communication } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
-import { getBookingWithRelations, payments, invoices, bookings, communications, conversations } from "@/lib/mock-data";
+import { getBookingWithRelations, payments, invoices, bookings, communications, conversations, clients } from "@/lib/mock-data";
+import { promoteClientToClient } from "@/lib/client-lifecycle";
 import { canViewBooking } from "@/lib/permissions";
 import { computeSlaState } from "@/lib/sla";
 import { BOOKING_STATUS_TRANSITIONS, BOOKING_STATUS_ACTION_LABELS, PAYMENT_METHOD_LABELS, CHANNEL_LABELS } from "@/lib/constants";
@@ -128,6 +129,9 @@ function confirmPayment(
         toStatus: "scheduled",
       });
     }
+
+    const paidClient = clients.find((c) => c.id === bookingRef.clientId);
+    if (paidClient) promoteClientToClient(paidClient);
   }
 }
 

@@ -197,8 +197,6 @@ export function applyClientFilters(
 
     if (filters.activeOnly && !c.isActive) return false;
 
-    if (filters.hasBookingsOnly && !c.hasBookings) return false;
-
     return true;
   });
 }

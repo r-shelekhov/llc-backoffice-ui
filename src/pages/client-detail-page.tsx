@@ -2,7 +2,8 @@ import { useState, useMemo, useCallback, useRef } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { clients, bookings, conversations, internalNotes, getAllConversationsWithRelations } from "@/lib/mock-data";
+import { clients, bookings, invoices, payments, conversations, internalNotes, getAllConversationsWithRelations } from "@/lib/mock-data";
+import { getClientIdsWithPaidBookings, resolveLifecycleStatus } from "@/lib/client-lifecycle";
 import { canViewClient } from "@/lib/permissions";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +42,12 @@ export function ClientDetailPage() {
 
   if (!client) {
     return <ErrorState message="Client not found" />;
+  }
+
+  const paidClientIds = getClientIdsWithPaidBookings(bookings, invoices, payments);
+  const lifecycle = resolveLifecycleStatus(client, paidClientIds);
+  if (lifecycle === "lead") {
+    return <ErrorState message="This person is a lead and does not have a client profile yet." />;
   }
 
   const clientBookings = bookings.filter((b) => b.clientId === client.id);
