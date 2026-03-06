@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
-import { getAllConversationsWithRelations, conversations as sourceConversations, communications, internalNotes, users as sourceUsers, bookings, clients, invoices } from "@/lib/mock-data";
+import { getAllConversationsWithRelations, conversations as sourceConversations, communications, internalNotes, users as sourceUsers, bookings, invoices } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/format";
 import { filterConversationsByPermission, filterVipConversations } from "@/lib/permissions";
 import { isConversationUnread, getUnreadCount } from "@/lib/unread";
@@ -151,7 +151,7 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
   const permittedConversations = useMemo(() => {
     const base = filterVipConversations(currentUser, filterConversationsByPermission(currentUser, allConversations));
     if (myConversationsOnly) {
-      return base.filter((c) => c.managerId === currentUser.id);
+      return base.filter((c) => c.managerIds.includes(currentUser.id));
     }
     return base;
   }, [currentUser, allConversations, myConversationsOnly, updateCounter]);
@@ -213,36 +213,30 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
     [unreadCountMap]
   );
 
-  const handleManagerChange = useCallback(
-    (conversationId: string, managerId: string | null) => {
-      // VIP assignment guard: reject plain managers for VIP clients
-      if (managerId) {
-        const conv = sourceConversations.find((c) => c.id === conversationId);
-        const client = conv ? clients.find((c) => c.id === conv.clientId) : null;
-        const user = sourceUsers.find((u) => u.id === managerId);
-        if (client?.isVip && user?.role === "manager") return;
-      }
-
+  const handleManagersChange = useCallback(
+    (conversationId: string, managerIds: string[]) => {
       const conv = sourceConversations.find((c) => c.id === conversationId);
       if (conv) {
-        conv.managerId = managerId;
+        conv.managerIds = managerIds;
         conv.updatedAt = new Date().toISOString();
       }
       const convWR = allConversations.find((c) => c.id === conversationId);
       if (convWR) {
-        convWR.managerId = managerId;
-        convWR.manager = managerId ? sourceUsers.find((u) => u.id === managerId) ?? null : null;
+        convWR.managerIds = managerIds;
+        convWR.managers = managerIds
+          .map((id) => sourceUsers.find((u) => u.id === id))
+          .filter((u): u is typeof sourceUsers[number] => u != null);
         convWR.updatedAt = new Date().toISOString();
       }
 
-      // Propagate manager to all bookings linked to this conversation
+      // Propagate managers to all bookings linked to this conversation
       for (const booking of bookings) {
         if (booking.conversationId !== conversationId) continue;
-        booking.managerId = managerId;
+        booking.managerIds = managerIds;
         booking.updatedAt = new Date().toISOString();
 
-        // Auto-schedule: paid + manager + execution date → scheduled
-        if (booking.status === "paid" && managerId !== null && booking.executionAt !== "") {
+        // Auto-schedule: paid + has manager + execution date → scheduled
+        if (booking.status === "paid" && managerIds.length > 0 && booking.executionAt !== "") {
           const fromStatus = booking.status;
           booking.status = "scheduled";
 
@@ -598,6 +592,7 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
           actionableCount={actionReasonsMap.size}
           totalCount={permittedConversations.length}
           actionReasonsMap={actionReasonsMap}
+          currentUserId={currentUser.id}
           {...(myConversationsOnly && {
             title: "My Queue",
           })}
@@ -622,7 +617,7 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
           <ContactDetailPanel
             conversation={selectedConversation}
             users={allUsers}
-            onManagerChange={handleManagerChange}
+            onManagersChange={handleManagersChange}
             currentUserId={currentUser.id}
             currentUserRole={currentUser.role}
             onAddNote={handleAddNote}

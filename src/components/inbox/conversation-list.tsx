@@ -44,6 +44,7 @@ interface ConversationListProps {
   totalCount: number;
   actionReasonsMap: Map<string, ActionReason[]>;
   title?: string;
+  currentUserId?: string;
 }
 
 export function ConversationList({
@@ -66,6 +67,7 @@ export function ConversationList({
   totalCount,
   actionReasonsMap,
   title = "Inbox",
+  currentUserId,
 }: ConversationListProps) {
   return (
     <div className="flex h-full flex-col">
@@ -133,6 +135,7 @@ export function ConversationList({
               isSelected={conversation.id === selectedId}
               onClick={() => onSelect(conversation.id)}
               actionReasons={actionReasonsMap.get(conversation.id)}
+              currentUserId={currentUserId}
             />
           ))
         )}

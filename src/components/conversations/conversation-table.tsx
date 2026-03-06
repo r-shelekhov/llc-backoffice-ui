@@ -16,6 +16,28 @@ import { VipIndicator } from "@/components/shared/vip-indicator";
 import { ServiceTypeIcon } from "@/components/shared/service-type-icon";
 import { ChannelIcon } from "@/components/shared/channel-icon";
 import { formatRelativeTime } from "@/lib/format";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+  AvatarGroup,
+  AvatarGroupCount,
+} from "@/components/ui/avatar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
 
 interface ConversationTableProps {
   conversations: ConversationWithRelations[];
@@ -80,6 +102,7 @@ export function ConversationTable({ conversations }: ConversationTableProps) {
   }, [conversations, sortColumn, sortDirection]);
 
   return (
+    <TooltipProvider>
     <Table>
       <TableHeader>
         <TableRow>
@@ -117,7 +140,7 @@ export function ConversationTable({ conversations }: ConversationTableProps) {
           </TableHead>
           <TableHead>Service</TableHead>
           <TableHead>Channel</TableHead>
-          <TableHead>Manager</TableHead>
+          <TableHead>Managers</TableHead>
           <TableHead>
             <button
               type="button"
@@ -164,19 +187,42 @@ export function ConversationTable({ conversations }: ConversationTableProps) {
               <ChannelIcon channel={conversation.channel} />
             </TableCell>
             <TableCell>
-              {conversation.manager ? (
-                <div className="flex items-center gap-2">
-                  <img
-                    src={conversation.manager.avatarUrl}
-                    alt={conversation.manager.name}
-                    className="w-6 h-6 rounded-full"
-                  />
-                  <span className="text-sm">{conversation.manager.name}</span>
-                </div>
-              ) : (
+              {conversation.managers.length === 0 ? (
                 <span className="text-sm text-muted-foreground">
                   Unassigned
                 </span>
+              ) : conversation.managers.length === 1 ? (
+                <div className="flex items-center gap-2">
+                  <img
+                    src={conversation.managers[0].avatarUrl}
+                    alt={conversation.managers[0].name}
+                    className="w-6 h-6 rounded-full"
+                  />
+                  <span className="text-sm">{conversation.managers[0].name}</span>
+                </div>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center">
+                      <AvatarGroup>
+                        {conversation.managers.slice(0, 2).map((m) => (
+                          <Avatar key={m.id} size="sm">
+                            <AvatarImage src={m.avatarUrl} alt={m.name} />
+                            <AvatarFallback>{getInitials(m.name)}</AvatarFallback>
+                          </Avatar>
+                        ))}
+                        {conversation.managers.length > 2 && (
+                          <AvatarGroupCount className="text-xs">
+                            +{conversation.managers.length - 2}
+                          </AvatarGroupCount>
+                        )}
+                      </AvatarGroup>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {conversation.managers.map((m) => m.name).join(", ")}
+                  </TooltipContent>
+                </Tooltip>
               )}
             </TableCell>
             <TableCell className="text-sm text-muted-foreground">
@@ -186,5 +232,6 @@ export function ConversationTable({ conversations }: ConversationTableProps) {
         ))}
       </TableBody>
     </Table>
+    </TooltipProvider>
   );
 }
