@@ -182,4 +182,15 @@ export const payments: Payment[] = [
     createdAt: "2026-02-22T10:00:00Z",
     updatedAt: "2026-02-22T10:00:00Z",
   },
+  {
+    id: "pay-17",
+    invoiceId: "inv-20",
+    clientId: "cli-7",
+    amount: 550,
+    method: "card",
+    status: "succeeded",
+    processedAt: "2026-02-26T10:00:00Z",
+    createdAt: "2026-02-26T10:00:00Z",
+    updatedAt: "2026-02-26T10:00:00Z",
+  },
 ];

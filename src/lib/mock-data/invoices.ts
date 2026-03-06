@@ -304,12 +304,12 @@ export const invoices: Invoice[] = [
     createdAt: "2026-02-25T11:00:00Z",
     updatedAt: "2026-02-25T11:00:00Z",
   },
-  // bk-15: Blake BMW transfer (draft)
+  // bk-15: Blake BMW transfer (awaiting_payment)
   {
     id: "inv-18",
     bookingId: "bk-15",
     clientId: "cli-11",
-    status: "draft",
+    status: "sent",
     lineItems: [
       { description: "BMW 7 Series Transfer — Heathrow to Surrey", quantity: 1, unitPrice: 520 },
       { description: "Meet & Greet service — Terminal 4", quantity: 1, unitPrice: 75 },
@@ -322,5 +322,24 @@ export const invoices: Invoice[] = [
     dueDate: "2026-04-08T00:00:00Z",
     createdAt: "2026-02-25T10:00:00Z",
     updatedAt: "2026-02-25T10:00:00Z",
+  },
+  // bk-18: Whitfield Audi e-tron GT (scheduled — paid)
+  {
+    id: "inv-20",
+    bookingId: "bk-18",
+    clientId: "cli-7",
+    status: "paid",
+    lineItems: [
+      { description: "Audi e-tron GT Transfer — Canary Wharf to Heathrow T5", quantity: 1, unitPrice: 450 },
+      { description: "Airport drop-off coordination", quantity: 1, unitPrice: 50 },
+    ],
+    subtotal: 500,
+    taxRate: 10,
+    taxAmount: 50,
+    total: 550,
+    dueDate: "2026-04-08T00:00:00Z",
+    paidAt: "2026-02-26T10:00:00Z",
+    createdAt: "2026-02-25T11:00:00Z",
+    updatedAt: "2026-02-26T10:00:00Z",
   },
 ];
