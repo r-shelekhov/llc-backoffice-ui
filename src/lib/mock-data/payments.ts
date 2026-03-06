@@ -26,7 +26,7 @@ export const payments: Payment[] = [
   },
   {
     id: "pay-3",
-    invoiceId: "inv-7",
+    invoiceId: "inv-3",
     clientId: "cli-4",
     amount: 9240,
     method: "card",
@@ -79,19 +79,7 @@ export const payments: Payment[] = [
     createdAt: "2026-02-25T08:00:00Z",
     updatedAt: "2026-02-25T08:00:00Z",
   },
-  // Refunded payments (3)
-  {
-    id: "pay-8",
-    invoiceId: "inv-17",
-    clientId: "cli-6",
-    amount: 24695,
-    method: "bank_transfer",
-    status: "refunded",
-    refundReason: "Client cancelled Citation XLS charter to Newquay outside cancellation penalty window. Full refund issued per policy.",
-    processedAt: "2026-02-10T10:00:00Z",
-    createdAt: "2026-02-03T09:00:00Z",
-    updatedAt: "2026-02-10T10:00:00Z",
-  },
+  // Refunded payments (2)
   {
     id: "pay-9",
     invoiceId: "inv-8",
@@ -116,7 +104,18 @@ export const payments: Payment[] = [
     createdAt: "2026-02-04T10:00:00Z",
     updatedAt: "2026-02-05T16:00:00Z",
   },
-  // Failed payments (3)
+  // Failed payments (4)
+  {
+    id: "pay-8",
+    invoiceId: "inv-17",
+    clientId: "cli-6",
+    amount: 24695,
+    method: "bank_transfer",
+    status: "failed",
+    processedAt: "2026-02-10T10:00:00Z",
+    createdAt: "2026-02-03T09:00:00Z",
+    updatedAt: "2026-02-10T10:00:00Z",
+  },
   {
     id: "pay-11",
     invoiceId: "inv-12",
@@ -167,8 +166,20 @@ export const payments: Payment[] = [
     clientId: "cli-10",
     amount: 20350,
     method: "card",
-    status: "pending",
+    status: "succeeded",
+    processedAt: "2026-02-25T15:00:00Z",
     createdAt: "2026-02-25T15:00:00Z",
     updatedAt: "2026-02-25T15:00:00Z",
+  },
+  {
+    id: "pay-16",
+    invoiceId: "inv-6",
+    clientId: "cli-4",
+    amount: 23446.5,
+    method: "bank_transfer",
+    status: "succeeded",
+    processedAt: "2026-02-22T10:00:00Z",
+    createdAt: "2026-02-22T10:00:00Z",
+    updatedAt: "2026-02-22T10:00:00Z",
   },
 ];

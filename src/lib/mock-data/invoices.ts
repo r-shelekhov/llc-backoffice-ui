@@ -73,7 +73,7 @@ export const invoices: Invoice[] = [
     lineItems: [
       { description: "Rolls-Royce Phantom (Arctic White) — Wedding Fleet", quantity: 4, unitPrice: 3500 },
       { description: "Floral arrangements by McQueens (per vehicle)", quantity: 4, unitPrice: 1800 },
-      { description: "Route survey and Metropolitan Police coordination", quantity: 1, unitPrice: 2500 },
+      { description: "Route survey and Metropolitan Police coordination", quantity: 1, unitPrice: 2000 },
       { description: "Ivory ribbon decorations — Pantone 11-0604 TCX", quantity: 4, unitPrice: 150 },
     ],
     subtotal: 23800,
@@ -113,11 +113,11 @@ export const invoices: Invoice[] = [
     id: "inv-6",
     bookingId: "bk-9",
     clientId: "cli-4",
-    status: "sent",
+    status: "paid",
     lineItems: [
       { description: "Bentley Flying Spur — 7-day dedicated rental", quantity: 1, unitPrice: 14000 },
       { description: "Dedicated chauffeur Pierre — 7 days (12h/day)", quantity: 7, unitPrice: 850 },
-      { description: "Garment bag storage rail installation", quantity: 1, unitPrice: 400 },
+      { description: "Garment bag storage rail installation", quantity: 1, unitPrice: 700 },
       { description: "Daily refreshment package (Evian, Ladurée macarons)", quantity: 7, unitPrice: 95 },
     ],
     subtotal: 21315,
@@ -125,8 +125,9 @@ export const invoices: Invoice[] = [
     taxAmount: 2131.5,
     total: 23446.5,
     dueDate: "2026-03-31T00:00:00Z",
+    paidAt: "2026-02-22T10:00:00Z",
     createdAt: "2026-02-10T09:00:00Z",
-    updatedAt: "2026-02-10T09:00:00Z",
+    updatedAt: "2026-02-22T10:00:00Z",
   },
   // bk-4: Harrington Heathrow transfer (completed)
   {
@@ -191,7 +192,7 @@ export const invoices: Invoice[] = [
     id: "inv-12",
     bookingId: "bk-6",
     clientId: "cli-9",
-    status: "overdue",
+    status: "paid",
     lineItems: [
       { description: "Mercedes E-Class Transfer — Gatwick to The Grand Brighton", quantity: 1, unitPrice: 280 },
       { description: "Standard driver", quantity: 1, unitPrice: 50 },
@@ -202,15 +203,16 @@ export const invoices: Invoice[] = [
     taxAmount: 40.5,
     total: 445.5,
     dueDate: "2026-02-15T00:00:00Z",
+    paidAt: "2026-02-25T08:00:00Z",
     createdAt: "2026-01-29T08:00:00Z",
-    updatedAt: "2026-02-16T00:00:00Z",
+    updatedAt: "2026-02-25T08:00:00Z",
   },
   // bk-11: Kensington celebrity event (scheduled)
   {
     id: "inv-13",
     bookingId: "bk-11",
     clientId: "cli-10",
-    status: "sent",
+    status: "paid",
     lineItems: [
       { description: "Rolls-Royce Phantom (privacy glass) — Charity Gala", quantity: 3, unitPrice: 3500 },
       { description: "NDA-cleared chauffeurs (premium)", quantity: 3, unitPrice: 500 },
@@ -223,8 +225,9 @@ export const invoices: Invoice[] = [
     taxAmount: 1850,
     total: 20350,
     dueDate: "2026-04-02T00:00:00Z",
+    paidAt: "2026-02-25T15:00:00Z",
     createdAt: "2026-02-14T09:00:00Z",
-    updatedAt: "2026-02-14T09:00:00Z",
+    updatedAt: "2026-02-25T15:00:00Z",
   },
   // bk-7: Kensington Heathrow (completed)
   {
@@ -281,6 +284,25 @@ export const invoices: Invoice[] = [
     dueDate: "2026-03-14T00:00:00Z",
     createdAt: "2026-02-02T09:00:00Z",
     updatedAt: "2026-02-10T09:30:00Z",
+  },
+  // bk-19: Blake Gatwick to Virginia Water (awaiting_payment)
+  {
+    id: "inv-19",
+    bookingId: "bk-19",
+    clientId: "cli-11",
+    status: "sent",
+    lineItems: [
+      { description: "Mercedes E-Class Transfer — Gatwick to Virginia Water", quantity: 1, unitPrice: 320 },
+      { description: "Meet & Greet service — North Terminal", quantity: 1, unitPrice: 50 },
+      { description: "Evening surcharge", quantity: 1, unitPrice: 10 },
+    ],
+    subtotal: 380,
+    taxRate: 10,
+    taxAmount: 38,
+    total: 418,
+    dueDate: "2026-04-15T00:00:00Z",
+    createdAt: "2026-02-25T11:00:00Z",
+    updatedAt: "2026-02-25T11:00:00Z",
   },
   // bk-15: Blake BMW transfer (draft)
   {
