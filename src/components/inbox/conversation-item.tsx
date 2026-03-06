@@ -8,16 +8,22 @@ import type { ConversationWithRelations, SlaState } from '@/types'
 const ACTION_BADGE_CONFIG: Partial<
 	Record<
 		ActionReason,
-		{ className: string; label: string | ((slaState: SlaState) => string) }
+		{
+			className: string | ((slaState: SlaState) => string)
+			label: string | ((slaState: SlaState) => string)
+		}
 	>
 > = {
 	sla_risk: {
-		className: 'bg-tone-danger-light text-tone-danger-foreground',
+		className: (s) =>
+			s === 'breached'
+				? 'bg-tone-danger text-white'
+				: 'bg-tone-warning-light text-tone-warning-foreground',
 		label: (s) => (s === 'breached' ? 'SLA Breached' : 'SLA Risk'),
 	},
 	unassigned: {
 		className:
-			'bg-tone-neutral-light text-tone-neutral-foreground ring-1 ring-inset ring-tone-neutral/25',
+			'bg-tone-danger-light text-tone-danger-foreground ring-1 ring-inset ring-tone-danger-foreground/40',
 		label: 'Unassigned',
 	},
 	draft_booking: {
@@ -127,12 +133,16 @@ export function ConversationItem({
 									typeof config.label === 'function'
 										? config.label(conversation.slaState)
 										: config.label
+								const badgeClassName =
+									typeof config.className === 'function'
+										? config.className(conversation.slaState)
+										: config.className
 								return (
 									<span
 										key={reason}
 										className={cn(
 											'rounded-full px-1.5 py-px text-[10px] font-medium leading-tight',
-											config.className,
+											badgeClassName,
 										)}
 									>
 										{label}
