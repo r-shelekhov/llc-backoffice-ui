@@ -36,7 +36,7 @@ export function BookingCreateForm({
       id: newId,
       conversationId: conversation.id,
       clientId: conversation.clientId,
-      managerId: conversation.managerId ?? null,
+      managerIds: conversation.managerIds,
       status: "draft",
       title,
       category,

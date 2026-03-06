@@ -179,7 +179,7 @@ export function computeDashboardMetrics(input: DashboardInput): DashboardMetrics
   const newUnassignedOver24h: ActionQueueItem[] = conversations
     .filter(
       (c) =>
-        c.managerId === null &&
+        c.managerIds.length === 0 &&
         hoursAgo(c.createdAt, now) > 24
     )
     .map((c) => ({
@@ -275,7 +275,7 @@ export function computeDashboardMetrics(input: DashboardInput): DashboardMetrics
       const bookingInvoices = invoiceByBookingId.get(b.id) ?? [];
       const hasUnpaidInvoice = bookingInvoices.length === 0 || bookingInvoices.some((i) => i.status !== "paid");
       const paymentRisk = b.status === "awaiting_payment" || hasUnpaidInvoice;
-      const assignmentRisk = b.managerId === null;
+      const assignmentRisk = b.managerIds.length === 0;
       const linkedConv = convMap.get(b.conversationId);
       const slaRisk = linkedConv
         ? computeSlaState(linkedConv.slaDueAt) === "breached"
@@ -285,7 +285,7 @@ export function computeDashboardMetrics(input: DashboardInput): DashboardMetrics
         id: b.id,
         title: b.title,
         executionAt: b.executionAt,
-        managerName: b.managerId,
+        managerName: b.managerIds[0] ?? null,
         paymentRisk,
         assignmentRisk,
         slaRisk,

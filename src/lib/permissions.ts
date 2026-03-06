@@ -22,25 +22,25 @@ export function canAccessRoute(role: User["role"], path: string): boolean {
 export function canViewConversation(user: User, conversation: Conversation): boolean {
   if (user.role === "admin" || user.role === "vip_manager") return true;
   if (isVipClient(conversation.clientId)) return false;
-  return conversation.managerId === user.id;
+  return conversation.managerIds.includes(user.id);
 }
 
 export function canViewBooking(user: User, booking: Booking): boolean {
   if (user.role === "admin" || user.role === "vip_manager") return true;
   if (isVipClient(booking.clientId)) return false;
-  return booking.managerId === user.id;
+  return booking.managerIds.includes(user.id);
 }
 
 export function canViewClient(user: User, clientId: string, conversations: Conversation[]): boolean {
   if (user.role === "admin" || user.role === "vip_manager") return true;
   if (isVipClient(clientId)) return false;
-  return conversations.some((c) => c.clientId === clientId && c.managerId === user.id);
+  return conversations.some((c) => c.clientId === clientId && c.managerIds.includes(user.id));
 }
 
 export function canViewInvoice(user: User, invoice: InvoiceWithRelations): boolean {
   if (user.role === "admin" || user.role === "vip_manager") return true;
   if (invoice.client.isVip) return false;
-  return invoice.booking.managerId === user.id;
+  return invoice.booking.managerIds.includes(user.id);
 }
 
 export function filterVipConversations<T extends ConversationWithRelations>(user: User, conversations: T[]): T[] {
@@ -50,12 +50,12 @@ export function filterVipConversations<T extends ConversationWithRelations>(user
 
 export function filterConversationsByPermission<T extends Conversation>(user: User, conversations: T[]): T[] {
   if (user.role === "admin" || user.role === "vip_manager") return conversations;
-  return conversations.filter((c) => c.managerId === user.id);
+  return conversations.filter((c) => c.managerIds.includes(user.id));
 }
 
 export function filterBookingsByPermission<T extends Booking>(user: User, bookings: T[]): T[] {
   if (user.role === "admin" || user.role === "vip_manager") return bookings;
-  return bookings.filter((b) => b.managerId === user.id);
+  return bookings.filter((b) => b.managerIds.includes(user.id));
 }
 
 export function filterInvoicesByPermission<T extends Invoice>(
@@ -65,7 +65,7 @@ export function filterInvoicesByPermission<T extends Invoice>(
 ): T[] {
   if (user.role === "admin" || user.role === "vip_manager") return invoices;
   const allowedBookingIds = new Set(
-    bookings.filter((b) => b.managerId === user.id).map((b) => b.id)
+    bookings.filter((b) => b.managerIds.includes(user.id)).map((b) => b.id)
   );
   return invoices.filter((i) => allowedBookingIds.has(i.bookingId));
 }
@@ -78,7 +78,7 @@ export function filterPaymentsByPermission<T extends Payment>(
 ): T[] {
   if (user.role === "admin" || user.role === "vip_manager") return payments;
   const allowedBookingIds = new Set(
-    bookings.filter((b) => b.managerId === user.id).map((b) => b.id)
+    bookings.filter((b) => b.managerIds.includes(user.id)).map((b) => b.id)
   );
   const allowedInvoiceIds = new Set(
     invoices.filter((i) => allowedBookingIds.has(i.bookingId)).map((i) => i.id)

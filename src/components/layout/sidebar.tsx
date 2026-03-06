@@ -72,7 +72,7 @@ export function Sidebar() {
 
   const myUnreadCount = permittedConversations.filter(
     (conversation) =>
-      conversation.managerId === currentUser.id &&
+      conversation.managerIds.includes(currentUser.id) &&
       isConversationUnread(conversation, conversationLastReadAt)
   ).length;
 

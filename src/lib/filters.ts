@@ -33,7 +33,7 @@ export function getConversationActionReasons(
   }
 
   // Unassigned
-  if (conversation.managerId === null) {
+  if (conversation.managerIds.length === 0) {
     reasons.push("unassigned");
   }
 
@@ -84,7 +84,7 @@ export function applyConversationFilters(
 
     // Manager
     if (filters.managerIds.length > 0) {
-      if (!r.managerId || !filters.managerIds.includes(r.managerId)) {
+      if (!r.managerIds.some((id) => filters.managerIds.includes(id))) {
         return false;
       }
     }
