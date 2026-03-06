@@ -1,4 +1,4 @@
-import type { BookingStatus, InvoiceStatus, PaymentStatus, PaymentMethod, Role, Channel, ServiceType, SlaState, Priority, DeliveryStatus } from "@/types";
+import type { BookingStatus, InvoiceStatus, PaymentStatus, PaymentMethod, Role, Channel, ServiceType, SlaState, Priority, DeliveryStatus, LifecycleStatus } from "@/types";
 
 export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
   draft: "New",
@@ -120,6 +120,11 @@ export const SLA_STATE_COLORS: Record<SlaState, string> = {
   on_track: "text-tone-success",
   at_risk: "text-tone-warning",
   breached: "text-tone-danger bg-tone-danger-light",
+};
+
+export const LIFECYCLE_AVATAR_COLORS: Record<LifecycleStatus, string> = {
+  client: "bg-tone-info-pastel text-tone-info-foreground",
+  lead: "bg-tone-neutral-pastel text-tone-neutral-foreground",
 };
 
 export const BOOKING_STATUS_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {

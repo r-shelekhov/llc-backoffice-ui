@@ -49,6 +49,7 @@
     --color-tone-info: var(--tone-info);
     --color-tone-info-light: var(--tone-info-light);
     --color-tone-info-foreground: var(--tone-info-foreground);
+    --color-tone-info-pastel: var(--tone-info-pastel);
     --color-tone-success: var(--tone-success);
     --color-tone-success-light: var(--tone-success-light);
     --color-tone-success-foreground: var(--tone-success-foreground);
@@ -61,6 +62,7 @@
     --color-tone-neutral: var(--tone-neutral);
     --color-tone-neutral-light: var(--tone-neutral-light);
     --color-tone-neutral-foreground: var(--tone-neutral-foreground);
+    --color-tone-neutral-pastel: var(--tone-neutral-pastel);
     --color-tone-purple: var(--tone-purple);
     --color-tone-purple-light: var(--tone-purple-light);
     --color-tone-purple-foreground: var(--tone-purple-foreground);
@@ -108,6 +110,7 @@
     --tone-info: #286EFA;
     --tone-info-light: #EBF0FF;
     --tone-info-foreground: #1B4FBF;
+    --tone-info-pastel: #C5DAFF;
     --tone-success: #188544;
     --tone-success-light: #E3F5E8;
     --tone-success-foreground: #15713A;
@@ -119,7 +122,8 @@
     --tone-danger-foreground: #B71C1C;
     --tone-neutral: #8C8C8C;
     --tone-neutral-light: #F5F5F5;
-    --tone-neutral-foreground: #6B6B6B;
+    --tone-neutral-foreground: #525252;
+    --tone-neutral-pastel: #D9D9DE;
     --tone-purple: #7B61FF;
     --tone-purple-light: #F0EEFF;
     --tone-purple-foreground: #5B45C5;

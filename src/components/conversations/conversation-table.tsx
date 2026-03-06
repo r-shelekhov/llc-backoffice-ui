@@ -15,7 +15,7 @@ import { SlaBadge } from "@/components/shared/sla-badge";
 import { VipIndicator } from "@/components/shared/vip-indicator";
 import { ServiceTypeIcon } from "@/components/shared/service-type-icon";
 import { ChannelIcon } from "@/components/shared/channel-icon";
-import { formatRelativeTime } from "@/lib/format";
+import { formatRelativeTime, getInitials } from "@/lib/format";
 import {
   Avatar,
   AvatarImage,
@@ -29,15 +29,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((p) => p[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 interface ConversationTableProps {
   conversations: ConversationWithRelations[];

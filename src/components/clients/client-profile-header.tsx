@@ -1,7 +1,9 @@
 import { Mail, Phone, Calendar } from "lucide-react";
 import type { Client } from "@/types";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { VipIndicator } from "@/components/shared/vip-indicator";
-import { formatDate } from "@/lib/format";
+import { LIFECYCLE_AVATAR_COLORS } from "@/lib/constants";
+import { formatDate, getInitials } from "@/lib/format";
 
 interface ClientProfileHeaderProps {
   client: Client;
@@ -10,11 +12,11 @@ interface ClientProfileHeaderProps {
 export function ClientProfileHeader({ client }: ClientProfileHeaderProps) {
   return (
     <div className="flex items-start gap-4">
-      <img
-        src={client.avatarUrl}
-        alt={client.name}
-        className="w-16 h-16 rounded-full"
-      />
+      <Avatar size="lg" shape={client.lifecycleStatus === 'lead' ? 'square' : 'circle'} className="size-16 text-lg">
+        <AvatarFallback className={LIFECYCLE_AVATAR_COLORS[client.lifecycleStatus ?? 'client']}>
+          {getInitials(client.name)}
+        </AvatarFallback>
+      </Avatar>
       <div className="space-y-1">
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-semibold">{client.name}</h1>

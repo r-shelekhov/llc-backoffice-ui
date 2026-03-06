@@ -46,6 +46,15 @@ export function formatShortName(fullName: string): string {
   return `${parts[0]} ${parts[parts.length - 1][0]}.`
 }
 
+export function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
 export function formatDuration(ms: number): string {
   const totalMinutes = Math.floor(ms / 60000);
   if (totalMinutes < 1) return "just now";

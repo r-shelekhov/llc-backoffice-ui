@@ -2,7 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail, Phone, Flag, Clock3, X, Plus, AlertCircle } from "lucide-react";
 import type { ConversationWithRelations, User } from "@/types";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { VipIndicator } from "@/components/shared/vip-indicator";
+import { LIFECYCLE_AVATAR_COLORS } from "@/lib/constants";
+import { getInitials } from "@/lib/format";
 import { ChannelIcon } from "@/components/shared/channel-icon";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { SlaBadge } from "@/components/shared/sla-badge";
@@ -62,11 +65,11 @@ export function ContactDetailPanel({
       {/* Client section */}
       <div className="border-b p-4">
         <div className="flex items-center gap-3">
-          <img
-            src={client.avatarUrl}
-            alt={client.name}
-            className="size-10 rounded-full object-cover"
-          />
+          <Avatar size="lg" shape={conversation.lifecycleStatus === 'lead' ? 'square' : 'circle'}>
+            <AvatarFallback className={LIFECYCLE_AVATAR_COLORS[conversation.lifecycleStatus]}>
+              {getInitials(client.name)}
+            </AvatarFallback>
+          </Avatar>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <span className="truncate text-sm font-semibold">{client.name}</span>

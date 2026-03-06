@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { clients, bookings, invoices, payments, conversations, communications, internalNotes, getAllConversationsWithRelations } from "@/lib/mock-data";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, getInitials } from "@/lib/format";
 import { getClientIdsWithPaidBookings, resolveLifecycleStatus } from "@/lib/client-lifecycle";
 import { canViewClient } from "@/lib/permissions";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { VipIndicator } from "@/components/shared/vip-indicator";
+import { LIFECYCLE_AVATAR_COLORS } from "@/lib/constants";
 import { PermissionDenied } from "@/components/shared/permission-denied";
 import { ErrorState } from "@/components/shared/error-state";
 import { ClientSidebar } from "@/components/clients/client-sidebar";
@@ -291,11 +293,11 @@ export function ClientDetailPage() {
 
         {/* Client profile header */}
         <div className="flex items-center gap-3 border-b px-4 py-2">
-          <img
-            src={client.avatarUrl}
-            alt={client.name}
-            className="size-8 shrink-0 rounded-full object-cover"
-          />
+          <Avatar>
+            <AvatarFallback className={LIFECYCLE_AVATAR_COLORS.client}>
+              {getInitials(client.name)}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex min-w-0 items-center gap-1.5">
             <span className="text-sm font-semibold">{client.name}</span>
             {client.isVip && <VipIndicator />}

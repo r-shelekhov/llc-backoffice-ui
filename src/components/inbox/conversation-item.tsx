@@ -1,7 +1,9 @@
 import { Crown } from 'lucide-react'
 import { ChannelIcon } from '@/components/shared/channel-icon'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import type { ActionReason } from '@/lib/filters'
-import { formatShortName, formatSmartDate } from '@/lib/format'
+import { LIFECYCLE_AVATAR_COLORS } from '@/lib/constants'
+import { formatShortName, formatSmartDate, getInitials } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { ConversationWithRelations, SlaState } from '@/types'
 import {
@@ -90,11 +92,11 @@ export function ConversationItem({
 			)}
 		>
 			<div className="relative shrink-0">
-				<img
-					src={conversation.client.avatarUrl}
-					alt={conversation.client.name}
-					className="size-10 rounded-full object-cover"
-				/>
+				<Avatar size="lg" shape={conversation.lifecycleStatus === 'lead' ? 'square' : 'circle'}>
+					<AvatarFallback className={LIFECYCLE_AVATAR_COLORS[conversation.lifecycleStatus]}>
+						{getInitials(conversation.client.name)}
+					</AvatarFallback>
+				</Avatar>
 				{conversation.client.isVip && (
 					<span className="absolute bottom-5 left-7.5 flex size-4 items-center justify-center rounded-full bg-tone-vip-light ring-2 ring-background">
 						<Crown className="size-2.5 text-tone-vip-foreground" />
@@ -155,16 +157,6 @@ export function ConversationItem({
 						actionReasons?.filter((r) => r in ACTION_BADGE_CONFIG) ?? []
 					return (
 						<div className="mt-0.5 flex flex-nowrap items-center gap-1 overflow-hidden">
-							<span
-								className={cn(
-									'shrink-0 rounded-full px-1.5 py-px text-[10px] font-medium leading-tight',
-									conversation.lifecycleStatus === 'client'
-										? 'bg-tone-info-light text-tone-info-foreground'
-										: 'bg-tone-neutral-light text-tone-neutral-foreground ring-1 ring-inset ring-tone-neutral/25',
-								)}
-							>
-								{conversation.lifecycleStatus === 'client' ? 'Client' : 'Lead'}
-							</span>
 							{conversation.resolvedAt && (
 								<span className="shrink-0 rounded-full bg-tone-success-light px-1.5 py-px text-[10px] font-medium leading-tight text-tone-success-foreground">
 									Resolved

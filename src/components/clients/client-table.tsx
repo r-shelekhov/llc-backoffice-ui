@@ -17,8 +17,10 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { VipIndicator } from "@/components/shared/vip-indicator";
-import { formatCurrency, formatRelativeTime, formatDate } from "@/lib/format";
+import { LIFECYCLE_AVATAR_COLORS } from "@/lib/constants";
+import { formatCurrency, formatRelativeTime, formatDate, getInitials } from "@/lib/format";
 
 interface ClientTableProps {
   clients: ClientRow[];
@@ -143,11 +145,11 @@ export function ClientTable({
           >
             <TableCell>
               <div className="flex items-center gap-2 whitespace-nowrap">
-                <img
-                  src={client.avatarUrl}
-                  alt={client.name}
-                  className="w-8 h-8 shrink-0 rounded-full"
-                />
+                <Avatar shape={client.lifecycleStatus === 'lead' ? 'square' : 'circle'}>
+                  <AvatarFallback className={`text-xs ${LIFECYCLE_AVATAR_COLORS[client.lifecycleStatus]}`}>
+                    {getInitials(client.name)}
+                  </AvatarFallback>
+                </Avatar>
                 <span className="text-sm font-medium">{client.name}</span>
                 {client.isVip && <VipIndicator />}
               </div>
