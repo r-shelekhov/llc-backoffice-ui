@@ -158,27 +158,9 @@ export function ClientDetailPage() {
         }
       }
 
-      // Send payment link agent message
-      const newComm: Communication = {
-        id: `local-${Date.now()}`,
-        conversationId,
-        sender: "agent",
-        senderName: currentUser.name,
-        channel,
-        message: `Here is your payment link: https://pay.example.com/inv/${invoiceId}`,
-        deliveryStatus: "sent",
-        createdAt: new Date().toISOString(),
-      };
-      setLocalMessages((prev) => {
-        const next = new Map(prev);
-        const existing = next.get(conversationId) ?? [];
-        next.set(conversationId, [...existing, newComm]);
-        return next;
-      });
-
       forceUpdate((n) => n + 1);
     },
-    [clientConversationsByChannel, currentUser.name]
+    [clientConversationsByChannel]
   );
 
   const handleChatCreateInvoice = useCallback(

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useMemo, useCallback } from "react";
 import { Plus, Clock, Eye, CheckCircle2 } from "lucide-react";
 import type { Attachment, Communication, ConversationWithRelations } from "@/types";
+import type { PaymentLinkData } from "@/components/conversation-detail/service-message";
 import { CommunicationTimeline } from "@/components/conversation-detail/communication-timeline";
 import { Button } from "@/components/ui/button";
 import { MessageComposer } from "./message-composer";
@@ -75,6 +76,31 @@ export function ConversationThread({
       return () => onSharePaymentLink(invoiceId);
     },
     [conversation.invoices, onSharePaymentLink]
+  );
+
+  const getPaymentLinkData = useCallback(
+    (comm: Communication): PaymentLinkData | undefined => {
+      const event = comm.event;
+      if (!event) return undefined;
+      if (event.type !== "invoice_created" && event.type !== "invoice_sent") return undefined;
+
+      let invoice: typeof conversation.invoices[number] | undefined;
+      if (event.invoiceId) {
+        invoice = conversation.invoices.find((inv) => inv.id === event.invoiceId);
+      } else if (event.bookingId) {
+        invoice = conversation.invoices.find((inv) => inv.bookingId === event.bookingId);
+      }
+
+      if (!invoice || invoice.status === "paid") return undefined;
+
+      return {
+        invoiceId: invoice.id,
+        paymentUrl: `https://pay.example.com/inv/${invoice.id}`,
+        clientName: conversation.client.name,
+        clientEmail: conversation.client.email,
+      };
+    },
+    [conversation.invoices, conversation.client]
   );
 
   const getCreateInvoiceHandler = useCallback(
@@ -159,7 +185,7 @@ export function ConversationThread({
         </div>
       )}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4">
-        <CommunicationTimeline communications={allMessages} getSharePaymentLinkHandler={getSharePaymentLinkHandler} getCreateInvoiceHandler={getCreateInvoiceHandler} lastReadAtOnOpen={lastReadAtOnOpen} newMessagesDividerRef={newMessagesDividerRef} />
+        <CommunicationTimeline communications={allMessages} getSharePaymentLinkHandler={getSharePaymentLinkHandler} getPaymentLinkData={getPaymentLinkData} getCreateInvoiceHandler={getCreateInvoiceHandler} lastReadAtOnOpen={lastReadAtOnOpen} newMessagesDividerRef={newMessagesDividerRef} />
       </div>
       <MessageComposer onSend={onSend} />
     </div>

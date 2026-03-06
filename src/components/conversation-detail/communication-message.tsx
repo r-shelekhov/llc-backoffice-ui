@@ -2,7 +2,7 @@ import { Paperclip, Check, CheckCheck } from "lucide-react";
 import { formatRelativeTime, formatFileSize } from "@/lib/format";
 import { DELIVERY_STATUS_LABELS } from "@/lib/constants";
 import type { Communication } from "@/types";
-import { ServiceMessage } from "./service-message";
+import { ServiceMessage, type PaymentLinkData } from "./service-message";
 import { ResolutionSeparator } from "./resolution-separator";
 
 function getTagStyle(tag: string): string {
@@ -21,12 +21,14 @@ function getTagStyle(tag: string): string {
 interface CommunicationMessageProps {
   communication: Communication;
   onSharePaymentLink?: () => void;
+  paymentLinkData?: PaymentLinkData;
   onCreateInvoice?: () => void;
 }
 
 export function CommunicationMessage({
   communication,
   onSharePaymentLink,
+  paymentLinkData,
   onCreateInvoice,
 }: CommunicationMessageProps) {
   if (communication.sender === "system") {
@@ -40,7 +42,7 @@ export function CommunicationMessage({
     }
 
     if (communication.event) {
-      return <ServiceMessage communication={communication} onSharePaymentLink={onSharePaymentLink} onCreateInvoice={onCreateInvoice} />;
+      return <ServiceMessage communication={communication} onSharePaymentLink={onSharePaymentLink} paymentLinkData={paymentLinkData} onCreateInvoice={onCreateInvoice} />;
     }
 
     return (

@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import {
   Calendar,
   Globe,
-  LinkIcon,
   ClipboardList,
   FileText,
   Send,
@@ -12,16 +11,26 @@ import {
 import { formatRelativeTime, formatCurrency } from "@/lib/format";
 import { BOOKING_STATUS_LABELS, PAYMENT_METHOD_LABELS } from "@/lib/constants";
 import type { Communication } from "@/types";
+import { SharePaymentLinkPopover } from "./share-payment-link-popover";
+
+export interface PaymentLinkData {
+  invoiceId: string;
+  paymentUrl: string;
+  clientName: string;
+  clientEmail: string;
+}
 
 interface ServiceMessageProps {
   communication: Communication;
   onSharePaymentLink?: () => void;
+  paymentLinkData?: PaymentLinkData;
   onCreateInvoice?: () => void;
 }
 
 export function ServiceMessage({
   communication,
   onSharePaymentLink,
+  paymentLinkData,
   onCreateInvoice,
 }: ServiceMessageProps) {
   const event = communication.event;
@@ -118,14 +127,14 @@ export function ServiceMessage({
                 <FileText className="size-3" /> Create Invoice
               </button>
             )}
-            {showSharePaymentLink && (
-              <button
-                type="button"
-                onClick={() => onSharePaymentLink?.()}
-                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-              >
-                <LinkIcon className="size-3" /> Share payment link
-              </button>
+            {showSharePaymentLink && paymentLinkData && (
+              <SharePaymentLinkPopover
+                invoiceId={paymentLinkData.invoiceId}
+                paymentUrl={paymentLinkData.paymentUrl}
+                clientName={paymentLinkData.clientName}
+                clientEmail={paymentLinkData.clientEmail}
+                onAction={() => onSharePaymentLink?.()}
+              />
             )}
           </div>
         )}

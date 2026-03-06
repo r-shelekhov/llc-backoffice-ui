@@ -1,11 +1,13 @@
 import { useMemo } from "react";
 import { format } from "date-fns";
 import { CommunicationMessage } from "./communication-message";
+import type { PaymentLinkData } from "./service-message";
 import type { Communication } from "@/types";
 
 interface CommunicationTimelineProps {
   communications: Communication[];
   getSharePaymentLinkHandler?: (comm: Communication) => (() => void) | undefined;
+  getPaymentLinkData?: (comm: Communication) => PaymentLinkData | undefined;
   getCreateInvoiceHandler?: (comm: Communication) => (() => void) | undefined;
   lastReadAtOnOpen?: string | null;
   newMessagesDividerRef?: React.RefObject<HTMLDivElement | null>;
@@ -14,6 +16,7 @@ interface CommunicationTimelineProps {
 export function CommunicationTimeline({
   communications,
   getSharePaymentLinkHandler,
+  getPaymentLinkData,
   getCreateInvoiceHandler,
   lastReadAtOnOpen,
   newMessagesDividerRef,
@@ -96,7 +99,7 @@ export function CommunicationTimeline({
                   <div className="flex-1 border-t border-primary/50" />
                 </div>
               )}
-              <CommunicationMessage communication={comm} onSharePaymentLink={getSharePaymentLinkHandler?.(comm)} onCreateInvoice={getCreateInvoiceHandler?.(comm)} />
+              <CommunicationMessage communication={comm} onSharePaymentLink={getSharePaymentLinkHandler?.(comm)} paymentLinkData={getPaymentLinkData?.(comm)} onCreateInvoice={getCreateInvoiceHandler?.(comm)} />
             </div>
           ))}
         </div>

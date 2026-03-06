@@ -415,27 +415,9 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
         }
       }
 
-      // Send payment link agent message
-      const newComm: Communication = {
-        id: `local-${Date.now()}`,
-        conversationId: selectedId,
-        sender: "agent",
-        senderName: currentUser.name,
-        channel: selectedConversation?.channel ?? "web",
-        message: `Here is your payment link: https://pay.example.com/inv/${invoiceId}`,
-        deliveryStatus: "sent",
-        createdAt: new Date().toISOString(),
-      };
-      setLocalMessages((prev) => {
-        const next = new Map(prev);
-        const existing = next.get(selectedId) ?? [];
-        next.set(selectedId, [...existing, newComm]);
-        return next;
-      });
-
       forceUpdate((n) => n + 1);
     },
-    [selectedId, currentUser.name, selectedConversation?.channel, allConversations]
+    [selectedId, selectedConversation?.channel, allConversations]
   );
 
   const handleCreateInvoice = useCallback(

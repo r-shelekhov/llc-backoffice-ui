@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import type { Attachment, Channel, Communication, ConversationWithRelations } from "@/types";
 import { CommunicationTimeline } from "@/components/conversation-detail/communication-timeline";
+import type { PaymentLinkData } from "@/components/conversation-detail/service-message";
 import { MessageComposer } from "@/components/inbox/message-composer";
 import { ChannelIcon } from "@/components/shared/channel-icon";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -74,6 +75,32 @@ export function ClientChatPanel({
       return () => onSharePaymentLink(convId, invoiceId);
     },
     [activeConversation, onSharePaymentLink]
+  );
+
+  const getPaymentLinkData = useCallback(
+    (comm: Communication): PaymentLinkData | undefined => {
+      if (!activeConversation) return undefined;
+      const event = comm.event;
+      if (!event) return undefined;
+      if (event.type !== "invoice_created" && event.type !== "invoice_sent") return undefined;
+
+      let invoice: (typeof activeConversation.invoices)[number] | undefined;
+      if (event.invoiceId) {
+        invoice = activeConversation.invoices.find((inv) => inv.id === event.invoiceId);
+      } else if (event.bookingId) {
+        invoice = activeConversation.invoices.find((inv) => inv.bookingId === event.bookingId);
+      }
+
+      if (!invoice || invoice.status === "paid") return undefined;
+
+      return {
+        invoiceId: invoice.id,
+        paymentUrl: `https://pay.example.com/inv/${invoice.id}`,
+        clientName: activeConversation.client.name,
+        clientEmail: activeConversation.client.email,
+      };
+    },
+    [activeConversation]
   );
 
   const getCreateInvoiceHandler = useCallback(
@@ -165,6 +192,7 @@ export function ClientChatPanel({
           <CommunicationTimeline
             communications={allMessages}
             getSharePaymentLinkHandler={getSharePaymentLinkHandler}
+            getPaymentLinkData={getPaymentLinkData}
             getCreateInvoiceHandler={getCreateInvoiceHandler}
             lastReadAtOnOpen={lastReadAtOnOpen[activeConversation.id]}
             newMessagesDividerRef={newMessagesDividerRef}
