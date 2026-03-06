@@ -97,7 +97,7 @@ export function ClientChatPanel({
         invoiceId: invoice.id,
         paymentUrl: `https://pay.example.com/inv/${invoice.id}`,
         clientName: activeConversation.client.name,
-        clientEmail: activeConversation.client.email,
+        clientEmail: activeConversation.client.email ?? "",
       };
     },
     [activeConversation]

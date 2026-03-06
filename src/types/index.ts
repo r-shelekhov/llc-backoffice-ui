@@ -48,8 +48,8 @@ export interface User {
 export interface Client {
   id: string;
   name: string;
-  email: string;
-  phone: string;
+  email?: string;
+  phone?: string;
   company: string;
   isVip: boolean;
   avatarUrl: string;

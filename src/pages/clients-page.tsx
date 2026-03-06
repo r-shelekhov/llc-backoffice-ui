@@ -131,8 +131,8 @@ export function ClientsPage() {
 
   function handleSave(data: {
     name: string;
-    email: string;
-    phone: string;
+    email?: string;
+    phone?: string;
     company: string;
     isVip: boolean;
   }) {

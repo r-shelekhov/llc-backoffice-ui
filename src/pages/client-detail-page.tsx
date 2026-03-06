@@ -249,8 +249,8 @@ export function ClientDetailPage() {
 
   const handleSaveClient = (data: {
     name: string;
-    email: string;
-    phone: string;
+    email?: string;
+    phone?: string;
     company: string;
     isVip: boolean;
   }) => {

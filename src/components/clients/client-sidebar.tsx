@@ -35,20 +35,24 @@ export function ClientSidebar({
           Contact Details
         </h4>
         <div className="space-y-2 text-sm">
-          <a
-            href={`mailto:${client.email}`}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-          >
-            <Mail className="size-3.5" />
-            <span className="truncate">{client.email}</span>
-          </a>
-          <a
-            href={`tel:${client.phone}`}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-          >
-            <Phone className="size-3.5" />
-            <span>{client.phone}</span>
-          </a>
+          {client.email && (
+            <a
+              href={`mailto:${client.email}`}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <Mail className="size-3.5" />
+              <span className="truncate">{client.email}</span>
+            </a>
+          )}
+          {client.phone && (
+            <a
+              href={`tel:${client.phone}`}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <Phone className="size-3.5" />
+              <span>{client.phone}</span>
+            </a>
+          )}
           <div className="flex gap-4 pt-1 text-xs text-muted-foreground">
             <div>
               <span className="font-medium text-foreground">{formatDate(client.createdAt)}</span>

@@ -197,8 +197,8 @@ export function applyClientFilters(
       const q = filters.search.toLowerCase();
       const matches =
         c.name.toLowerCase().includes(q) ||
-        c.email.toLowerCase().includes(q) ||
-        c.phone.toLowerCase().includes(q) ||
+        (c.email?.toLowerCase().includes(q) ?? false) ||
+        (c.phone?.toLowerCase().includes(q) ?? false) ||
         c.company.toLowerCase().includes(q) ||
         c.id.toLowerCase().includes(q);
       if (!matches) return false;

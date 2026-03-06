@@ -472,7 +472,7 @@ export const conversations: Conversation[] = [
     clientId: "cli-11",
 
     priority: "low",
-    channel: "phone",
+    channel: "web",
     serviceType: "car",
     title: "E-Class Transfer - Gatwick to Surrey",
     description: "Scheduled Mercedes E-Class transfer for Mr. Blake from Gatwick to Virginia Water. All details confirmed.",

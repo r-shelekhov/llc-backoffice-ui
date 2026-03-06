@@ -158,10 +158,12 @@ export function ClientTable({
               )}
             </TableCell>
             <TableCell>
-              <div className="text-sm">{client.email}</div>
-              <div className="text-xs text-muted-foreground">
-                {client.phone}
-              </div>
+              {client.email && <div className="text-sm">{client.email}</div>}
+              {client.phone && (
+                <div className="text-xs text-muted-foreground">
+                  {client.phone}
+                </div>
+              )}
             </TableCell>
             <TableCell className="text-sm">
               {formatCurrency(client.totalSpend)}

@@ -97,7 +97,7 @@ export function ConversationThread({
         invoiceId: invoice.id,
         paymentUrl: `https://pay.example.com/inv/${invoice.id}`,
         clientName: conversation.client.name,
-        clientEmail: conversation.client.email,
+        clientEmail: conversation.client.email ?? "",
       };
     },
     [conversation.invoices, conversation.client]

@@ -150,7 +150,6 @@ export const clients: Client[] = [
   {
     id: "cli-12",
     name: "Amara Okafor",
-    email: "amara@okaforventures.co.uk",
     phone: "+44 7700 900678",
     company: "Okafor Ventures UK",
     isVip: false,

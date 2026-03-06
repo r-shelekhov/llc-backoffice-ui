@@ -17,8 +17,8 @@ interface ClientFormDialogProps {
   client?: Client;
   onSave: (data: {
     name: string;
-    email: string;
-    phone: string;
+    email?: string;
+    phone?: string;
     company: string;
     isVip: boolean;
   }) => void;
@@ -50,19 +50,17 @@ export function ClientFormDialog({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !email.trim() || !phone.trim() || !company.trim())
-      return;
+    if (!name.trim() || !company.trim()) return;
     onSave({
       name: name.trim(),
-      email: email.trim(),
-      phone: phone.trim(),
+      email: email.trim() || undefined,
+      phone: phone.trim() || undefined,
       company: company.trim(),
       isVip,
     });
   }
 
-  const isValid =
-    !!name.trim() && !!email.trim() && !!phone.trim() && !!company.trim();
+  const isValid = !!name.trim() && !!company.trim();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -89,7 +87,6 @@ export function ClientFormDialog({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="client@example.com"
-              required
             />
           </div>
 
@@ -100,7 +97,6 @@ export function ClientFormDialog({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+1 (555) 000-0000"
-              required
             />
           </div>
 

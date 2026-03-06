@@ -22,14 +22,18 @@ export function ClientProfileHeader({ client }: ClientProfileHeaderProps) {
         </div>
         <p className="text-lg text-muted-foreground">{client.company}</p>
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Mail className="size-4" />
-            {client.email}
-          </span>
-          <span className="flex items-center gap-1">
-            <Phone className="size-4" />
-            {client.phone}
-          </span>
+          {client.email && (
+            <span className="flex items-center gap-1">
+              <Mail className="size-4" />
+              {client.email}
+            </span>
+          )}
+          {client.phone && (
+            <span className="flex items-center gap-1">
+              <Phone className="size-4" />
+              {client.phone}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <Calendar className="size-4" />
