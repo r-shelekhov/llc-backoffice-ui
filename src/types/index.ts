@@ -104,7 +104,7 @@ export interface Communication {
   message: string;
   deliveryStatus?: DeliveryStatus;
   attachments?: Attachment[];
-  tags?: string[];
+
   event?: {
     type: CommunicationEventType;
     // Common booking fields

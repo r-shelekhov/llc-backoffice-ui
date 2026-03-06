@@ -9,7 +9,6 @@ export const communications: Communication[] = [
     senderName: "James Ashworth",
     message: "I need my usual Farnborough pickup tomorrow evening. Arriving at 6 PM sharp. Make sure Heinrich is driving — he knows the protocol.",
     channel: "concierge",
-    tags: ["vip"],
     createdAt: "2026-01-14T10:00:00Z",
   },
   {
@@ -20,7 +19,6 @@ export const communications: Communication[] = [
     message: "Confirmed, Mr. Ashworth. Heinrich is assigned and will be at the TAG Terminal by 5:30 PM. Maybach S680 is prepped with Krug Grande Cuvée chilled to your preference. Security team has been notified.",
     channel: "concierge",
     deliveryStatus: "read",
-    tags: ["vip"],
     createdAt: "2026-01-14T10:30:00Z",
   },
   {
@@ -138,7 +136,6 @@ export const communications: Communication[] = [
     senderName: "James Ashworth",
     message: "Need a G650 for Newcastle this weekend. Six of us plus luggage. And please arrange Dorchester catering — the full menu, not the standard selection.",
     channel: "phone",
-    tags: ["vip", "urgent"],
     createdAt: "2026-02-10T14:00:00Z",
   },
   {
@@ -149,7 +146,6 @@ export const communications: Communication[] = [
     message: "Good afternoon, Mr. Ashworth. I have two G650 options available for the 28th. Tail G-LUXE is your preferred aircraft from November — shall I confirm that one? Dorchester full menu for 6 is noted. I'll need the passenger manifest by end of day Thursday.",
     channel: "phone",
     deliveryStatus: "read",
-    tags: ["vip"],
     createdAt: "2026-02-10T14:15:00Z",
   },
   {
@@ -159,7 +155,6 @@ export const communications: Communication[] = [
     senderName: "James Ashworth",
     message: "Yes, G-LUXE. Manifest attached. Also add ground transport on the Newcastle side — two Range Rovers at the airport.",
     channel: "email",
-    tags: ["vip"],
     attachments: [
       {
         id: "att-1",
@@ -239,7 +234,6 @@ export const communications: Communication[] = [
     senderName: "Lady Charlotte Beaumont",
     message: "Darling, I need a heli from Battersea to Goodwood on the 5th. The AW139 please, not the smaller one. And I'll need return around midnight.",
     channel: "whatsapp",
-    tags: ["vip"],
     createdAt: "2026-02-18T09:00:00Z",
   },
   {
@@ -250,7 +244,6 @@ export const communications: Communication[] = [
     message: "Of course, Lady Beaumont. AW139 confirmed for March 5th. Departure from Battersea Heliport at 2:00 PM, return at midnight from Goodwood. Shall I arrange VIP paddock access as well?",
     channel: "whatsapp",
     deliveryStatus: "read",
-    tags: ["vip"],
     createdAt: "2026-02-18T09:20:00Z",
   },
   {
@@ -260,7 +253,6 @@ export const communications: Communication[] = [
     senderName: "Lady Charlotte Beaumont",
     message: "Yes, full VIP paddock. And have them prepare the private suite. My usual table.",
     channel: "whatsapp",
-    tags: ["vip"],
     createdAt: "2026-02-18T09:25:00Z",
   },
   // Conversation conv-4 communications (Lady Beaumont wedding fleet - converted)
@@ -272,7 +264,6 @@ export const communications: Communication[] = [
     message: "Good news — all four white Phantoms are confirmed for the 20th. Floral arrangements by McQueens will be installed the morning of. Route has been surveyed and approved by the Metropolitan Police.",
     channel: "email",
     deliveryStatus: "read",
-    tags: ["vip"],
     createdAt: "2026-01-10T09:00:00Z",
   },
   {
@@ -282,7 +273,6 @@ export const communications: Communication[] = [
     senderName: "Lady Charlotte Beaumont",
     message: "Perfect. Make sure the ribbons match the exact shade of ivory from the sample I sent. Pantone 11-0604 TCX.",
     channel: "email",
-    tags: ["vip"],
     attachments: [
       {
         id: "att-2",
@@ -411,7 +401,6 @@ export const communications: Communication[] = [
     message: "Sheikh Al-Fayed, we have identified three superyachts meeting your specifications for Cowes Week Regatta. The 88m 'Eclipse II' with prime harbour position is my top recommendation. Deck plans and crew profiles attached.",
     channel: "concierge",
     deliveryStatus: "read",
-    tags: ["vip", "urgent"],
     attachments: [
       {
         id: "att-3",
@@ -437,7 +426,6 @@ export const communications: Communication[] = [
     senderName: "Sheikh Omar Al-Fayed",
     message: "Eclipse II looks acceptable. But I need the master suite reconfigured. My designer will send specifications. Also, the chef must be Michelin-starred — no exceptions.",
     channel: "concierge",
-    tags: ["vip", "urgent"],
     createdAt: "2026-02-06T15:00:00Z",
   },
   {
@@ -448,7 +436,6 @@ export const communications: Communication[] = [
     message: "Understood. We are awaiting the designer's specifications for the master suite. I have shortlisted three Michelin-starred chefs with experience on superyachts. Profiles will follow. ACTION NEEDED: Please have your designer send specs by February 25th to meet the refit deadline.",
     channel: "concierge",
     deliveryStatus: "delivered",
-    tags: ["vip", "urgent", "follow-up"],
     createdAt: "2026-02-07T09:00:00Z",
   },
   // Conversation conv-7 communications (Isabelle car - in_review)
@@ -459,7 +446,6 @@ export const communications: Communication[] = [
     senderName: "Isabelle de Montfort",
     message: "Elena, I need the Flying Spur for all of Fashion Week. The driver must know every venue — I cannot be late to Burberry or Alexander McQueen.",
     channel: "email",
-    tags: ["vip"],
     createdAt: "2026-02-05T13:00:00Z",
   },
   {
@@ -470,7 +456,6 @@ export const communications: Communication[] = [
     message: "Bonjour Madame de Montfort. Pierre will be your chauffeur — he drove you last season and knows every venue entrance and back route in London. The Flying Spur in Meteor finish is reserved. I'll share the full schedule once the show calendar is finalised.",
     channel: "email",
     deliveryStatus: "read",
-    tags: ["vip"],
     createdAt: "2026-02-05T14:30:00Z",
   },
   {
@@ -480,7 +465,6 @@ export const communications: Communication[] = [
     senderName: "Isabelle de Montfort",
     message: "Parfait. Also arrange storage in the boot for garment bags — I'll be collecting pieces throughout the week.",
     channel: "whatsapp",
-    tags: ["vip"],
     createdAt: "2026-02-06T10:00:00Z",
   },
   {
@@ -659,7 +643,6 @@ export const communications: Communication[] = [
     message: "Ms Zhang, the Maybach GLS 600 is reserved for March 13. We still need your meeting itinerary to plan the route and timing. Could you please share it at your earliest convenience?",
     channel: "email",
     deliveryStatus: "read",
-    tags: ["follow-up"],
     createdAt: "2026-02-21T10:00:00Z",
   },
   {
@@ -679,7 +662,6 @@ export const communications: Communication[] = [
     senderName: "Sarah Kensington",
     message: "We need three Phantoms for the charity gala at the V&A on March 2nd. Our celebrity guests require absolute discretion. Tinted windows mandatory. Can you coordinate with our PR team on arrival timing?",
     channel: "concierge",
-    tags: ["urgent"],
     createdAt: "2026-02-12T10:00:00Z",
   },
   {
@@ -690,7 +672,6 @@ export const communications: Communication[] = [
     message: "Absolutely, Ms Kensington. Three Phantoms with factory-tinted privacy glass confirmed. I'll need your PR team's contact to coordinate the 30-second interval arrivals at the red carpet. All drivers are NDA-cleared.",
     channel: "concierge",
     deliveryStatus: "read",
-    tags: ["urgent"],
     createdAt: "2026-02-12T10:45:00Z",
   },
   {
@@ -700,7 +681,6 @@ export const communications: Communication[] = [
     senderName: "Sarah Kensington",
     message: "Perfect. PR contact: jessica.hall@kensingtonpr.co.uk. She'll send the exact arrival schedule by February 28th. Each guest will have a personal assistant in the vehicle — please ensure rear seating for 3 in each car.",
     channel: "email",
-    tags: ["urgent"],
     attachments: [
       {
         id: "att-5",
@@ -740,7 +720,6 @@ export const communications: Communication[] = [
     senderName: "James Ashworth",
     message: "Marcus, regarding the Solent charter — I want the same captain from last year, Captain Morrison. Also add the Jet Ski package and the 40ft tender, not the 30ft. My children will be joining this time.",
     channel: "concierge",
-    tags: ["vip", "urgent"],
     createdAt: "2026-02-15T08:00:00Z",
   },
   {
@@ -751,7 +730,6 @@ export const communications: Communication[] = [
     message: "Mr. Ashworth, Captain Morrison is available and delighted to be aboard again. I'm working on upgrading the tender to the 40ft and adding the full water toys package including Jet Skis. For the children, shall I arrange the youth entertainment coordinator as well? I also need to know ages for safety equipment sizing.",
     channel: "concierge",
     deliveryStatus: "read",
-    tags: ["vip", "urgent", "follow-up"],
     createdAt: "2026-02-15T10:00:00Z",
   },
   {
@@ -761,7 +739,6 @@ export const communications: Communication[] = [
     senderName: "James Ashworth",
     message: "Ages 8 and 11. Yes to the entertainment coordinator. And my wife wants the spa to be fully operational — she was disappointed last time. Make sure the therapist is top-tier.",
     channel: "concierge",
-    tags: ["vip"],
     createdAt: "2026-02-16T14:00:00Z",
   },
   // Conversation conv-6 communications (Sheikh jet - new)
@@ -772,7 +749,6 @@ export const communications: Communication[] = [
     senderName: "Sheikh Omar Al-Fayed",
     message: "I require a BBJ for my delegation travelling to London from Manchester on March 15. Twenty passengers. The aircraft must have a full bedroom suite. Catering by Al Reef — they know my requirements.",
     channel: "phone",
-    tags: ["vip"],
     createdAt: "2026-02-24T11:00:00Z",
   },
   // Conversation conv-8 communications (Isabelle helicopter - converted)
@@ -784,7 +760,6 @@ export const communications: Communication[] = [
     message: "Mme de Montfort, your Lake District helicopter tour is confirmed for January 25th at 11 AM. Bollinger Rosé will be served during the flight. Landing at Windermere, and your table at L'Enclume is reserved for 1 PM.",
     channel: "whatsapp",
     deliveryStatus: "read",
-    tags: ["vip"],
     createdAt: "2026-01-20T10:00:00Z",
   },
   {
@@ -794,7 +769,6 @@ export const communications: Communication[] = [
     senderName: "Isabelle de Montfort",
     message: "Merci Marcus. Can you also arrange transport from Windermere back to London after lunch? Something comfortable — perhaps a Range Rover?",
     channel: "whatsapp",
-    tags: ["vip"],
     createdAt: "2026-01-20T11:00:00Z",
   },
   {
@@ -805,7 +779,6 @@ export const communications: Communication[] = [
     message: "Of course! Range Rover Autobiography will be waiting at the restaurant. Driver is familiar with the M6 route back to London. Estimated drive time: 4 hours.",
     channel: "whatsapp",
     deliveryStatus: "read",
-    tags: ["vip"],
     createdAt: "2026-01-20T11:15:00Z",
   },
   {

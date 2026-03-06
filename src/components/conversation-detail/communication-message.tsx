@@ -5,19 +5,6 @@ import type { Communication } from "@/types";
 import { ServiceMessage, type PaymentLinkData } from "./service-message";
 import { ResolutionSeparator } from "./resolution-separator";
 
-function getTagStyle(tag: string): string {
-  switch (tag.toLowerCase()) {
-    case "vip":
-      return "bg-tone-vip-light text-tone-vip-foreground border-tone-vip-foreground/20";
-    case "urgent":
-      return "bg-tone-danger-light text-tone-danger-foreground border-tone-danger-foreground/20";
-    case "follow-up":
-      return "bg-tone-warning-light text-tone-warning-foreground border-tone-warning-foreground/20";
-    default:
-      return "bg-tone-info-light text-tone-info-foreground border-tone-info-foreground/20";
-  }
-}
-
 interface CommunicationMessageProps {
   communication: Communication;
   onSharePaymentLink?: () => void;
@@ -104,18 +91,6 @@ export function CommunicationMessage({
           </div>
         )}
 
-        {communication.tags && communication.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {communication.tags.map((tag) => (
-              <span
-                key={tag}
-                className={`text-[11px] font-medium rounded-full px-2 py-0.5 border ${getTagStyle(tag)}`}
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
