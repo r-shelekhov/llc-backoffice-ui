@@ -9,9 +9,10 @@ const ACTIVE_STATUSES = new Set(["draft", "awaiting_payment", "scheduled", "in_p
 interface ClientBookingsSummaryProps {
   bookings: Booking[];
   clientId: string;
+  conversationId?: string;
 }
 
-export function ClientBookingsSummary({ bookings, clientId }: ClientBookingsSummaryProps) {
+export function ClientBookingsSummary({ bookings, clientId, conversationId }: ClientBookingsSummaryProps) {
   const navigate = useNavigate();
   const activeBookings = bookings.filter((b) => ACTIVE_STATUSES.has(b.status));
 
@@ -55,7 +56,7 @@ export function ClientBookingsSummary({ bookings, clientId }: ClientBookingsSumm
       {bookings.length > 0 && (
         <button
           className="mt-3 text-xs font-medium text-primary hover:underline"
-          onClick={() => navigate(`/bookings?clientId=${clientId}`)}
+          onClick={() => navigate(`/bookings?clientId=${clientId}`, conversationId ? { state: { from: "conversation", conversationId } } : undefined)}
         >
           View all {bookings.length} bookings →
         </button>

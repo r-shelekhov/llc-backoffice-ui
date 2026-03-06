@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { AlertCircle, ArrowLeft, Calendar, PoundSterling, Clock, Check, ChevronDown } from "lucide-react";
 import type { BookingFilterState, BookingStatus, PaymentMethod } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
@@ -27,7 +27,9 @@ const TERMINAL_STATUSES: BookingStatus[] = ["completed", "cancelled"];
 export function BookingsPage() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const fromConversation = location.state?.from === "conversation" ? location.state.conversationId as string : null;
 
   const initialClientId = searchParams.get("clientId");
   const [filters, setFilters] = useState<BookingFilterState>({
@@ -126,7 +128,7 @@ export function BookingsPage() {
     // Auto-schedule: paid → scheduled when manager + execution date set
     if (
       bookingRef.status === "paid" &&
-      bookingRef.managerId !== null &&
+      bookingRef.managerIds.length > 0 &&
       bookingRef.executionAt !== ""
     ) {
       bookingRef.status = "scheduled";
@@ -163,7 +165,7 @@ export function BookingsPage() {
     if (bookingRef) {
       bookingRef.status = "paid";
       bookingRef.updatedAt = now;
-      if (bookingRef.managerId !== null && bookingRef.executionAt !== "") {
+      if (bookingRef.managerIds.length > 0 && bookingRef.executionAt !== "") {
         bookingRef.status = "scheduled";
       }
     }
@@ -255,9 +257,11 @@ export function BookingsPage() {
     <div className="space-y-6">
       {filters.clientId && (
         <Button variant="ghost" size="sm" className="-ml-2 h-7 text-xs" asChild>
-          <Link to={`/clients/${filters.clientId}`}>
+          <Link to={fromConversation ? `/inbox?id=${fromConversation}` : `/clients/${filters.clientId}`}>
             <ArrowLeft className="size-3.5" />
-            Back to {clientOptions.find((c) => c.value === filters.clientId)?.label ?? "Client"}
+            {fromConversation
+              ? `Back to conversation with ${clientOptions.find((c) => c.value === filters.clientId)?.label ?? "Client"}`
+              : `Back to ${clientOptions.find((c) => c.value === filters.clientId)?.label ?? "Client"}`}
           </Link>
         </Button>
       )}
