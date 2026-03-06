@@ -41,7 +41,7 @@ function getBookingWarnings(booking: BookingWithRelations): Warning[] {
   const warnings: Warning[] = [];
 
   // No manager (non-terminal bookings only)
-  if (!booking.managerId && !TERMINAL_STATUSES.includes(booking.status)) {
+  if (booking.managerIds.length === 0 && !TERMINAL_STATUSES.includes(booking.status)) {
     warnings.push({
       icon: AlertCircle,
       message: "No manager",
@@ -76,6 +76,14 @@ function getBookingWarnings(booking: BookingWithRelations): Warning[] {
   return warnings;
 }
 
+function ManagersCell({ managers }: { managers: BookingWithRelations["managers"] }) {
+  if (managers.length === 0) {
+    return <span className="text-sm text-muted-foreground">Unassigned</span>;
+  }
+
+  return <span className="text-sm">{managers.map((m) => m.name).join(", ")}</span>;
+}
+
 export function BookingTable({ bookings, onSelect, onStatusChange, onConfirmPayment, onCreateInvoice, onSendInvoice }: BookingTableProps) {
   return (
     <TooltipProvider>
@@ -86,7 +94,7 @@ export function BookingTable({ bookings, onSelect, onStatusChange, onConfirmPaym
             <TableHead>Client</TableHead>
             <TableHead>Category</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Manager</TableHead>
+            <TableHead>Managers</TableHead>
             <TableHead>Price</TableHead>
             <TableHead>Execution Date</TableHead>
             <TableHead className="w-[140px]">Actions</TableHead>
@@ -121,11 +129,7 @@ export function BookingTable({ bookings, onSelect, onStatusChange, onConfirmPaym
                   <StatusBadge type="booking" status={booking.status} />
                 </TableCell>
                 <TableCell>
-                  {booking.manager ? (
-                    <span className="text-sm">{booking.manager.name}</span>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">Unassigned</span>
-                  )}
+                  <ManagersCell managers={booking.managers} />
                 </TableCell>
                 <TableCell>{formatCurrency(booking.price)}</TableCell>
                 <TableCell>{formatDate(booking.executionAt)}</TableCell>

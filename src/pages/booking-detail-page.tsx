@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { AlertCircle, Zap } from "lucide-react";
+import { AlertCircle, Plus, X, Zap } from "lucide-react";
 import type { BookingStatus, PaymentMethod, Communication } from "@/types";
 import { useAuth } from "@/hooks/use-auth";
-import { getBookingWithRelations, payments, invoices, bookings, communications, conversations, clients } from "@/lib/mock-data";
+import { getBookingWithRelations, payments, invoices, bookings, communications, conversations, clients, users } from "@/lib/mock-data";
 import { promoteClientToClient } from "@/lib/client-lifecycle";
-import { canViewBooking } from "@/lib/permissions";
+import { canViewBooking, getAssignableManagers } from "@/lib/permissions";
 import { computeSlaState } from "@/lib/sla";
 import { BOOKING_STATUS_TRANSITIONS, BOOKING_STATUS_ACTION_LABELS, PAYMENT_METHOD_LABELS, CHANNEL_LABELS } from "@/lib/constants";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -16,6 +16,8 @@ import { VipIndicator } from "@/components/shared/vip-indicator";
 import { formatCurrency, formatDateTime, formatDate, formatRelativeTime } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 import {
   Dialog,
@@ -120,7 +122,7 @@ function confirmPayment(
       toStatus: "paid",
     });
 
-    if (bookingRef.managerId !== null && bookingRef.executionAt !== "") {
+    if (bookingRef.managerIds.length > 0 && bookingRef.executionAt !== "") {
       bookingRef.status = "scheduled";
       pushSystemMessage(bookingRef.conversationId, "Booking status changed from paid to scheduled", {
         type: "booking_status_changed",
@@ -142,6 +144,7 @@ export function BookingDetailPage() {
   const [, forceUpdate] = useState(0);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [declineDialogOpen, setDeclineDialogOpen] = useState(false);
+  const [addManagerOpen, setAddManagerOpen] = useState(false);
 
   const booking = id ? getBookingWithRelations(id) : null;
 
@@ -175,7 +178,7 @@ export function BookingDetailPage() {
   const transitions = BOOKING_STATUS_TRANSITIONS[booking.status];
   const isAutoScheduled =
     booking.status === "paid" &&
-    booking.managerId !== null &&
+    booking.managerIds.length > 0 &&
     booking.executionAt !== "";
 
   const billingState = deriveBillingState();
@@ -194,11 +197,45 @@ export function BookingDetailPage() {
   function checkAutoSchedule(bookingRef: typeof bookings[number]) {
     if (
       bookingRef.status === "paid" &&
-      bookingRef.managerId !== null &&
+      bookingRef.managerIds.length > 0 &&
       bookingRef.executionAt !== ""
     ) {
       bookingRef.status = "scheduled";
     }
+  }
+
+  const assignableUsers = getAssignableManagers(booking.client, users);
+  const availableManagers = assignableUsers.filter(
+    (u) => !booking.managerIds.includes(u.id)
+  );
+
+  function handleAddManager(userId: string) {
+    const bookingRef = bookings.find((b) => b.id === id);
+    if (!bookingRef) return;
+    bookingRef.managerIds = [...bookingRef.managerIds, userId];
+    const conv = conversations.find((c) => c.id === bookingRef.conversationId);
+    if (conv) conv.managerIds = [...bookingRef.managerIds];
+    const statusBefore = bookingRef.status;
+    checkAutoSchedule(bookingRef);
+    if (bookingRef.status !== statusBefore) {
+      pushSystemMessage(bookingRef.conversationId, `Booking status changed from ${statusBefore} to ${bookingRef.status}`, {
+        type: "booking_status_changed",
+        bookingId: bookingRef.id,
+        fromStatus: statusBefore,
+        toStatus: bookingRef.status,
+      });
+    }
+    setAddManagerOpen(false);
+    forceUpdate((n) => n + 1);
+  }
+
+  function handleRemoveManager(userId: string) {
+    const bookingRef = bookings.find((b) => b.id === id);
+    if (!bookingRef) return;
+    bookingRef.managerIds = bookingRef.managerIds.filter((mid) => mid !== userId);
+    const conv = conversations.find((c) => c.id === bookingRef.conversationId);
+    if (conv) conv.managerIds = [...bookingRef.managerIds];
+    forceUpdate((n) => n + 1);
   }
 
   function deriveBillingState(): BillingState {
@@ -297,7 +334,7 @@ export function BookingDetailPage() {
             }
             infoStrip={
               <>
-                {isEditable && !booking.managerId && (
+                {isEditable && booking.managerIds.length === 0 && (
                   <div className="flex items-center gap-2 rounded-md bg-tone-warning-light px-3 py-1.5 text-sm text-tone-warning-foreground">
                     <AlertCircle className="size-4" />
                     <span>No manager — assign someone to proceed with execution</span>
@@ -334,16 +371,85 @@ export function BookingDetailPage() {
             {/* Execution Readiness */}
             <DetailRailCard title="Execution Readiness">
               <dl className="space-y-2">
-                <DetailKv
-                  label="Manager"
-                  value={
-                    booking.manager ? (
-                      <span className="text-tone-success-foreground">{booking.manager.name}</span>
-                    ) : (
-                      <span className="text-tone-warning">Unassigned</span>
-                    )
-                  }
-                />
+                {isEditable ? (
+                  <div>
+                    <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Managers</dt>
+                    <div className="mt-1.5 space-y-2">
+                      {booking.managers.length === 0 && (
+                        <div className="flex items-center gap-2 rounded-md bg-tone-warning-light px-3 py-2 text-sm text-tone-warning-foreground">
+                          <AlertCircle className="size-4 shrink-0" />
+                          <span>Unassigned</span>
+                        </div>
+                      )}
+                      {booking.managers.map((manager) => (
+                        <div
+                          key={manager.id}
+                          className="flex items-center justify-between gap-2 rounded-md border px-2.5 py-1.5"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <img
+                              src={manager.avatarUrl}
+                              alt={manager.name}
+                              className="size-5 shrink-0 rounded-full object-cover"
+                            />
+                            <span className="truncate text-sm">{manager.name}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveManager(manager.id)}
+                            className="shrink-0 rounded-sm p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
+                            <X className="size-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                      <Popover open={addManagerOpen} onOpenChange={setAddManagerOpen}>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className="flex w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
+                            <Plus className="size-3.5" />
+                            Add manager
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[220px] p-0" align="start">
+                          <Command>
+                            <CommandInput placeholder="Search managers..." />
+                            <CommandList>
+                              <CommandEmpty>No managers available.</CommandEmpty>
+                              <CommandGroup>
+                                {availableManagers.map((user) => (
+                                  <CommandItem
+                                    key={user.id}
+                                    value={user.name}
+                                    onSelect={() => handleAddManager(user.id)}
+                                  >
+                                    <img
+                                      src={user.avatarUrl}
+                                      alt={user.name}
+                                      className="size-5 rounded-full object-cover"
+                                    />
+                                    {user.name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+                ) : (
+                  <DetailKv
+                    label="Managers"
+                    value={
+                      booking.managers.length > 0
+                        ? booking.managers.map((m) => m.name).join(", ")
+                        : "Unassigned"
+                    }
+                  />
+                )}
                 <DetailKv
                   label="Execution Date"
                   value={
@@ -443,8 +549,11 @@ export function BookingDetailPage() {
                     value={formatDateTime(booking.executionAt)}
                   />
                   <DetailKv
-                    label="Manager"
-                    value={booking.manager?.name ?? "Unassigned"}
+                    label="Managers"
+                    value={booking.managers.length > 0
+                      ? booking.managers.map((m) => m.name).join(", ")
+                      : "Unassigned"
+                    }
                   />
                 </>
               )}
