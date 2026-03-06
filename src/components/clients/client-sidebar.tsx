@@ -1,4 +1,4 @@
-import { Mail, Phone } from "lucide-react";
+import { Cake, Mail, Phone } from "lucide-react";
 import type { Booking, Client, InternalNote, User } from "@/types";
 import { formatDate, formatCurrency } from "@/lib/format";
 import { InternalNotesPanel } from "@/components/conversation-detail/internal-notes-panel";
@@ -52,6 +52,12 @@ export function ClientSidebar({
               <Phone className="size-3.5" />
               <span>{client.phone}</span>
             </a>
+          )}
+          {client.birthday && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Cake className="size-3.5" />
+              <span>{formatDate(client.birthday)}</span>
+            </div>
           )}
           <div className="flex gap-4 pt-1 text-xs text-muted-foreground">
             <div>

@@ -57,6 +57,7 @@ export interface Client {
   updatedAt: string;
   totalConversations: number;
   totalSpend: number;
+  birthday?: string;
   lifecycleStatus?: LifecycleStatus;
 }
 

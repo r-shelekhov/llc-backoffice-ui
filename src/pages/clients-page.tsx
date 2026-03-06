@@ -135,6 +135,7 @@ export function ClientsPage() {
     phone?: string;
     company: string;
     isVip: boolean;
+    birthday?: string;
   }) {
     if (editingClient) {
       const idx = clients.findIndex((c) => c.id === editingClient.id);

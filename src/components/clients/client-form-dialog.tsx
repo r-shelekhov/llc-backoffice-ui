@@ -21,6 +21,7 @@ interface ClientFormDialogProps {
     phone?: string;
     company: string;
     isVip: boolean;
+    birthday?: string;
   }) => void;
 }
 
@@ -35,6 +36,7 @@ export function ClientFormDialog({
   const [phone, setPhone] = useState("");
   const [company, setCompany] = useState("");
   const [isVip, setIsVip] = useState(false);
+  const [birthday, setBirthday] = useState("");
 
   const isEdit = !!client;
 
@@ -45,6 +47,7 @@ export function ClientFormDialog({
       setPhone(client?.phone ?? "");
       setCompany(client?.company ?? "");
       setIsVip(client?.isVip ?? false);
+      setBirthday(client?.birthday ?? "");
     }
   }, [open, client]);
 
@@ -57,6 +60,7 @@ export function ClientFormDialog({
       phone: phone.trim() || undefined,
       company: company.trim(),
       isVip,
+      birthday: birthday || undefined,
     });
   }
 
@@ -97,6 +101,15 @@ export function ClientFormDialog({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+1 (555) 000-0000"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <span className="text-sm font-medium">Birthday</span>
+            <Input
+              type="date"
+              value={birthday}
+              onChange={(e) => setBirthday(e.target.value)}
             />
           </div>
 
