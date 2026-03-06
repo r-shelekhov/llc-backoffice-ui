@@ -35,6 +35,7 @@ export const clients: Client[] = [
     phone: "+971 50 123 4567",
     company: "Al-Fayed Investment Group",
     isVip: true,
+    lifecycleStatus: "client",
     totalConversations: 9,
     totalSpend: 425000,
     avatarUrl: "https://api.dicebear.com/7.x/initials/svg?seed=OA",
