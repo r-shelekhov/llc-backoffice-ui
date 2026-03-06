@@ -4,6 +4,12 @@ import type { ActionReason } from '@/lib/filters'
 import { formatShortName, formatSmartDate } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { ConversationWithRelations, SlaState } from '@/types'
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 const ACTION_BADGE_CONFIG: Partial<
 	Record<
@@ -46,6 +52,7 @@ interface ConversationItemProps {
 	unreadCount: number
 	onClick: () => void
 	actionReasons?: ActionReason[]
+	currentUserId?: string
 }
 
 export function ConversationItem({
@@ -55,6 +62,7 @@ export function ConversationItem({
 	unreadCount,
 	onClick,
 	actionReasons,
+	currentUserId,
 }: ConversationItemProps) {
 	const lastComm = conversation.communications.length
 		? conversation.communications.reduce((a, b) =>
@@ -65,6 +73,13 @@ export function ConversationItem({
 	const preview = lastComm
 		? `${lastComm.sender === 'agent' ? 'You: ' : ''}${lastComm.message}`
 		: 'No messages yet'
+
+	// Determine display manager: current user first if assigned, otherwise first in array
+	const managers = conversation.managers
+	const displayManager = currentUserId
+		? managers.find((m) => m.id === currentUserId) ?? managers[0]
+		: managers[0]
+	const extraCount = managers.length - 1
 
 	return (
 		<button
@@ -87,7 +102,7 @@ export function ConversationItem({
 				)}
 			</div>
 			<div className="min-w-0 flex-1">
-				<div className="flex items-center justify-between gap-2">
+				<div className="flex items-baseline justify-between gap-2">
 					<div className="flex min-w-0 items-baseline gap-1">
 						<span
 							className={cn(
@@ -99,12 +114,26 @@ export function ConversationItem({
 						>
 							{conversation.client.name}
 						</span>
-						{conversation.manager ? (
+						{managers.length > 0 ? (
 							<>
 								<span className="shrink-0 text-muted-foreground">›</span>
 								<span className="shrink-0 text-sm text-muted-foreground">
-									{formatShortName(conversation.manager.name)}
+									{formatShortName(displayManager!.name)}
 								</span>
+								{extraCount > 0 && (
+									<TooltipProvider>
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<span className="shrink-0 text-[10px] text-muted-foreground">
+													+{extraCount}
+												</span>
+											</TooltipTrigger>
+											<TooltipContent>
+												{managers.map((m) => m.name).join(', ')}
+											</TooltipContent>
+										</Tooltip>
+									</TooltipProvider>
+								)}
 							</>
 						) : (
 							<>
