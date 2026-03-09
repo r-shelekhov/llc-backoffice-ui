@@ -380,7 +380,13 @@ export function BookingsPage() {
       ) : (
         <BookingTable
           bookings={sortedBookings}
-          onSelect={(booking) => navigate(`/bookings/${booking.id}`)}
+          onSelect={(booking) =>
+            navigate(`/bookings/${booking.id}`, {
+              state: {
+                ...(filters.clientId ? { from: "client-bookings", clientId: filters.clientId } : {}),
+              },
+            })
+          }
           onStatusChange={handleStatusChange}
           onConfirmPayment={handleConfirmPaymentFromTable}
           onCreateInvoice={handleCreateInvoice}
