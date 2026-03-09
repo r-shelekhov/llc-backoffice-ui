@@ -10,6 +10,7 @@ interface CommunicationMessageProps {
   onSharePaymentLink?: () => void;
   paymentLinkData?: PaymentLinkData;
   onCreateInvoice?: () => void;
+  onApproveBooking?: () => void;
 }
 
 export function CommunicationMessage({
@@ -17,6 +18,7 @@ export function CommunicationMessage({
   onSharePaymentLink,
   paymentLinkData,
   onCreateInvoice,
+  onApproveBooking,
 }: CommunicationMessageProps) {
   if (communication.sender === "system") {
     if (communication.event?.type === "conversation_resolved") {
@@ -29,7 +31,7 @@ export function CommunicationMessage({
     }
 
     if (communication.event) {
-      return <ServiceMessage communication={communication} onSharePaymentLink={onSharePaymentLink} paymentLinkData={paymentLinkData} onCreateInvoice={onCreateInvoice} />;
+      return <ServiceMessage communication={communication} onSharePaymentLink={onSharePaymentLink} paymentLinkData={paymentLinkData} onCreateInvoice={onCreateInvoice} onApproveBooking={onApproveBooking} />;
     }
 
     return (

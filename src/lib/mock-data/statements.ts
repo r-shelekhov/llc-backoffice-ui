@@ -1,0 +1,65 @@
+import type { Statement } from "@/types";
+
+export const statements: Statement[] = [
+  // cli-1 Ashworth: paid statement for February 2026
+  {
+    id: "stmt-1",
+    clientId: "cli-1",
+    period: "2026-02",
+    invoiceIds: ["inv-1"],
+    subtotal: 2690,
+    taxAmount: 269,
+    total: 2959,
+    paidAmount: 2959,
+    status: "paid",
+    dueDate: "2026-03-15T00:00:00Z",
+    paidAt: "2026-03-05T10:00:00Z",
+    createdAt: "2026-03-01T00:00:00Z",
+    updatedAt: "2026-03-05T10:00:00Z",
+  },
+  // cli-1 Ashworth: open statement for March 2026 with inv-2
+  {
+    id: "stmt-2",
+    clientId: "cli-1",
+    period: "2026-03",
+    invoiceIds: ["inv-2"],
+    subtotal: 75850,
+    taxAmount: 7585,
+    total: 83435,
+    paidAmount: 0,
+    status: "open",
+    dueDate: "2026-04-15T00:00:00Z",
+    createdAt: "2026-03-01T00:00:00Z",
+    updatedAt: "2026-03-01T00:00:00Z",
+  },
+  // cli-3 Sheikh: open statement for March 2026
+  {
+    id: "stmt-3",
+    clientId: "cli-3",
+    period: "2026-03",
+    invoiceIds: [],
+    subtotal: 0,
+    taxAmount: 0,
+    total: 0,
+    paidAmount: 0,
+    status: "open",
+    dueDate: "2026-04-15T00:00:00Z",
+    createdAt: "2026-03-01T00:00:00Z",
+    updatedAt: "2026-03-01T00:00:00Z",
+  },
+  // cli-1 Ashworth: overdue statement for January 2026
+  {
+    id: "stmt-4",
+    clientId: "cli-1",
+    period: "2026-01",
+    invoiceIds: [],
+    subtotal: 4500,
+    taxAmount: 450,
+    total: 4950,
+    paidAmount: 0,
+    status: "overdue",
+    dueDate: "2026-02-15T00:00:00Z",
+    createdAt: "2026-02-01T00:00:00Z",
+    updatedAt: "2026-02-15T00:00:00Z",
+  },
+];

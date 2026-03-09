@@ -7,6 +7,7 @@ import {
   FileText,
   Send,
   CircleCheck,
+  ShieldCheck,
 } from "lucide-react";
 import { formatRelativeTime, formatCurrency } from "@/lib/format";
 import { BOOKING_STATUS_LABELS, PAYMENT_METHOD_LABELS } from "@/lib/constants";
@@ -25,6 +26,7 @@ interface ServiceMessageProps {
   onSharePaymentLink?: () => void;
   paymentLinkData?: PaymentLinkData;
   onCreateInvoice?: () => void;
+  onApproveBooking?: () => void;
 }
 
 export function ServiceMessage({
@@ -32,6 +34,7 @@ export function ServiceMessage({
   onSharePaymentLink,
   paymentLinkData,
   onCreateInvoice,
+  onApproveBooking,
 }: ServiceMessageProps) {
   const event = communication.event;
   if (!event) return null;
@@ -43,6 +46,7 @@ export function ServiceMessage({
   let showOpenBooking = false;
   let showSharePaymentLink = false;
   let showCreateInvoice = false;
+  let showApproveBooking = false;
 
   switch (event.type) {
     case "web_form_submitted":
@@ -67,11 +71,19 @@ export function ServiceMessage({
       refId = event.bookingId ?? null;
       showOpenBooking = true;
       break;
+    case "booking_approved":
+      icon = <ShieldCheck className="size-4 text-muted-foreground" />;
+      line1 = "Booking approved";
+      line2 = "Payment deferred to monthly statement";
+      refId = event.bookingId ?? null;
+      showOpenBooking = true;
+      break;
     case "invoice_created":
       icon = <FileText className="size-4 text-muted-foreground" />;
       line1 = `Invoice created${event.invoiceTotal != null ? ` · ${formatCurrency(event.invoiceTotal)}` : ""}`;
       refId = event.invoiceId ?? null;
       showSharePaymentLink = !!onSharePaymentLink;
+      showApproveBooking = !!onApproveBooking;
       break;
     case "invoice_sent":
       icon = <Send className="size-4 text-muted-foreground" />;
@@ -103,7 +115,7 @@ export function ServiceMessage({
         {refId && (
           <p className="mt-1 font-mono text-xs text-muted-foreground">{refId}</p>
         )}
-        {(showOpenBooking || showSharePaymentLink || showCreateInvoice) && (
+        {(showOpenBooking || showSharePaymentLink || showCreateInvoice || showApproveBooking) && (
           <div className="mt-1 flex items-center justify-center gap-3">
             {showOpenBooking && event.bookingId && (
               <Link
@@ -125,6 +137,15 @@ export function ServiceMessage({
                 className={`inline-flex items-center gap-1 text-xs font-medium ${onCreateInvoice ? "text-primary hover:underline" : "text-muted-foreground/50 cursor-not-allowed"}`}
               >
                 <FileText className="size-3" /> Create Invoice
+              </button>
+            )}
+            {showApproveBooking && onApproveBooking && (
+              <button
+                type="button"
+                onClick={onApproveBooking}
+                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+              >
+                <ShieldCheck className="size-3" /> Approve Booking
               </button>
             )}
             {showSharePaymentLink && paymentLinkData && (

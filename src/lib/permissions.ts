@@ -1,4 +1,4 @@
-import type { User, Client, Conversation, ConversationWithRelations, Booking, BookingWithRelations, Invoice, InvoiceWithRelations, Payment, PaymentWithRelations } from "@/types";
+import type { User, Client, Conversation, ConversationWithRelations, Booking, BookingWithRelations, Invoice, InvoiceWithRelations, Payment, PaymentWithRelations, StatementWithRelations } from "@/types";
 import { clients } from "@/lib/mock-data";
 
 function isVipClient(clientId: string): boolean {
@@ -84,6 +84,25 @@ export function filterPaymentsByPermission<T extends Payment>(
     invoices.filter((i) => allowedBookingIds.has(i.bookingId)).map((i) => i.id)
   );
   return payments.filter((p) => allowedInvoiceIds.has(p.invoiceId));
+}
+
+export function filterStatementsByPermission(
+  user: User,
+  statements: StatementWithRelations[],
+  bookings: Booking[]
+): StatementWithRelations[] {
+  if (user.role === "admin" || user.role === "vip_manager") return statements;
+  const allowedBookingIds = new Set(
+    bookings.filter((b) => b.managerIds.includes(user.id)).map((b) => b.id)
+  );
+  return statements.filter((s) =>
+    s.invoices.some((inv) => allowedBookingIds.has(inv.bookingId))
+  );
+}
+
+export function filterVipStatements<T extends StatementWithRelations>(user: User, statements: T[]): T[] {
+  if (user.role === "admin" || user.role === "vip_manager") return statements;
+  return statements.filter((s) => !s.client.isVip);
 }
 
 export function filterVipBookings<T extends BookingWithRelations>(user: User, bookings: T[]): T[] {

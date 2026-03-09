@@ -71,6 +71,14 @@ export function ClientSidebar({
           Client Details
         </h4>
         <div className="space-y-3 text-sm">
+          {client.isAccountHolder && (
+            <div>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-tone-info-light px-2.5 py-0.5 text-xs font-medium text-tone-info-foreground">
+                <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />
+                Account Holder
+              </span>
+            </div>
+          )}
           {client.birthday && (
             <div>
               <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">

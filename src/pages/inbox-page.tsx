@@ -235,8 +235,8 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
         booking.managerIds = managerIds;
         booking.updatedAt = new Date().toISOString();
 
-        // Auto-schedule: paid + has manager + execution date → scheduled
-        if (booking.status === "paid" && managerIds.length > 0 && booking.executionAt !== "") {
+        // Auto-schedule: paid/approved + has manager + execution date → scheduled
+        if ((booking.status === "paid" || booking.status === "approved") && managerIds.length > 0 && booking.executionAt !== "") {
           const fromStatus = booking.status;
           booking.status = "scheduled";
 
@@ -469,6 +469,89 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
     [selectedConversation?.channel, allConversations]
   );
 
+  const handleApproveBooking = useCallback(
+    (bookingId: string, conversationId: string) => {
+      const booking = bookings.find((b) => b.id === bookingId);
+      if (!booking || booking.status !== "draft") return;
+
+      const fromStatus = booking.status;
+      booking.status = "approved";
+      booking.updatedAt = new Date().toISOString();
+
+      const convWR = allConversations.find((c) => c.id === conversationId);
+      const channel = convWR?.channel ?? "web";
+
+      // Push booking_approved event
+      const approvedComm: Communication = {
+        id: `sys-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        conversationId,
+        sender: "system",
+        senderName: "System",
+        channel,
+        message: "Booking approved — payment deferred to monthly statement.",
+        event: {
+          type: "booking_approved",
+          bookingId: booking.id,
+          title: booking.title,
+        },
+        createdAt: new Date().toISOString(),
+      };
+      communications.push(approvedComm);
+      if (convWR) convWR.communications.push(approvedComm);
+
+      // Push status change event
+      const statusComm: Communication = {
+        id: `sys-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        conversationId,
+        sender: "system",
+        senderName: "System",
+        channel,
+        message: `Booking status changed from ${fromStatus} to approved`,
+        event: {
+          type: "booking_status_changed",
+          bookingId: booking.id,
+          fromStatus,
+          toStatus: "approved",
+        },
+        createdAt: new Date().toISOString(),
+      };
+      communications.push(statusComm);
+      if (convWR) convWR.communications.push(statusComm);
+
+      // Auto-schedule if manager + execution date set
+      if (booking.managerIds.length > 0 && booking.executionAt !== "") {
+        booking.status = "scheduled";
+        const schedComm: Communication = {
+          id: `sys-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          conversationId,
+          sender: "system",
+          senderName: "System",
+          channel,
+          message: "Booking status changed from approved to scheduled",
+          event: {
+            type: "booking_status_changed",
+            bookingId: booking.id,
+            fromStatus: "approved",
+            toStatus: "scheduled",
+          },
+          createdAt: new Date().toISOString(),
+        };
+        communications.push(schedComm);
+        if (convWR) convWR.communications.push(schedComm);
+      }
+
+      // Send invoice if it's still draft
+      const invoice = invoices.find((i) => i.bookingId === bookingId && i.status === "draft");
+      if (invoice) {
+        invoice.status = "sent";
+        invoice.updatedAt = new Date().toISOString();
+      }
+
+      forceUpdate((n) => n + 1);
+    },
+    [allConversations]
+  );
+
   const currentLocalMessages = selectedId
     ? localMessages.get(selectedId) ?? []
     : [];
@@ -607,6 +690,7 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
             onCreateBooking={(id) => setCreateBookingConvId(id)}
             onSharePaymentLink={handleSharePaymentLink}
             onCreateInvoice={handleCreateInvoice}
+            onApproveBooking={handleApproveBooking}
             onResolve={handleResolve}
             lastReadAtOnOpen={lastReadAtOnOpen}
           />

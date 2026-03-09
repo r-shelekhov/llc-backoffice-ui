@@ -226,6 +226,20 @@ export const communications: Communication[] = [
     },
     createdAt: "2026-02-12T09:05:00Z",
   },
+  {
+    id: "com-67",
+    conversationId: "conv-2",
+    sender: "system",
+    senderName: "System",
+    message: "Booking approved — payment deferred to monthly statement.",
+    channel: "email",
+    event: {
+      type: "booking_approved",
+      bookingId: "bk-8",
+      title: "G650 Newcastle",
+    },
+    createdAt: "2026-02-12T09:10:00Z",
+  },
   // Conversation conv-3 communications (Lady Beaumont helicopter - in_review)
   {
     id: "com-7",

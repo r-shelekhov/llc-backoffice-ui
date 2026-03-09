@@ -6,25 +6,30 @@ import {
   INVOICE_STATUS_LABELS,
   PAYMENT_STATUS_COLORS,
   PAYMENT_STATUS_LABELS,
+  STATEMENT_STATUS_COLORS,
+  STATEMENT_STATUS_LABELS,
 } from "@/lib/constants";
-import type { BookingStatus, InvoiceStatus, PaymentStatus } from "@/types";
+import type { BookingStatus, InvoiceStatus, PaymentStatus, StatementStatus } from "@/types";
 import { cn } from "@/lib/utils";
 
 type StatusBadgeProps =
   | { type: "booking"; status: BookingStatus }
   | { type: "invoice"; status: InvoiceStatus }
-  | { type: "payment"; status: PaymentStatus };
+  | { type: "payment"; status: PaymentStatus }
+  | { type: "statement"; status: StatementStatus };
 
 const colorMaps = {
   booking: BOOKING_STATUS_COLORS,
   invoice: INVOICE_STATUS_COLORS,
   payment: PAYMENT_STATUS_COLORS,
+  statement: STATEMENT_STATUS_COLORS,
 } as const;
 
 const labelMaps = {
   booking: BOOKING_STATUS_LABELS,
   invoice: INVOICE_STATUS_LABELS,
   payment: PAYMENT_STATUS_LABELS,
+  statement: STATEMENT_STATUS_LABELS,
 } as const;
 
 export function StatusBadge({ type, status }: StatusBadgeProps) {

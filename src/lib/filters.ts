@@ -1,4 +1,4 @@
-import type { ConversationFilterState, BookingFilterState, InvoiceFilterState, PaymentFilterState, ClientFilterState, ConversationWithRelations, BookingWithRelations, InvoiceWithRelations, PaymentWithRelations, ClientRow } from "@/types";
+import type { ConversationFilterState, BookingFilterState, InvoiceFilterState, PaymentFilterState, ClientFilterState, StatementFilterState, ConversationWithRelations, BookingWithRelations, InvoiceWithRelations, PaymentWithRelations, ClientRow, StatementWithRelations } from "@/types";
 
 export type ActionReason = "unread" | "sla_risk" | "unassigned" | "draft_booking" | "awaiting_payment" | "needs_scheduling" | "overdue_invoice";
 
@@ -47,8 +47,8 @@ export function getConversationActionReasons(
     reasons.push("awaiting_payment");
   }
 
-  // Needs Scheduling: paid but not yet scheduled
-  if (conversation.bookings.some(b => b.status === "paid")) {
+  // Needs Scheduling: paid/approved but not yet scheduled
+  if (conversation.bookings.some(b => b.status === "paid" || b.status === "approved")) {
     reasons.push("needs_scheduling");
   }
 
@@ -183,6 +183,28 @@ export function applyPaymentFilters(
 
     if (filters.dateFrom && new Date(p.createdAt) < filters.dateFrom) return false;
     if (filters.dateTo && new Date(p.createdAt) > filters.dateTo) return false;
+
+    return true;
+  });
+}
+
+export function applyStatementFilters(
+  statements: StatementWithRelations[],
+  filters: StatementFilterState
+): StatementWithRelations[] {
+  return statements.filter((s) => {
+    if (filters.search) {
+      const q = filters.search.toLowerCase();
+      const matches = s.client.name.toLowerCase().includes(q) ||
+        s.client.company.toLowerCase().includes(q);
+      if (!matches) return false;
+    }
+
+    if (filters.statuses.length > 0 && !filters.statuses.includes(s.status)) {
+      return false;
+    }
+
+    if (filters.period && s.period !== filters.period) return false;
 
     return true;
   });

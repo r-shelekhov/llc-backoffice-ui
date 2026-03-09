@@ -42,6 +42,7 @@ type BillingState =
   | "awaiting_payment"
   | "payment_processing"
   | "paid"
+  | "approved"
   | "overdue";
 
 const BILLING_STATE_CONFIG: Record<BillingState, { label: string; className: string }> = {
@@ -50,6 +51,7 @@ const BILLING_STATE_CONFIG: Record<BillingState, { label: string; className: str
   awaiting_payment: { label: "Awaiting Payment", className: "bg-tone-warning-light text-tone-warning-foreground" },
   payment_processing: { label: "Payment Processing", className: "bg-tone-warning-light text-tone-warning-foreground" },
   paid: { label: "Paid", className: "bg-tone-success-light text-tone-success-foreground" },
+  approved: { label: "Approved (Monthly Statement)", className: "bg-tone-info-light text-tone-info-foreground" },
   overdue: { label: "Overdue", className: "bg-tone-danger-light text-tone-danger-foreground" },
 };
 
@@ -177,7 +179,7 @@ export function BookingDetailPage() {
 
   const transitions = BOOKING_STATUS_TRANSITIONS[booking.status];
   const isAutoScheduled =
-    booking.status === "paid" &&
+    (booking.status === "paid" || booking.status === "approved") &&
     booking.managerIds.length > 0 &&
     booking.executionAt !== "";
 
@@ -196,7 +198,7 @@ export function BookingDetailPage() {
 
   function checkAutoSchedule(bookingRef: typeof bookings[number]) {
     if (
-      bookingRef.status === "paid" &&
+      (bookingRef.status === "paid" || bookingRef.status === "approved") &&
       bookingRef.managerIds.length > 0 &&
       bookingRef.executionAt !== ""
     ) {
@@ -247,8 +249,14 @@ export function BookingDetailPage() {
     const hasPaid = booking!.invoices.some((i) => i.status === "paid");
     if (hasPaid) return "paid";
 
+    // Account holder approved bookings
+    if (booking!.status === "approved" || booking!.status === "scheduled" || booking!.status === "in_progress" || booking!.status === "completed") {
+      if (booking!.client.isAccountHolder && !hasPaid) return "approved";
+    }
+
     const hasSent = booking!.invoices.some((i) => i.status === "sent");
     if (hasSent) {
+      if (booking!.client.isAccountHolder) return "approved";
       const hasPending = booking!.payments.some((p) => p.status === "pending");
       return hasPending ? "payment_processing" : "awaiting_payment";
     }
@@ -313,8 +321,9 @@ export function BookingDetailPage() {
                 <div className="flex flex-wrap gap-2">
                   {transitions
                     .filter((s) => !(booking.status === "draft" && s === "awaiting_payment"))
+                    .filter((s) => !(booking.status === "draft" && s === "approved"))
                     .filter((s) => !(booking.status === "awaiting_payment" && s === "paid"))
-                    .filter((s) => !(s === "in_progress" && billingState !== "paid"))
+                    .filter((s) => !(s === "in_progress" && billingState !== "paid" && billingState !== "approved"))
                     .map((nextStatus) => (
                       <Button
                         key={nextStatus}
@@ -701,7 +710,53 @@ export function BookingDetailPage() {
                 Create Invoice
               </Button>
             )}
-            {isEditable && billingState === "invoice_draft" && (
+            {isEditable && billingState === "invoice_draft" && booking.client.isAccountHolder && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  const draftInvoice = invoices.find(
+                    (i) => i.bookingId === booking.id && i.status === "draft"
+                  );
+                  if (draftInvoice) {
+                    draftInvoice.status = "sent";
+                    draftInvoice.updatedAt = new Date().toISOString();
+                  }
+
+                  const bookingRef = bookings.find((b) => b.id === id);
+                  if (bookingRef) {
+                    const fromStatus = bookingRef.status;
+                    bookingRef.status = "approved";
+                    bookingRef.updatedAt = new Date().toISOString();
+
+                    pushSystemMessage(booking.conversationId, "Booking approved — payment deferred to monthly statement.", {
+                      type: "booking_approved",
+                      bookingId: booking.id,
+                      title: booking.title,
+                    });
+                    pushSystemMessage(booking.conversationId, `Booking status changed from ${fromStatus} to approved`, {
+                      type: "booking_status_changed",
+                      bookingId: booking.id,
+                      fromStatus,
+                      toStatus: "approved",
+                    });
+
+                    checkAutoSchedule(bookingRef);
+                    if ((bookingRef.status as string) === "scheduled") {
+                      pushSystemMessage(booking.conversationId, "Booking status changed from approved to scheduled", {
+                        type: "booking_status_changed",
+                        bookingId: booking.id,
+                        fromStatus: "approved",
+                        toStatus: "scheduled",
+                      });
+                    }
+                  }
+                  forceUpdate((n) => n + 1);
+                }}
+              >
+                Approve Booking
+              </Button>
+            )}
+            {isEditable && billingState === "invoice_draft" && !booking.client.isAccountHolder && (
               <Button
                 size="sm"
                 onClick={() => {
@@ -740,7 +795,7 @@ export function BookingDetailPage() {
                 Send Invoice
               </Button>
             )}
-            {isEditable && billingState === "awaiting_payment" && (
+            {isEditable && billingState === "awaiting_payment" && !booking.client.isAccountHolder && (
               <Button
                 size="sm"
                 onClick={() => setPaymentDialogOpen(true)}

@@ -22,6 +22,7 @@ interface ConversationThreadProps {
   onCreateBooking: (conversationId: string) => void;
   onSharePaymentLink: (invoiceId: string) => void;
   onCreateInvoice: (bookingId: string, conversationId: string) => void;
+  onApproveBooking: (bookingId: string, conversationId: string) => void;
   onResolve?: () => void;
   lastReadAtOnOpen?: string | null;
 }
@@ -33,6 +34,7 @@ export function ConversationThread({
   onCreateBooking,
   onSharePaymentLink,
   onCreateInvoice,
+  onApproveBooking,
   onResolve,
   lastReadAtOnOpen,
 }: ConversationThreadProps) {
@@ -116,6 +118,20 @@ export function ConversationThread({
     [conversation.invoices, conversation.id, onCreateInvoice]
   );
 
+  const getApproveBookingHandler = useCallback(
+    (comm: Communication) => {
+      if (!conversation.client.isAccountHolder) return undefined;
+      const event = comm.event;
+      if (!event || event.type !== "invoice_created" || !event.bookingId) return undefined;
+      const booking = conversation.bookings.find((b) => b.id === event.bookingId);
+      if (!booking || booking.status !== "draft") return undefined;
+      const bookingId = event.bookingId;
+      const convId = conversation.id;
+      return () => onApproveBooking(bookingId, convId);
+    },
+    [conversation.client.isAccountHolder, conversation.bookings, conversation.id, onApproveBooking]
+  );
+
   // On conversation open: scroll to divider or bottom
   useEffect(() => {
     prevMessageCountRef.current = allMessages.length;
@@ -185,7 +201,7 @@ export function ConversationThread({
         </div>
       )}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4">
-        <CommunicationTimeline communications={allMessages} getSharePaymentLinkHandler={getSharePaymentLinkHandler} getPaymentLinkData={getPaymentLinkData} getCreateInvoiceHandler={getCreateInvoiceHandler} lastReadAtOnOpen={lastReadAtOnOpen} newMessagesDividerRef={newMessagesDividerRef} />
+        <CommunicationTimeline communications={allMessages} getSharePaymentLinkHandler={getSharePaymentLinkHandler} getPaymentLinkData={getPaymentLinkData} getCreateInvoiceHandler={getCreateInvoiceHandler} getApproveBookingHandler={getApproveBookingHandler} lastReadAtOnOpen={lastReadAtOnOpen} newMessagesDividerRef={newMessagesDividerRef} />
       </div>
       <MessageComposer onSend={onSend} />
     </div>

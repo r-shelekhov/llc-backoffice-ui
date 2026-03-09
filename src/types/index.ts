@@ -6,6 +6,7 @@ export type BookingStatus =
   | "draft"
   | "awaiting_payment"
   | "paid"
+  | "approved"
   | "scheduled"
   | "in_progress"
   | "completed"
@@ -29,6 +30,7 @@ export type CommunicationEventType =
   | "web_form_submitted"
   | "booking_created"
   | "booking_status_changed"
+  | "booking_approved"
   | "invoice_created"
   | "invoice_sent"
   | "payment_confirmed"
@@ -52,6 +54,7 @@ export interface Client {
   phone?: string;
   company: string;
   isVip: boolean;
+  isAccountHolder: boolean;
   avatarUrl: string;
   createdAt: string;
   updatedAt: string;
@@ -213,6 +216,29 @@ export interface PaymentWithRelations extends Payment {
   booking: Booking;
 }
 
+export type StatementStatus = "open" | "closed" | "paid" | "overdue";
+
+export interface Statement {
+  id: string;
+  clientId: string;
+  period: string; // YYYY-MM
+  invoiceIds: string[];
+  subtotal: number;
+  taxAmount: number;
+  total: number;
+  paidAmount: number;
+  status: StatementStatus;
+  dueDate: string;
+  paidAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StatementWithRelations extends Statement {
+  client: Client;
+  invoices: InvoiceWithRelations[];
+}
+
 export interface ConversationFilterState {
   search: string;
   channels: Channel[];
@@ -243,6 +269,12 @@ export interface PaymentFilterState {
   statuses: PaymentStatus[];
   dateFrom: Date | null;
   dateTo: Date | null;
+}
+
+export interface StatementFilterState {
+  search: string;
+  statuses: StatementStatus[];
+  period: string | null;
 }
 
 export interface KpiData {

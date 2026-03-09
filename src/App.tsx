@@ -10,6 +10,7 @@ import { ClientsPage } from "@/pages/clients-page";
 import { ClientDetailPage } from "@/pages/client-detail-page";
 import { BillingPage } from "@/pages/billing-page";
 import { InvoiceDetailPage } from "@/pages/invoice-detail-page";
+import { StatementDetailPage } from "@/pages/statement-detail-page";
 import { AdminUsersPage } from "@/pages/admin-users-page";
 import { ProfilePage } from "@/pages/profile-page";
 import { NotFoundPage } from "@/pages/not-found-page";
@@ -41,6 +42,7 @@ export function App() {
             <Route path="clients" element={<ClientsPage />} />
             <Route path="clients/:id" element={<ClientDetailPage />} />
             <Route path="billing" element={<BillingPage />} />
+            <Route path="billing/statements/:id" element={<StatementDetailPage />} />
             <Route path="billing/:id" element={<InvoiceDetailPage />} />
             <Route path="invoices" element={<Navigate to="/billing" replace />} />
             <Route path="invoices/:id" element={<InvoiceRedirect />} />

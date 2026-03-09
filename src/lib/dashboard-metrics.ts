@@ -274,7 +274,8 @@ export function computeDashboardMetrics(input: DashboardInput): DashboardMetrics
     .map((b) => {
       const bookingInvoices = invoiceByBookingId.get(b.id) ?? [];
       const hasUnpaidInvoice = bookingInvoices.length === 0 || bookingInvoices.some((i) => i.status !== "paid");
-      const paymentRisk = b.status === "awaiting_payment" || hasUnpaidInvoice;
+      const isAccountHolder = clientMap.get(b.clientId)?.isAccountHolder ?? false;
+      const paymentRisk = !isAccountHolder && (b.status === "awaiting_payment" || hasUnpaidInvoice);
       const assignmentRisk = b.managerIds.length === 0;
       const linkedConv = convMap.get(b.conversationId);
       const slaRisk = linkedConv

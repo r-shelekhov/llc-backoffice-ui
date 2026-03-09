@@ -9,6 +9,7 @@ interface CommunicationTimelineProps {
   getSharePaymentLinkHandler?: (comm: Communication) => (() => void) | undefined;
   getPaymentLinkData?: (comm: Communication) => PaymentLinkData | undefined;
   getCreateInvoiceHandler?: (comm: Communication) => (() => void) | undefined;
+  getApproveBookingHandler?: (comm: Communication) => (() => void) | undefined;
   lastReadAtOnOpen?: string | null;
   newMessagesDividerRef?: React.RefObject<HTMLDivElement | null>;
 }
@@ -18,6 +19,7 @@ export function CommunicationTimeline({
   getSharePaymentLinkHandler,
   getPaymentLinkData,
   getCreateInvoiceHandler,
+  getApproveBookingHandler,
   lastReadAtOnOpen,
   newMessagesDividerRef,
 }: CommunicationTimelineProps) {
@@ -99,7 +101,7 @@ export function CommunicationTimeline({
                   <div className="flex-1 border-t border-primary/50" />
                 </div>
               )}
-              <CommunicationMessage communication={comm} onSharePaymentLink={getSharePaymentLinkHandler?.(comm)} paymentLinkData={getPaymentLinkData?.(comm)} onCreateInvoice={getCreateInvoiceHandler?.(comm)} />
+              <CommunicationMessage communication={comm} onSharePaymentLink={getSharePaymentLinkHandler?.(comm)} paymentLinkData={getPaymentLinkData?.(comm)} onCreateInvoice={getCreateInvoiceHandler?.(comm)} onApproveBooking={getApproveBookingHandler?.(comm)} />
             </div>
           ))}
         </div>

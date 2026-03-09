@@ -21,6 +21,7 @@ interface ClientFormDialogProps {
     phone?: string;
     company: string;
     isVip: boolean;
+    isAccountHolder: boolean;
     birthday?: string;
   }) => void;
 }
@@ -36,6 +37,7 @@ export function ClientFormDialog({
   const [phone, setPhone] = useState("");
   const [company, setCompany] = useState("");
   const [isVip, setIsVip] = useState(false);
+  const [isAccountHolder, setIsAccountHolder] = useState(false);
   const [birthday, setBirthday] = useState("");
 
   const isEdit = !!client;
@@ -47,6 +49,7 @@ export function ClientFormDialog({
       setPhone(client?.phone ?? "");
       setCompany(client?.company ?? "");
       setIsVip(client?.isVip ?? false);
+      setIsAccountHolder(client?.isAccountHolder ?? false);
       setBirthday(client?.birthday ?? "");
     }
   }, [open, client]);
@@ -60,6 +63,7 @@ export function ClientFormDialog({
       phone: phone.trim() || undefined,
       company: company.trim(),
       isVip,
+      isAccountHolder,
       birthday: birthday || undefined,
     });
   }
@@ -129,6 +133,14 @@ export function ClientFormDialog({
               onCheckedChange={(checked) => setIsVip(checked === true)}
             />
             VIP Client
+          </label>
+
+          <label className="flex items-center gap-2 text-sm">
+            <Checkbox
+              checked={isAccountHolder}
+              onCheckedChange={(checked) => setIsAccountHolder(checked === true)}
+            />
+            Account Holder (Monthly Billing)
           </label>
 
           <DialogFooter>

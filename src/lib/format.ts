@@ -1,4 +1,4 @@
-import { format, formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow, parse } from "date-fns";
 
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat("en-GB", {
@@ -65,4 +65,10 @@ export function formatDuration(ms: number): string {
   const days = Math.floor(hours / 24);
   const remainingHours = hours % 24;
   return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days}d`;
+}
+
+/** "2026-03" → "March 2026" */
+export function formatPeriod(period: string): string {
+  const date = parse(period, "yyyy-MM", new Date());
+  return format(date, "MMMM yyyy");
 }

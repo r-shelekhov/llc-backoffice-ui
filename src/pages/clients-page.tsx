@@ -135,6 +135,7 @@ export function ClientsPage() {
     phone?: string;
     company: string;
     isVip: boolean;
+    isAccountHolder: boolean;
     birthday?: string;
   }) {
     if (editingClient) {

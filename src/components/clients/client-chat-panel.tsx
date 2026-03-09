@@ -18,6 +18,7 @@ interface ClientChatPanelProps {
   onSend: (conversationId: string, message: string, attachments?: Attachment[]) => void;
   onSharePaymentLink: (conversationId: string, invoiceId: string) => void;
   onCreateInvoice: (conversationId: string, bookingId: string) => void;
+  onApproveBooking: (conversationId: string, bookingId: string) => void;
   onMarkRead: (conversationId: string) => void;
 }
 
@@ -29,6 +30,7 @@ export function ClientChatPanel({
   onSend,
   onSharePaymentLink,
   onCreateInvoice,
+  onApproveBooking,
   onMarkRead,
 }: ClientChatPanelProps) {
   const availableChannels = useMemo(
@@ -117,6 +119,21 @@ export function ClientChatPanel({
     [activeConversation, onCreateInvoice]
   );
 
+  const getApproveBookingHandler = useCallback(
+    (comm: Communication) => {
+      if (!activeConversation) return undefined;
+      if (!activeConversation.client.isAccountHolder) return undefined;
+      const event = comm.event;
+      if (!event || event.type !== "invoice_created" || !event.bookingId) return undefined;
+      const booking = activeConversation.bookings.find((b) => b.id === event.bookingId);
+      if (!booking || booking.status !== "draft") return undefined;
+      const convId = activeConversation.id;
+      const bookingId = event.bookingId;
+      return () => onApproveBooking(convId, bookingId);
+    },
+    [activeConversation, onApproveBooking]
+  );
+
   // On conversation change: scroll to divider or bottom + mark read
   useEffect(() => {
     if (!activeConversation) return;
@@ -194,6 +211,7 @@ export function ClientChatPanel({
             getSharePaymentLinkHandler={getSharePaymentLinkHandler}
             getPaymentLinkData={getPaymentLinkData}
             getCreateInvoiceHandler={getCreateInvoiceHandler}
+            getApproveBookingHandler={getApproveBookingHandler}
             lastReadAtOnOpen={lastReadAtOnOpen[activeConversation.id]}
             newMessagesDividerRef={newMessagesDividerRef}
           />

@@ -31,7 +31,7 @@ A person is either a **lead** or a **client**:
 
 A booking has "paid evidence" if ANY of these is true:
 
-1. **Booking status** is one of: `paid`, `scheduled`, `in_progress`, `completed`
+1. **Booking status** is one of: `paid`, `approved`, `scheduled`, `in_progress`, `completed`
 2. **Invoice** linked to the booking has status `paid`
 3. **Payment** linked to the booking's invoice has status `succeeded` or `refunded`
 
@@ -46,6 +46,40 @@ Statuses that are NOT paid evidence:
 - Promotion is one-way: a client never reverts to lead
 - **Key implication**: if ALL of a person's bookings are `draft` / `awaiting_payment` / `cancelled`, they are a LEAD
 
+## Account Holders
+
+Clients with `isAccountHolder: true` use deferred monthly billing instead of per-booking upfront payment.
+
+### Designation
+- Set via `client.isAccountHolder` flag (toggled in client form, like VIP)
+- Typically corporate/VIP clients with established billing relationships
+
+### Modified Booking Flow
+```
+draft → approved → scheduled → in_progress → completed
+  ↘ cancelled   ↘ cancelled
+```
+- After invoice is created, manager clicks "Approve Booking" (instead of "Send Invoice" / "Confirm Payment")
+- `approved` sets booking status to `approved`, invoice remains `sent`
+- Payment happens via monthly statement, not per-booking
+- `approved` counts as paid evidence for lifecycle (lead → client promotion)
+
+### Statement Lifecycle
+```
+open → closed → paid
+              → overdue
+```
+- `open`: current month, accumulating invoices
+- `closed`: month ended, statement finalized
+- `paid`: full payment received
+- `overdue`: past due date, unpaid
+
+### Monthly Statements
+- Each account holder gets one statement per month
+- Individual invoices are still created per booking (deferred payment)
+- Statement consolidates all invoices for the period
+- "Confirm Payment" applies to the whole statement
+
 ## Booking Statuses (`src/lib/constants.ts`)
 
 ### Flow
@@ -53,15 +87,17 @@ Statuses that are NOT paid evidence:
 ```
 draft → awaiting_payment → paid → scheduled → in_progress → completed
   ↘ cancelled    ↘ cancelled   ↘ cancelled  ↘ cancelled   ↘ cancelled
+  ↘ approved → scheduled (account holders)
 ```
 
 ### Exact Transitions (`BOOKING_STATUS_TRANSITIONS`)
 
 | From | Allowed transitions |
 |------|-------------------|
-| `draft` | `awaiting_payment`, `cancelled` |
+| `draft` | `awaiting_payment`, `approved`, `cancelled` |
 | `awaiting_payment` | `paid`, `cancelled` |
 | `paid` | `cancelled` |
+| `approved` | `scheduled`, `cancelled` |
 | `scheduled` | `in_progress`, `cancelled` |
 | `in_progress` | `completed`, `cancelled` |
 | `completed` | _(terminal)_ |
@@ -76,6 +112,7 @@ Note: transition from `paid` → `scheduled` is not in `BOOKING_STATUS_TRANSITIO
 | `draft` | New |
 | `awaiting_payment` | Awaiting Payment |
 | `paid` | Paid |
+| `approved` | Approved |
 | `scheduled` | Scheduled |
 | `in_progress` | Active |
 | `completed` | Completed |
@@ -137,6 +174,7 @@ Tags shown on conversation tiles to indicate required actions:
 | `web_form_submitted` | Client submits a web form |
 | `booking_created` | New booking created |
 | `booking_status_changed` | Booking status transition |
+| `booking_approved` | Booking approved for account holder (deferred payment) |
 | `invoice_created` | Invoice generated |
 | `invoice_sent` | Invoice sent to client |
 | `payment_confirmed` | Payment received |

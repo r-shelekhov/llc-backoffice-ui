@@ -1,4 +1,4 @@
-import type { ConversationWithRelations, BookingWithRelations, InvoiceWithRelations, PaymentWithRelations } from "@/types";
+import type { ConversationWithRelations, BookingWithRelations, InvoiceWithRelations, PaymentWithRelations, StatementWithRelations } from "@/types";
 import { computeSlaState } from "@/lib/sla";
 import { getClientIdsWithPaidBookings, resolveLifecycleStatus } from "@/lib/client-lifecycle";
 
@@ -10,6 +10,7 @@ export { communications } from "./communications";
 export { internalNotes } from "./internal-notes";
 export { invoices } from "./invoices";
 export { payments } from "./payments";
+export { statements } from "./statements";
 
 import { users } from "./users";
 import { clients } from "./clients";
@@ -19,6 +20,7 @@ import { communications } from "./communications";
 import { internalNotes } from "./internal-notes";
 import { invoices } from "./invoices";
 import { payments } from "./payments";
+import { statements } from "./statements";
 
 export function getConversationWithRelations(conversationId: string): ConversationWithRelations | null {
   const conversation = conversations.find((c) => c.id === conversationId);
@@ -132,4 +134,26 @@ export function getAllPaymentsWithRelations(): PaymentWithRelations[] {
   return payments
     .map((p) => getPaymentWithRelations(p.id))
     .filter((p): p is PaymentWithRelations => p !== null);
+}
+
+export function getStatementWithRelations(statementId: string): StatementWithRelations | null {
+  const statement = statements.find((s) => s.id === statementId);
+  if (!statement) return null;
+
+  const client = clients.find((c) => c.id === statement.clientId) ?? null;
+  const statementInvoices = statement.invoiceIds
+    .map((invId) => getInvoiceWithRelations(invId))
+    .filter((i): i is InvoiceWithRelations => i !== null);
+
+  return {
+    ...statement,
+    client: client!,
+    invoices: statementInvoices,
+  };
+}
+
+export function getAllStatementsWithRelations(): StatementWithRelations[] {
+  return statements
+    .map((s) => getStatementWithRelations(s.id))
+    .filter((s): s is StatementWithRelations => s !== null);
 }

@@ -1,9 +1,10 @@
-import type { BookingStatus, InvoiceStatus, PaymentStatus, PaymentMethod, Role, Channel, ServiceType, SlaState, Priority, DeliveryStatus, LifecycleStatus } from "@/types";
+import type { BookingStatus, InvoiceStatus, PaymentStatus, PaymentMethod, Role, Channel, ServiceType, SlaState, Priority, DeliveryStatus, LifecycleStatus, StatementStatus } from "@/types";
 
 export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
   draft: "New",
   awaiting_payment: "Awaiting Payment",
   paid: "Paid",
+  approved: "Approved",
   scheduled: "Scheduled",
   in_progress: "Active",
   completed: "Completed",
@@ -14,6 +15,7 @@ export const BOOKING_STATUS_ACTION_LABELS: Record<BookingStatus, string> = {
   draft: "New",
   awaiting_payment: "Send for Payment",
   paid: "Mark as Paid",
+  approved: "Approve",
   scheduled: "Schedule",
   in_progress: "Start",
   completed: "Complete",
@@ -88,6 +90,7 @@ export const BOOKING_STATUS_COLORS: Record<BookingStatus, string> = {
   draft: "bg-tone-neutral-light text-tone-neutral-foreground",
   awaiting_payment: "bg-tone-warning-light text-tone-warning-foreground",
   paid: "bg-tone-success-light text-tone-success-foreground",
+  approved: "bg-tone-info-light text-tone-info-foreground",
   scheduled: "bg-tone-info-light text-tone-info-foreground",
   in_progress: "bg-tone-purple-light text-tone-purple-foreground",
   completed: "bg-tone-success-light text-tone-success-foreground",
@@ -127,10 +130,25 @@ export const LIFECYCLE_AVATAR_COLORS: Record<LifecycleStatus, string> = {
   lead: "bg-tone-neutral-pastel text-tone-neutral-foreground",
 };
 
+export const STATEMENT_STATUS_LABELS: Record<StatementStatus, string> = {
+  open: "Open",
+  closed: "Closed",
+  paid: "Paid",
+  overdue: "Overdue",
+};
+
+export const STATEMENT_STATUS_COLORS: Record<StatementStatus, string> = {
+  open: "bg-tone-info-light text-tone-info-foreground",
+  closed: "bg-tone-warning-light text-tone-warning-foreground",
+  paid: "bg-tone-success-light text-tone-success-foreground",
+  overdue: "bg-tone-danger-light text-tone-danger-foreground",
+};
+
 export const BOOKING_STATUS_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
-  draft: ["awaiting_payment", "cancelled"],
+  draft: ["awaiting_payment", "approved", "cancelled"],
   awaiting_payment: ["paid", "cancelled"],
   paid: ["cancelled"],
+  approved: ["scheduled", "cancelled"],
   scheduled: ["in_progress", "cancelled"],
   in_progress: ["completed", "cancelled"],
   completed: [],

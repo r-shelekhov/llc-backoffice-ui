@@ -220,6 +220,70 @@ export function ClientDetailPage() {
     [clientConversationsByChannel]
   );
 
+  const handleChatApproveBooking = useCallback(
+    (conversationId: string, bookingId: string) => {
+      const booking = bookings.find((b) => b.id === bookingId);
+      if (!booking || booking.status !== "draft") return;
+
+      const conv = [...clientConversationsByChannel.values()].find((c) => c.id === conversationId);
+      const channel = conv?.channel ?? "web";
+      const fromStatus = booking.status;
+
+      booking.status = "approved";
+      booking.updatedAt = new Date().toISOString();
+
+      const approvedComm: Communication = {
+        id: `sys-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        conversationId,
+        sender: "system",
+        senderName: "System",
+        channel,
+        message: "Booking approved — payment deferred to monthly statement.",
+        event: {
+          type: "booking_approved",
+          bookingId: booking.id,
+          title: booking.title,
+        },
+        createdAt: new Date().toISOString(),
+      };
+      communications.push(approvedComm);
+      if (conv) conv.communications.push(approvedComm);
+
+      const statusComm: Communication = {
+        id: `sys-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        conversationId,
+        sender: "system",
+        senderName: "System",
+        channel,
+        message: `Booking status changed from ${fromStatus} to approved`,
+        event: {
+          type: "booking_status_changed",
+          bookingId: booking.id,
+          fromStatus,
+          toStatus: "approved",
+        },
+        createdAt: new Date().toISOString(),
+      };
+      communications.push(statusComm);
+      if (conv) conv.communications.push(statusComm);
+
+      // Auto-schedule if conditions met
+      if (booking.managerIds.length > 0 && booking.executionAt !== "") {
+        booking.status = "scheduled";
+      }
+
+      // Send invoice if draft
+      const invoice = invoices.find((i) => i.bookingId === bookingId && i.status === "draft");
+      if (invoice) {
+        invoice.status = "sent";
+        invoice.updatedAt = new Date().toISOString();
+      }
+
+      forceUpdate((n) => n + 1);
+    },
+    [clientConversationsByChannel]
+  );
+
   const handleAddNote = (content: string) => {
     const note = {
       id: `note-client-${Date.now()}`,
@@ -255,6 +319,7 @@ export function ClientDetailPage() {
     phone?: string;
     company: string;
     isVip: boolean;
+    isAccountHolder: boolean;
   }) => {
     const idx = clients.findIndex((c) => c.id === client.id);
     if (idx !== -1) {
@@ -342,6 +407,7 @@ export function ClientDetailPage() {
           onSend={handleChatSend}
           onSharePaymentLink={handleChatSharePaymentLink}
           onCreateInvoice={handleChatCreateInvoice}
+          onApproveBooking={handleChatApproveBooking}
           onMarkRead={markConversationRead}
         />
       </div>

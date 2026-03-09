@@ -2,6 +2,7 @@ import type { Booking, Invoice, Payment, Client, LifecycleStatus } from "@/types
 
 const PAID_BOOKING_STATUSES: Booking["status"][] = [
   "paid",
+  "approved",
   "scheduled",
   "in_progress",
   "completed",
