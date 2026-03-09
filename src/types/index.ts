@@ -26,6 +26,9 @@ export type SlaState = "on_track" | "at_risk" | "breached";
 
 export type DeliveryStatus = "sent" | "delivered" | "read";
 
+export type CallDirection = "inbound" | "outbound";
+export type CallOutcome = "answered" | "missed" | "voicemail" | "no_answer";
+
 export type CommunicationEventType =
   | "web_form_submitted"
   | "booking_created"
@@ -34,7 +37,8 @@ export type CommunicationEventType =
   | "invoice_created"
   | "invoice_sent"
   | "payment_confirmed"
-  | "conversation_resolved";
+  | "conversation_resolved"
+  | "call_logged";
 
 export interface User {
   id: string;
@@ -108,6 +112,13 @@ export interface Communication {
   message: string;
   deliveryStatus?: DeliveryStatus;
   attachments?: Attachment[];
+
+  call?: {
+    direction: CallDirection;
+    outcome: CallOutcome;
+    duration?: number; // seconds, undefined if missed/no_answer
+    notes?: string; // agent notes about the call
+  };
 
   event?: {
     type: CommunicationEventType;

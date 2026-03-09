@@ -184,6 +184,12 @@ Tags shown on conversation tiles to indicate required actions:
 
 `phone`, `email`, `whatsapp`, `web`, `concierge`
 
+### Phone channel
+
+Voice-only — displays call log (inbound/outbound/missed). No text composer.
+Each call entry shows: direction, outcome, duration, summary, and agent notes.
+System events (booking created, invoice sent, etc.) still appear inline.
+
 ## SLA (`src/lib/sla.ts`)
 
 | State | Condition |

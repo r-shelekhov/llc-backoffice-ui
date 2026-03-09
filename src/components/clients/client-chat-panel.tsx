@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import type { Attachment, Channel, Communication, ConversationWithRelations } from "@/types";
+import { CallLogEntry } from "@/components/clients/call-log-entry";
+import { CommunicationMessage } from "@/components/conversation-detail/communication-message";
 import { CommunicationTimeline } from "@/components/conversation-detail/communication-timeline";
 import type { PaymentLinkData } from "@/components/conversation-detail/service-message";
 import { MessageComposer } from "@/components/inbox/message-composer";
@@ -53,8 +55,12 @@ export function ClientChatPanel({
   const allMessages = useMemo(() => {
     if (!activeConversation) return [];
     const local = localMessages.get(activeConversation.id) ?? [];
-    return [...activeConversation.communications, ...local];
-  }, [activeConversation, localMessages]);
+    const all = [...activeConversation.communications, ...local];
+    if (activeChannel === "phone") {
+      return all.filter((m) => m.channel === "phone");
+    }
+    return all;
+  }, [activeConversation, localMessages, activeChannel]);
 
   const getSharePaymentLinkHandler = useCallback(
     (comm: Communication) => {
@@ -184,7 +190,7 @@ export function ClientChatPanel({
   }
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       <div className="shrink-0 border-b">
         <Tabs
           value={activeChannel ?? undefined}
@@ -204,8 +210,18 @@ export function ClientChatPanel({
         </Tabs>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4">
-        {activeConversation && (
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 pb-8">
+        {activeConversation && activeChannel === "phone" ? (
+          <div className="space-y-3">
+            {allMessages.map((comm) =>
+              comm.call ? (
+                <CallLogEntry key={comm.id} communication={comm} />
+              ) : (
+                <CommunicationMessage key={comm.id} communication={comm} />
+              )
+            )}
+          </div>
+        ) : activeConversation ? (
           <CommunicationTimeline
             communications={allMessages}
             getSharePaymentLinkHandler={getSharePaymentLinkHandler}
@@ -215,10 +231,10 @@ export function ClientChatPanel({
             lastReadAtOnOpen={lastReadAtOnOpen[activeConversation.id]}
             newMessagesDividerRef={newMessagesDividerRef}
           />
-        )}
+        ) : null}
       </div>
 
-      <MessageComposer onSend={handleSend} />
+      {activeChannel !== "phone" && <MessageComposer onSend={handleSend} />}
     </div>
   );
 }

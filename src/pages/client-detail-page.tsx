@@ -363,7 +363,7 @@ export function ClientDetailPage() {
   return (
     <div className="flex h-full">
       {/* Center: main content area */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <div className="flex items-center border-b px-4 py-2">
           <Button variant="ghost" size="sm" className="-ml-2 h-7 text-xs" asChild>
             <Link to={backUrl}>
