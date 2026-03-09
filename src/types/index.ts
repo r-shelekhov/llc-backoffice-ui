@@ -302,3 +302,13 @@ export type SortField = "last_activity" | "date_started" | "priority" | "waiting
 export type SortDirection = "asc" | "desc";
 
 export type LifecycleStatus = "lead" | "client";
+
+export type RelationshipType = "family" | "colleague" | "pa_assistant" | "other";
+
+export interface ClientRelation {
+  id: string;
+  clientIdA: string;
+  clientIdB: string;
+  type: RelationshipType;
+  createdAt: string;
+}

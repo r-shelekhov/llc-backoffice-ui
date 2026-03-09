@@ -1,7 +1,8 @@
-import type { Booking, Client, InternalNote, User } from "@/types";
+import type { Booking, Client, InternalNote, User, RelationshipType } from "@/types";
 import { formatDate, formatCurrency } from "@/lib/format";
 import { InternalNotesPanel } from "@/components/conversation-detail/internal-notes-panel";
 import { ClientBookingsSummary } from "./client-bookings-summary";
+import { RelatedClientsSection } from "./related-clients-section";
 
 interface ClientSidebarProps {
   client: Client;
@@ -13,6 +14,8 @@ interface ClientSidebarProps {
   onAddNote: (content: string) => void;
   onEditNote: (noteId: string, content: string) => void;
   onDeleteNote: (noteId: string) => void;
+  onAddRelation: (relatedClientId: string, type: RelationshipType) => void;
+  onRemoveRelation: (relationId: string) => void;
 }
 
 export function ClientSidebar({
@@ -25,6 +28,8 @@ export function ClientSidebar({
   onAddNote,
   onEditNote,
   onDeleteNote,
+  onAddRelation,
+  onRemoveRelation,
 }: ClientSidebarProps) {
   return (
     <div className="space-y-0">
@@ -101,6 +106,13 @@ export function ClientSidebar({
           </div>
         </div>
       </div>
+
+      {/* Related Clients */}
+      <RelatedClientsSection
+        clientId={client.id}
+        onAddRelation={onAddRelation}
+        onRemoveRelation={onRemoveRelation}
+      />
 
       {/* Bookings */}
       <div className="border-b p-4">

@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useRef } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { clients, bookings, invoices, payments, conversations, communications, internalNotes, getAllConversationsWithRelations } from "@/lib/mock-data";
+import { clients, bookings, invoices, payments, conversations, communications, internalNotes, getAllConversationsWithRelations, clientRelations } from "@/lib/mock-data";
 import { formatCurrency, getInitials } from "@/lib/format";
 import { getClientIdsWithPaidBookings, resolveLifecycleStatus } from "@/lib/client-lifecycle";
 import { canViewClient } from "@/lib/permissions";
@@ -22,7 +22,7 @@ import { ClientSidebar } from "@/components/clients/client-sidebar";
 import { ClientFormDialog } from "@/components/clients/client-form-dialog";
 import { DeleteClientDialog } from "@/components/clients/delete-client-dialog";
 import { ClientChatPanel } from "@/components/clients/client-chat-panel";
-import type { Attachment, Channel, Communication, ConversationWithRelations } from "@/types";
+import type { Attachment, Channel, Communication, ConversationWithRelations, RelationshipType } from "@/types";
 
 export function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -284,6 +284,23 @@ export function ClientDetailPage() {
     [clientConversationsByChannel]
   );
 
+  const handleAddRelation = (relatedClientId: string, type: RelationshipType) => {
+    clientRelations.push({
+      id: `rel-${Date.now()}`,
+      clientIdA: client.id,
+      clientIdB: relatedClientId,
+      type,
+      createdAt: new Date().toISOString(),
+    });
+    forceUpdate((n) => n + 1);
+  };
+
+  const handleRemoveRelation = (relationId: string) => {
+    const idx = clientRelations.findIndex((r) => r.id === relationId);
+    if (idx !== -1) clientRelations.splice(idx, 1);
+    forceUpdate((n) => n + 1);
+  };
+
   const handleAddNote = (content: string) => {
     const note = {
       id: `note-client-${Date.now()}`,
@@ -424,6 +441,8 @@ export function ClientDetailPage() {
           onAddNote={handleAddNote}
           onEditNote={handleEditNote}
           onDeleteNote={handleDeleteNote}
+          onAddRelation={handleAddRelation}
+          onRemoveRelation={handleRemoveRelation}
         />
       </div>
 

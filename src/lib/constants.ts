@@ -1,4 +1,4 @@
-import type { BookingStatus, InvoiceStatus, PaymentStatus, PaymentMethod, Role, Channel, ServiceType, SlaState, Priority, DeliveryStatus, LifecycleStatus, StatementStatus } from "@/types";
+import type { BookingStatus, InvoiceStatus, PaymentStatus, PaymentMethod, Role, Channel, ServiceType, SlaState, Priority, DeliveryStatus, LifecycleStatus, StatementStatus, RelationshipType } from "@/types";
 
 export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
   draft: "New",
@@ -142,6 +142,13 @@ export const STATEMENT_STATUS_COLORS: Record<StatementStatus, string> = {
   closed: "bg-tone-warning-light text-tone-warning-foreground",
   paid: "bg-tone-success-light text-tone-success-foreground",
   overdue: "bg-tone-danger-light text-tone-danger-foreground",
+};
+
+export const RELATIONSHIP_TYPE_LABELS: Record<RelationshipType, string> = {
+  family: "Family",
+  colleague: "Colleague",
+  pa_assistant: "PA / Assistant",
+  other: "Other",
 };
 
 export const BOOKING_STATUS_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {

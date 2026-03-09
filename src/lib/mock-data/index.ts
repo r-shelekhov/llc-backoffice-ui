@@ -1,4 +1,4 @@
-import type { ConversationWithRelations, BookingWithRelations, InvoiceWithRelations, PaymentWithRelations, StatementWithRelations } from "@/types";
+import type { ConversationWithRelations, BookingWithRelations, InvoiceWithRelations, PaymentWithRelations, StatementWithRelations, Client, ClientRelation, RelationshipType } from "@/types";
 import { computeSlaState } from "@/lib/sla";
 import { getClientIdsWithPaidBookings, resolveLifecycleStatus } from "@/lib/client-lifecycle";
 
@@ -11,6 +11,7 @@ export { internalNotes } from "./internal-notes";
 export { invoices } from "./invoices";
 export { payments } from "./payments";
 export { statements } from "./statements";
+export { clientRelations } from "./client-relations";
 
 import { users } from "./users";
 import { clients } from "./clients";
@@ -21,6 +22,7 @@ import { internalNotes } from "./internal-notes";
 import { invoices } from "./invoices";
 import { payments } from "./payments";
 import { statements } from "./statements";
+import { clientRelations } from "./client-relations";
 
 export function getConversationWithRelations(conversationId: string): ConversationWithRelations | null {
   const conversation = conversations.find((c) => c.id === conversationId);
@@ -156,4 +158,16 @@ export function getAllStatementsWithRelations(): StatementWithRelations[] {
   return statements
     .map((s) => getStatementWithRelations(s.id))
     .filter((s): s is StatementWithRelations => s !== null);
+}
+
+export function getRelatedClients(clientId: string): { relation: ClientRelation; relatedClient: Client; type: RelationshipType }[] {
+  return clientRelations
+    .filter((r) => r.clientIdA === clientId || r.clientIdB === clientId)
+    .map((r) => {
+      const otherId = r.clientIdA === clientId ? r.clientIdB : r.clientIdA;
+      const relatedClient = clients.find((c) => c.id === otherId);
+      if (!relatedClient) return null;
+      return { relation: r, relatedClient, type: r.type };
+    })
+    .filter((r): r is { relation: ClientRelation; relatedClient: Client; type: RelationshipType } => r !== null);
 }
