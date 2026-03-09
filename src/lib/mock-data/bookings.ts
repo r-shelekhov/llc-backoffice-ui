@@ -112,7 +112,7 @@ export const bookings: Booking[] = [
     conversationId: "conv-2",
     clientId: "cli-1",
     managerIds: ["usr-3"],
-    status: "awaiting_payment",
+    status: "approved",
     title: "G650 Charter - London to Newcastle",
     category: "Private Jet",
     duration: "1 hour 15 minutes",

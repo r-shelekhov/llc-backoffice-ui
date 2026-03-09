@@ -62,6 +62,7 @@ export function ConversationThread({
 
   const getSharePaymentLinkHandler = useCallback(
     (comm: Communication) => {
+      if (conversation.client.isAccountHolder) return undefined;
       const event = comm.event;
       if (!event) return undefined;
       if (event.type !== "invoice_created" && event.type !== "invoice_sent") return undefined;
@@ -77,11 +78,12 @@ export function ConversationThread({
       const invoiceId = invoice.id;
       return () => onSharePaymentLink(invoiceId);
     },
-    [conversation.invoices, onSharePaymentLink]
+    [conversation.client.isAccountHolder, conversation.invoices, onSharePaymentLink]
   );
 
   const getPaymentLinkData = useCallback(
     (comm: Communication): PaymentLinkData | undefined => {
+      if (conversation.client.isAccountHolder) return undefined;
       const event = comm.event;
       if (!event) return undefined;
       if (event.type !== "invoice_created" && event.type !== "invoice_sent") return undefined;
@@ -102,7 +104,7 @@ export function ConversationThread({
         clientEmail: conversation.client.email ?? "",
       };
     },
-    [conversation.invoices, conversation.client]
+    [conversation.client.isAccountHolder, conversation.invoices, conversation.client]
   );
 
   const getCreateInvoiceHandler = useCallback(

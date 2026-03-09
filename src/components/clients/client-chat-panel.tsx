@@ -65,6 +65,7 @@ export function ClientChatPanel({
   const getSharePaymentLinkHandler = useCallback(
     (comm: Communication) => {
       if (!activeConversation) return undefined;
+      if (activeConversation.client.isAccountHolder) return undefined;
       const event = comm.event;
       if (!event) return undefined;
       if (event.type !== "invoice_created" && event.type !== "invoice_sent")
@@ -88,6 +89,7 @@ export function ClientChatPanel({
   const getPaymentLinkData = useCallback(
     (comm: Communication): PaymentLinkData | undefined => {
       if (!activeConversation) return undefined;
+      if (activeConversation.client.isAccountHolder) return undefined;
       const event = comm.event;
       if (!event) return undefined;
       if (event.type !== "invoice_created" && event.type !== "invoice_sent") return undefined;
