@@ -1,6 +1,13 @@
 import { useState, useMemo, useCallback, useRef } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { BookingCreateForm } from "@/components/bookings/booking-create-form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { clients, bookings, invoices, payments, conversations, communications, internalNotes, getAllConversationsWithRelations, clientRelations } from "@/lib/mock-data";
 import { formatCurrency, getInitials } from "@/lib/format";
@@ -22,16 +29,17 @@ import { ClientSidebar } from "@/components/clients/client-sidebar";
 import { ClientFormDialog } from "@/components/clients/client-form-dialog";
 import { DeleteClientDialog } from "@/components/clients/delete-client-dialog";
 import { ClientChatPanel } from "@/components/clients/client-chat-panel";
-import type { Attachment, Channel, Communication, ConversationWithRelations, RelationshipType } from "@/types";
+import type { Attachment, Booking, Channel, Communication, ConversationWithRelations, RelationshipType } from "@/types";
 
 export function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { currentUser, allUsers, conversationLastReadAt, markConversationRead } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [, forceUpdate] = useState(0);
+  const [updateCounter, forceUpdate] = useState(0);
   const [formOpen, setFormOpen] = useState(false);
   const [deletingOpen, setDeletingOpen] = useState(false);
+  const [createBookingConvId, setCreateBookingConvId] = useState<string | null>(null);
 
   const fromConversation = location.state?.from === "conversation"
     ? (location.state.conversationId as string)
@@ -67,7 +75,7 @@ export function ClientDetailPage() {
       }
     }
     return byChannel;
-  }, [client.id]);
+  }, [client.id, updateCounter]);
 
   const [localMessages, setLocalMessages] = useState<Map<string, Communication[]>>(new Map());
 
@@ -284,6 +292,90 @@ export function ClientDetailPage() {
     [clientConversationsByChannel]
   );
 
+  const handleResolve = useCallback(
+    (conversationId: string) => {
+      const now = new Date().toISOString();
+
+      // Update source conversation
+      const srcConv = conversations.find((c) => c.id === conversationId);
+      if (srcConv) {
+        srcConv.resolvedAt = now;
+        srcConv.resolvedBy = currentUser.id;
+        srcConv.updatedAt = now;
+      }
+
+      // Push system communication
+      const conv = [...clientConversationsByChannel.values()].find((c) => c.id === conversationId);
+      const systemComm: Communication = {
+        id: `sys-resolve-${Date.now()}`,
+        conversationId,
+        sender: "system",
+        senderName: currentUser.name,
+        channel: conv?.channel ?? "web",
+        message: "Conversation resolved",
+        event: { type: "conversation_resolved" },
+        createdAt: now,
+      };
+      communications.push(systemComm);
+
+      // Update in-memory snapshot
+      if (conv) {
+        conv.resolvedAt = now;
+        conv.resolvedBy = currentUser.id;
+        conv.updatedAt = now;
+        conv.communications.push(systemComm);
+      }
+
+      forceUpdate((n) => n + 1);
+    },
+    [clientConversationsByChannel, currentUser]
+  );
+
+  const createBookingConversation = createBookingConvId
+    ? [...clientConversationsByChannel.values()].find((c) => c.id === createBookingConvId) ?? null
+    : null;
+
+  const handleBookingCreated = useCallback(
+    (booking: Booking) => {
+      if (!createBookingConvId) return;
+      setCreateBookingConvId(null);
+
+      const conv = [...clientConversationsByChannel.values()].find((c) => c.id === createBookingConvId);
+      const systemComm: Communication = {
+        id: `sys-${Date.now()}`,
+        conversationId: createBookingConvId,
+        sender: "system",
+        senderName: "System",
+        channel: conv?.channel ?? "web",
+        message: `Booking created: ${booking.title}`,
+        event: {
+          type: "booking_created",
+          bookingId: booking.id,
+          title: booking.title,
+          category: booking.category,
+          executionAt: booking.executionAt,
+          location: booking.location,
+          price: booking.price,
+        },
+        createdAt: new Date().toISOString(),
+      };
+      communications.push(systemComm);
+      // Clear resolved status — booking creation reopens the conversation
+      const srcConv = conversations.find((c) => c.id === createBookingConvId);
+      if (srcConv) {
+        srcConv.resolvedAt = undefined;
+        srcConv.resolvedBy = undefined;
+      }
+      if (conv) {
+        conv.resolvedAt = undefined;
+        conv.resolvedBy = undefined;
+        conv.communications.push(systemComm);
+      }
+      forceUpdate((n) => n + 1);
+    },
+    [createBookingConvId, clientConversationsByChannel]
+  );
+
   const handleAddRelation = (relatedClientId: string, type: RelationshipType) => {
     clientRelations.push({
       id: `rel-${Date.now()}`,
@@ -426,6 +518,8 @@ export function ClientDetailPage() {
           onCreateInvoice={handleChatCreateInvoice}
           onApproveBooking={handleChatApproveBooking}
           onMarkRead={markConversationRead}
+          onResolve={handleResolve}
+          onCreateBooking={(convId) => setCreateBookingConvId(convId)}
         />
       </div>
 
@@ -461,6 +555,26 @@ export function ClientDetailPage() {
           onConfirm={handleConfirmDelete}
         />
       )}
+
+      <Dialog
+        open={!!createBookingConvId}
+        onOpenChange={(open) => {
+          if (!open) setCreateBookingConvId(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>Create Booking</DialogTitle>
+          </DialogHeader>
+          {createBookingConversation && (
+            <BookingCreateForm
+              conversation={createBookingConversation}
+              onSubmit={handleBookingCreated}
+              onCancel={() => setCreateBookingConvId(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

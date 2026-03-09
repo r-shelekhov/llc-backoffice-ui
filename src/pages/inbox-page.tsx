@@ -639,8 +639,16 @@ export function InboxPage({ myConversationsOnly }: InboxPageProps = {}) {
       // Persist into the source mock data so it survives navigation
       communications.push(systemComm);
       // Also push into the current snapshot so it's visible immediately
+      // Clear resolved status — booking creation reopens the conversation
+      const srcConv = sourceConversations.find((c) => c.id === createBookingConvId);
+      if (srcConv) {
+        srcConv.resolvedAt = undefined;
+        srcConv.resolvedBy = undefined;
+      }
       const convWR = allConversations.find((c) => c.id === createBookingConvId);
       if (convWR) {
+        convWR.resolvedAt = undefined;
+        convWR.resolvedBy = undefined;
         convWR.communications.push(systemComm);
       }
       forceUpdate((n) => n + 1);

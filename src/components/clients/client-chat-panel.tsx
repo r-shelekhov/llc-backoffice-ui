@@ -6,7 +6,9 @@ import { CommunicationTimeline } from "@/components/conversation-detail/communic
 import type { PaymentLinkData } from "@/components/conversation-detail/service-message";
 import { MessageComposer } from "@/components/inbox/message-composer";
 import { ChannelIcon } from "@/components/shared/channel-icon";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CheckCircle2, Plus } from "lucide-react";
 import { CHANNEL_LABELS } from "@/lib/constants";
 import { isConversationUnread } from "@/lib/unread";
 
@@ -22,6 +24,8 @@ interface ClientChatPanelProps {
   onCreateInvoice: (conversationId: string, bookingId: string) => void;
   onApproveBooking: (conversationId: string, bookingId: string) => void;
   onMarkRead: (conversationId: string) => void;
+  onResolve?: (conversationId: string) => void;
+  onCreateBooking?: (conversationId: string) => void;
 }
 
 export function ClientChatPanel({
@@ -34,6 +38,8 @@ export function ClientChatPanel({
   onCreateInvoice,
   onApproveBooking,
   onMarkRead,
+  onResolve,
+  onCreateBooking,
 }: ClientChatPanelProps) {
   const availableChannels = useMemo(
     () => CHANNEL_ORDER.filter((ch) => conversationsByChannel.has(ch)),
@@ -211,6 +217,36 @@ export function ClientChatPanel({
           </TabsList>
         </Tabs>
       </div>
+
+      {activeConversation && (
+        <div className="flex items-center justify-end gap-2 border-b px-4 py-2">
+          {activeConversation.resolvedAt ? (
+            <span className="flex items-center gap-1.5 rounded-full bg-tone-success-light px-3 py-1 text-xs font-medium text-tone-success-foreground">
+              <CheckCircle2 className="size-3.5" />
+              Resolved
+            </span>
+          ) : activeConversation.lifecycleStatus === "client" && onResolve ? (
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-tone-success/30 text-tone-success-foreground hover:bg-tone-success-light"
+              onClick={() => onResolve(activeConversation.id)}
+            >
+              <CheckCircle2 className="size-4" />
+              Resolve
+            </Button>
+          ) : null}
+          {onCreateBooking && (
+            <Button
+              size="sm"
+              onClick={() => onCreateBooking(activeConversation.id)}
+            >
+              <Plus className="size-4" />
+              Create Booking
+            </Button>
+          )}
+        </div>
+      )}
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 pb-8">
         {activeConversation && activeChannel === "phone" ? (
